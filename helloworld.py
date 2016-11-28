@@ -28,7 +28,7 @@ class Application(tornado.web.Application):
         #where to look for the html files
         settings = dict(
             template_path=os.path.join(os.path.dirname(__file__), "templates"), 
-            static_path=os.path.join(os.path.dirname(__file__), "static"), 
+            static_path=os.path.join(os.path.dirname(__file__), "static2"), 
             debug=True,
         )
         #initializes web app
