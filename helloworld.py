@@ -12,6 +12,7 @@ from pymongo import MongoClient
 define("port", default=8888, help="run on the given port", type=int)
 
 
+
 class Application(tornado.web.Application):
     def __init__(self):
         #connects url with code 
@@ -28,7 +29,7 @@ class Application(tornado.web.Application):
         #where to look for the html files
         settings = dict(
             template_path=os.path.join(os.path.dirname(__file__), "templates"), 
-            static_path=os.path.join(os.path.dirname(__file__), "static2"), 
+            static_path=os.path.join(os.path.dirname(__file__), "static"), 
             debug=True,
         )
         #initializes web app
@@ -40,8 +41,10 @@ class Application(tornado.web.Application):
 
 class MainHandler(tornado.web.RequestHandler):
     def get(self):
+    
         #displays contents of index.html
-        self.render("index.html")
+        self.render('mmd.html', mmd="13")
+        
     def post(self):
         #refers to database connected to in 'class Application'
         database = self.application.db.database
@@ -51,6 +54,7 @@ class MainHandler(tornado.web.RequestHandler):
         self.application.UserID = database.insert_one(entry).inserted_id
         print self.application.UserID
         self.redirect('/prestudy')
+
 
 class PreStudyHandler(tornado.web.RequestHandler):
     def get(self):
@@ -85,6 +89,7 @@ class LocusHandler(tornado.web.RequestHandler):
         #displays contents of locus.html
         self.render("locus.html")
     def post(self):
+        #get system time.
         #gets content submitted in the form for locus
         question1 = self.get_argument('question1')
         question2 = self.get_argument('question2')
@@ -115,6 +120,7 @@ class LocusHandler(tornado.web.RequestHandler):
         question27 = self.get_argument('question27')
         question28 = self.get_argument('question28')
         question29 = self.get_argument('question29')
+        time = self.get_argument('elapsed_time')
         #organizes locus content into JSON format to save to database
         locus = {"question1": question1,
                  "question2": question2,
@@ -148,10 +154,11 @@ class LocusHandler(tornado.web.RequestHandler):
         #refers to database connected to in 'class Application'
         database = self.application.db.database
         #gets database entry with current sessions user id and saves locus content 
-        database.update({"_id": self.application.UserID}, {'$set': locus})
+        database.update({"_id": self.application.UserID}, {'$set': locus})        
         #code to print updated entry for testing 
-        entry = database.find_one({"_id": self.application.UserID})
-        print entry
+        
+        #entry = database.find_one({"_id": self.application.UserID})
+        #print entry
     
 
 #main function is first thing to run when application starts 
