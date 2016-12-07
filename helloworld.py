@@ -15,7 +15,7 @@ define("port", default=8888, help="run on the given port", type=int)
 
 class Application(tornado.web.Application):
     def __init__(self):
-        #connects url with code 
+        #connects url with code
         handlers = [
             (r"/", MainHandler),
             (r"/locus", LocusHandler),
@@ -26,11 +26,11 @@ class Application(tornado.web.Application):
         client = MongoClient()
         self.db = client.atuav
         #"global variable" to save current UserID of session
-        UserID = ''; 
+        UserID = '';
         #where to look for the html files
         settings = dict(
-            template_path=os.path.join(os.path.dirname(__file__), "templates"), 
-            static_path=os.path.join(os.path.dirname(__file__), "static"), 
+            template_path=os.path.join(os.path.dirname(__file__), "templates"),
+            static_path=os.path.join(os.path.dirname(__file__), "static"),
             debug=True,
         )
         #initializes web app
@@ -42,11 +42,11 @@ class Application(tornado.web.Application):
 
 class MainHandler(tornado.web.RequestHandler):
     def get(self):
-    
+
         #displays contents of index.html
-        self.render('index.html')
-        #self.render('mmd.html', "mmd=3")
-        
+        #self.render('index.html')
+        self.render('mmd.html', mmd="3")
+
     def post(self):
         #refers to database connected to in 'class Application'
         database = self.application.db.database
@@ -61,7 +61,7 @@ class MMDHandler(tornado.web.RequestHandler):
     def get(self):
         #displays contents of index.html
         self.render('mmd.html', mmd="30")
-        
+
     def post(self):
         #refers to database connected to in 'class Application'
         #database = self.application.db.database
@@ -77,7 +77,7 @@ class PreStudyHandler(tornado.web.RequestHandler):
         #display contents of prestudy.html
         self.render("prestudy.html")
     def post(self):
-        #get contents submitted in the form for prestudy 
+        #get contents submitted in the form for prestudy
         age = self.get_argument('age')
         gender = self.get_argument('gender')
         occupation = self.get_argument('occupation')
@@ -93,9 +93,9 @@ class PreStudyHandler(tornado.web.RequestHandler):
                     "complex_bar": complex_bar}
         #refers to database connected to in 'class Application'
         database = self.application.db.database
-        #gets database entry with current sessions user id and saves prestudy content 
+        #gets database entry with current sessions user id and saves prestudy content
         database.update({"_id": self.application.UserID}, {'$set': prestudy})
-        #code to print updated entry for testing 
+        #code to print updated entry for testing
         entry = database.find_one({"_id": self.application.UserID})
         print entry
         self.redirect('/locus')
@@ -169,26 +169,24 @@ class LocusHandler(tornado.web.RequestHandler):
                  "question29": question29,}
         #refers to database connected to in 'class Application'
         database = self.application.db.database
-        #gets database entry with current sessions user id and saves locus content 
-        database.update({"_id": self.application.UserID}, {'$set': locus})        
-        #code to print updated entry for testing 
-        
+        #gets database entry with current sessions user id and saves locus content
+        database.update({"_id": self.application.UserID}, {'$set': locus})
+        #code to print updated entry for testing
+
         #entry = database.find_one({"_id": self.application.UserID})
         #print entry
         self.redirect('/mmd')
-        
 
-#main function is first thing to run when application starts 
+
+#main function is first thing to run when application starts
 def main():
     tornado.options.parse_command_line()
     #Application() refers to 'class Application'
     http_server = tornado.httpserver.HTTPServer(Application())
     http_server.listen(options.port)
     tornado.ioloop.IOLoop.current().start()
-    
+
 
 
 if __name__ == "__main__":
     main()
-
-    
