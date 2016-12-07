@@ -8,8 +8,14 @@
 h2 {
     width: 350px;
     text-align: left;
+    padding-top: 0px;
+    margin-top: 0px;
 }
 
+h3 {
+    padding-top: 0px;
+    margin-top: 0px;
+}
 /*html, body {
     height: 100%;
 }*/
