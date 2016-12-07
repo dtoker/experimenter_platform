@@ -20,6 +20,7 @@ class Application(tornado.web.Application):
             (r"/", MainHandler),
             (r"/locus", LocusHandler),
             (r"/prestudy", PreStudyHandler),
+            (r"/mmd", MMDHandler),
         ]
         #connects to database
         client = MongoClient()
@@ -43,7 +44,8 @@ class MainHandler(tornado.web.RequestHandler):
     def get(self):
     
         #displays contents of index.html
-        self.render('mmd.html', mmd="13")
+        self.render('index.html')
+        #self.render('mmd.html', "mmd=3")
         
     def post(self):
         #refers to database connected to in 'class Application'
@@ -55,6 +57,20 @@ class MainHandler(tornado.web.RequestHandler):
         print self.application.UserID
         self.redirect('/prestudy')
 
+class MMDHandler(tornado.web.RequestHandler):
+    def get(self):
+        #displays contents of index.html
+        self.render('mmd.html', mmd="30")
+        
+    def post(self):
+        #refers to database connected to in 'class Application'
+        #database = self.application.db.database
+        #empty entry to insert into database in order to generate a user id
+        #entry = {}
+        #inserts empty entry and saves it to UserID variable in 'class Application'
+        #self.application.UserID = database.insert_one(entry).inserted_id
+        #print self.application.UserID
+        self.redirect('/prestudy')
 
 class PreStudyHandler(tornado.web.RequestHandler):
     def get(self):
@@ -120,7 +136,7 @@ class LocusHandler(tornado.web.RequestHandler):
         question27 = self.get_argument('question27')
         question28 = self.get_argument('question28')
         question29 = self.get_argument('question29')
-        time = self.get_argument('elapsed_time')
+        #time = self.get_argument('elapsed_time')
         #organizes locus content into JSON format to save to database
         locus = {"question1": question1,
                  "question2": question2,
@@ -159,7 +175,8 @@ class LocusHandler(tornado.web.RequestHandler):
         
         #entry = database.find_one({"_id": self.application.UserID})
         #print entry
-    
+        self.redirect('/mmd')
+        
 
 #main function is first thing to run when application starts 
 def main():
