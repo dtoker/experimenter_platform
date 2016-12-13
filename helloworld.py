@@ -26,14 +26,10 @@ class Application(tornado.web.Application):
         #connects to database
         self.conn = sqlite3.connect('database.db')
         #"global variable" to save current UserID of session
-<<<<<<< HEAD
         UserID = -1; 
         #global variable to track start and end times
         start_time = '';
         end_time = ''; 
-=======
-        UserID = '';
->>>>>>> d2c6dc370ce278ef50ef1ebccda5f188cacc97d0
         #where to look for the html files
         settings = dict(
             template_path=os.path.join(os.path.dirname(__file__), "templates"),
@@ -49,10 +45,6 @@ class Application(tornado.web.Application):
 
 class MainHandler(tornado.web.RequestHandler):
     def get(self):
-<<<<<<< HEAD
-=======
-
->>>>>>> d2c6dc370ce278ef50ef1ebccda5f188cacc97d0
         #displays contents of index.html
         #self.render('index.html')
         self.render('mmd.html', mmd="3")
@@ -88,20 +80,15 @@ class PreStudyHandler(tornado.web.RequestHandler):
         #display contents of prestudy.html
         self.render("prestudy.html")
     def post(self):
-<<<<<<< HEAD
         #gets time upon completing form
         self.application.end_time = str(datetime.datetime.now().time())
         #get contents submitted in the form for prestudy 
-=======
-        #get contents submitted in the form for prestudy
->>>>>>> d2c6dc370ce278ef50ef1ebccda5f188cacc97d0
         age = self.get_argument('age')
         gender = self.get_argument('gender')
         occupation = self.get_argument('occupation')
         field = self.get_argument('field')
         simple_bar = self.get_argument('simple_bar')
         complex_bar = self.get_argument('complex_bar')
-<<<<<<< HEAD
 
         #currently that number value is just a dummy user id
         #organizes data to insert into table into a tuple
@@ -113,22 +100,6 @@ class PreStudyHandler(tornado.web.RequestHandler):
 
         #get database entry with current sessions user id and saves prestudy content 
             #database.update({"_id": self.application.UserID}, {'$set': prestudy})
-=======
-        #organizes prestudy content into JSON format to save to database
-        prestudy = {"age": age,
-                    "gender": gender,
-                    "occupation": occupation,
-                    "field": field,
-                    "simple_bar": simple_bar,
-                    "complex_bar": complex_bar}
-        #refers to database connected to in 'class Application'
-        database = self.application.db.database
-        #gets database entry with current sessions user id and saves prestudy content
-        database.update({"_id": self.application.UserID}, {'$set': prestudy})
-        #code to print updated entry for testing
-        entry = database.find_one({"_id": self.application.UserID})
-        print entry
->>>>>>> d2c6dc370ce278ef50ef1ebccda5f188cacc97d0
         self.redirect('/locus')
 
 class LocusHandler(tornado.web.RequestHandler):
@@ -171,7 +142,6 @@ class LocusHandler(tornado.web.RequestHandler):
         q28 = self.get_argument('question28')
         q29 = self.get_argument('question29')
         #time = self.get_argument('elapsed_time')
-<<<<<<< HEAD
 
         #####TODO#####
 
@@ -187,46 +157,7 @@ class LocusHandler(tornado.web.RequestHandler):
                                                                 '?,?,?,?,?,?,?,?,?,?,' +
                                                                 '?,?,?,?,?,?,?,?,?,?,?)', locus)
         self.application.conn.commit()
-=======
-        #organizes locus content into JSON format to save to database
-        locus = {"question1": question1,
-                 "question2": question2,
-                 "question3": question3,
-                 "question4": question4,
-                 "question5": question5,
-                 "question6": question6,
-                 "question7": question7,
-                 "question8": question8,
-                 "question9": question9,
-                 "question10": question10,
-                 "question11": question11,
-                 "question12": question12,
-                 "question13": question13,
-                 "question14": question14,
-                 "question15": question15,
-                 "question16": question16,
-                 "question17": question17,
-                 "question18": question18,
-                 "question19": question19,
-                 "question20": question20,
-                 "question21": question21,
-                 "question22": question22,
-                 "question23": question23,
-                 "question24": question24,
-                 "question25": question25,
-                 "question26": question26,
-                 "question27": question27,
-                 "question28": question28,
-                 "question29": question29,}
-        #refers to database connected to in 'class Application'
-        database = self.application.db.database
-        #gets database entry with current sessions user id and saves locus content
-        database.update({"_id": self.application.UserID}, {'$set': locus})
-        #code to print updated entry for testing
-
-        #entry = database.find_one({"_id": self.application.UserID})
-        #print entry
->>>>>>> d2c6dc370ce278ef50ef1ebccda5f188cacc97d0
+         
         self.redirect('/mmd')
 
 
