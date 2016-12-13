@@ -1,9 +1,21 @@
 #thetextparagraph{
     width: 400px;
     font-size: 18px;
-	text-align: justify;
+	  text-align: justify;
+
 }
 
+h2 {
+    width: 350px;
+    text-align: left;
+    padding-top: 0px;
+    margin-top: 0px;
+}
+
+h3 {
+    padding-top: 0px;
+    margin-top: 0px;
+}
 /*html, body {
     height: 100%;
 }*/
@@ -16,4 +28,9 @@ html {
 body {
     display: table-cell;
     vertical-align: middle;
+}
+
+td {
+  vertical-align: top;
+  padding-right: 20px;
 }

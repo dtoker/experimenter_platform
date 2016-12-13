@@ -19,9 +19,8 @@ var currentMMD; //by default
 });
 */
 
-     console.log("dfasdasdasd");
 d3.json("static/data/conditions.json", function(data){
-     console.log(data);
+
 	 var selectHtml = "";
      MMDSet = data;
      for(var i=0;i<data.length;i++){
@@ -41,7 +40,7 @@ d3.json("static/data/conditions.json", function(data){
 
 });
 
-function loadMMD(mmdName){	
+function loadMMD(mmdName){
      d3.json("static/data/"+mmdName+".json", function(data){
           $("#thetextparagraph").html(data.text);
           //console.log('<img src='+data.chart+'');
