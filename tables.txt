@@ -1,0 +1,56 @@
+CREATE TABLE prestudy(
+   ID INT PRIMARY   KEY     NOT NULL,
+   AGE              CHAR(50),
+   GENDER           CHAR(50),
+   OCCUPATION       CHAR(50),
+   FIELD            CHAR(50),
+   SIMPLEBAR        CHAR(50),
+   COMPLEXBAR       CHAR(50),
+   PRE_START_TIME   CHAR(50),
+   PRE_END_TIME     CHAR(50)
+);
+
+
+('INSERT INTO prestudy VALUES (?,?,?,?,?,?,?,?,?)', prestudy)
+
+CREATE TABLE locus(
+   ID INT PRIMARY   KEY    NOT NULL,
+   QUESTION1               CHAR(50),
+   QUESTION2               CHAR(50),
+   QUESTION3               CHAR(50),
+   QUESTION4               CHAR(50),
+   QUESTION5               CHAR(50),
+   QUESTION6               CHAR(50),
+   QUESTION7               CHAR(50),
+   QUESTION8               CHAR(50),
+   QUESTION9               CHAR(50),
+   QUESTION10              CHAR(50),
+   QUESTION11              CHAR(50),
+   QUESTION12              CHAR(50),
+   QUESTION13              CHAR(50),
+   QUESTION14              CHAR(50),
+   QUESTION15              CHAR(50),
+   QUESTION16              CHAR(50),
+   QUESTION17              CHAR(50),
+   QUESTION18              CHAR(50),
+   QUESTION19              CHAR(50),
+   QUESTION20              CHAR(50),
+   QUESTION21              CHAR(50),
+   QUESTION22              CHAR(50),
+   QUESTION23              CHAR(50),
+   QUESTION24              CHAR(50),
+   QUESTION25              CHAR(50),
+   QUESTION26              CHAR(50),
+   QUESTION27              CHAR(50),
+   QUESTION28              CHAR(50),
+   QUESTION29              CHAR(50),
+   LOC_START_TIME          CHAR(50),
+   LOC_END_TIME            CHAR(50)
+);
+
+('INSERT INTO locus VALUES (?,?,?,?,?,?,?,?,?,?,
+							?,?,?,?,?,?,?,?,?,?,
+							?,?,?,?,?,?,?,?,?,?,?)', locus)
+
+
+
