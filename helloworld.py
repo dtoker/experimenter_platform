@@ -26,10 +26,10 @@ class Application(tornado.web.Application):
         #connects to database
         self.conn = sqlite3.connect('database.db')
         #"global variable" to save current UserID of session
-        UserID = -1; 
+        UserID = -1;
         #global variable to track start and end times
         start_time = '';
-        end_time = ''; 
+        end_time = '';
         #where to look for the html files
         settings = dict(
             template_path=os.path.join(os.path.dirname(__file__), "templates"),
@@ -47,6 +47,9 @@ class MainHandler(tornado.web.RequestHandler):
     def get(self):
         #displays contents of index.html
         #self.render('index.html')
+        self.application.start_time = str(datetime.datetime.now().time())
+        self.application.cur_mmd = 3
+        self.application.cur_user = 100
         self.render('mmd.html', mmd="3")
 
     def post(self):
@@ -56,11 +59,17 @@ class MainHandler(tornado.web.RequestHandler):
         # 1)generate userid
         # 2)login with old userid
 
+        self.application.end_time = str(datetime.datetime.now().time())
+        task_data = (self.application.cur_user, self.application.cur_mmd, self.application.start_time, self.application.end_time,"")
+        self.application.conn.execute('INSERT INTO MMD_tasks VALUES (?,?,?,?,?)', task_data)
+        self.application.conn.commit()
+
         self.redirect('/prestudy')
 
 class MMDHandler(tornado.web.RequestHandler):
     def get(self):
         #displays contents of index.html
+        self.application.start_time = str(datetime.datetime.now().time())
         self.render('mmd.html', mmd="30")
 
     def post(self):
@@ -82,7 +91,7 @@ class PreStudyHandler(tornado.web.RequestHandler):
     def post(self):
         #gets time upon completing form
         self.application.end_time = str(datetime.datetime.now().time())
-        #get contents submitted in the form for prestudy 
+        #get contents submitted in the form for prestudy
         age = self.get_argument('age')
         gender = self.get_argument('gender')
         occupation = self.get_argument('occupation')
@@ -98,13 +107,13 @@ class PreStudyHandler(tornado.web.RequestHandler):
 
         #####TODO######
 
-        #get database entry with current sessions user id and saves prestudy content 
+        #get database entry with current sessions user id and saves prestudy content
             #database.update({"_id": self.application.UserID}, {'$set': prestudy})
         self.redirect('/locus')
 
 class LocusHandler(tornado.web.RequestHandler):
     def get(self):
-        #get time upon entering form 
+        #get time upon entering form
         self.application.start_time = str(datetime.datetime.now().time())
         #displays contents of locus.html
         self.render("locus.html")
@@ -145,8 +154,8 @@ class LocusHandler(tornado.web.RequestHandler):
 
         #####TODO#####
 
-        #gets database entry with current sessions user id and saves locus content 
-            #database.update({"_id": self.application.UserID}, {'$set': locus})        
+        #gets database entry with current sessions user id and saves locus content
+            #database.update({"_id": self.application.UserID}, {'$set': locus})
 
         #organizes data to be inserted into table as a tuple
         locus = (2, q1, q2, q3, q4, q5, q6, q7, q8, q9, q10,
@@ -157,7 +166,7 @@ class LocusHandler(tornado.web.RequestHandler):
                                                                 '?,?,?,?,?,?,?,?,?,?,' +
                                                                 '?,?,?,?,?,?,?,?,?,?,?)', locus)
         self.application.conn.commit()
-         
+
         self.redirect('/mmd')
 
 
