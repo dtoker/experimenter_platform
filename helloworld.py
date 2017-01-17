@@ -19,6 +19,7 @@ class Application(tornado.web.Application):
             (r"/", MainHandler),
             (r"/locus", LocusHandler),
             (r"/prestudy", PreStudyHandler),
+            (r"/fixation", FixationHandler)
         ]
         #connects to database
         client = MongoClient()
@@ -55,7 +56,7 @@ class MainHandler(tornado.web.RequestHandler):
 class PreStudyHandler(tornado.web.RequestHandler):
     def get(self):
         #display contents of prestudy.html
-        self.render("prestudy.html")
+        self.render("prestudy.html", userid = self.application.UserID)
     def post(self):
         #get contents submitted in the form for prestudy 
         age = self.get_argument('age')
@@ -83,7 +84,7 @@ class PreStudyHandler(tornado.web.RequestHandler):
 class LocusHandler(tornado.web.RequestHandler):
     def get(self):
         #displays contents of locus.html
-        self.render("locus.html")
+        self.render("locus.html", userid = self.application.UserID)
     def post(self):
         #gets content submitted in the form for locus
         question1 = self.get_argument('question1')
@@ -152,6 +153,10 @@ class LocusHandler(tornado.web.RequestHandler):
         #code to print updated entry for testing 
         entry = database.find_one({"_id": self.application.UserID})
         print entry
+
+class FixationHandler(tornado.web.RequestHandler):
+    def get(self):
+        self.write("Hello, world")
     
 
 #main function is first thing to run when application starts 
