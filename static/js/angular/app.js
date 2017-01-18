@@ -7,7 +7,9 @@ var AppCtrl = function($scope, $http, $location) {
    * @type {string}
    */
   $scope.loadUrl;
-  /** @type {string} */
+    $scopeGlobal = $scope;
+
+    /** @type {string} */
 
   /**
    * Source for the chart.
@@ -50,34 +52,45 @@ var AppCtrl = function($scope, $http, $location) {
 
   $scope.curMarksManager;
   $scope.curSpanManager;
-
+  console.log(currentMMD);
   // Fetch the conditions
   $http.get('static/data/conditions.json').
       success(function(data, status, headers) {
         $scope.conditions = data;
         if (data.length > 0) {
+
           $scope.curConditionId = data[0];
+            if(currentMMD){
+                $scope.curConditionId = currentMMD;
+            }
           $scope.changeConditions();
         }
       });
 
   $scope.changeConditions = function() {
+    console.log('change conditions');
+
     if ($scope.curSpanManager) {
       $scope.curSpanManager.clearSpans();
     }
-
+    console.log('static/data/' + $scope.curConditionId + '.json');
     // Load the new condition
     $http.get('static/data/' + $scope.curConditionId + '.json').
         success(function(data, status, headers) {
           // Reset the worker filter
           $scope.imgSrc = 'static/' + data.chart;
           $scope.curText = data.text;
+          globalText = data.text;
           $scope.sentences = data.sentences;
+          console.log($scope.curText);
+          console.log($scope.sentences);
           $scope.datatable = data.datatable;
           $scope.marks = data.marks;
           $scope.visualReferences = data.visual_references;
           $scope.allReferences = data.references;
           $scope.curReference = $scope.allReferences[0].reference;
+
+          document.getElementById("theText").innerHTML =$scope.curText;
 
           // Add names and select grouping to the references
           angular.forEach($scope.allReferences, function(reference) {
@@ -125,6 +138,7 @@ var AppCtrl = function($scope, $http, $location) {
       });
 
   var textPar = angular.element(document.getElementById('theTextParagraph'));
+  //document.getElementById("theTextParagraph").innerHTML =globalText;
   textPar.on('mousedown', function() {
     // Clear the spans
     if ($scope.curSpanManager) {
@@ -490,6 +504,8 @@ function highlightRelatedPhrases($scope, references, selection) {
 function createSpans(phrases, selection,
     highlightAndReferenceSpans, highlightSpans) {
   var paragraph = document.getElementById('theTextParagraph');
+  console.log(paragraph);
+  console.log(phrases);
 
   // Create distinct spans
   i = 1;
@@ -691,5 +707,39 @@ function clone(obj) {
   }
   return out;	
 }
+    $( "#button_text" ).click(function() {
+        console.log('highlight text');
+        var overlappedReferences = [];
 
+        //for (var i=0; i<$scopeGlobal.curReference.length; i++) {
+        var reference = $scopeGlobal.curReference[1];
+        overlappedReferences.push(reference);
+        //}
+        console.log(overlappedReferences);
+        //highlightRelatedTuples($scopeGlobal, overlappedReferences);
+        highlightRelatedPhrases($scopeGlobal, overlappedReferences);
+    });
+    $( "#button_targets" ).click(function() {
+        var overlappedReferences = [];
+
+        //for (var i=0; i<$scopeGlobal.curReference.length; i++) {
+        var reference = $scopeGlobal.curReference[1];
+        overlappedReferences.push(reference);
+        //}
+        console.log(overlappedReferences);
+        highlightRelatedTuples($scopeGlobal, overlappedReferences);
+    });
+
+    $( "#button_both" ).click(function() {
+        var overlappedReferences = [];
+
+        //for (var i=0; i<$scopeGlobal.curReference.length; i++) {
+        var reference = $scopeGlobal.curReference[1];
+        overlappedReferences.push(reference);
+        //}
+        console.log(overlappedReferences);
+        highlightRelatedTuples($scopeGlobal, overlappedReferences);
+        highlightRelatedPhrases($scopeGlobal, overlappedReferences);
+
+    });
 }());
