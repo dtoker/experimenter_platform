@@ -21,6 +21,7 @@ class Application(tornado.web.Application):
             (r"/", MainHandler),
             (r"/locus", LocusHandler),
             (r"/prestudy", PreStudyHandler),
+            (r"/fixation", FixationHandler)
             (r"/mmd", MMDHandler),
             (r"/MMDIntervention", MMDInterventionHandler),
 			
@@ -107,7 +108,7 @@ class PreStudyHandler(tornado.web.RequestHandler):
         #gets time upon entering form
         self.application.start_time = str(datetime.datetime.now().time())
         #display contents of prestudy.html
-        self.render("prestudy.html")
+        self.render("prestudy.html", userid = self.application.UserID)
     def post(self):
         #gets time upon completing form
         self.application.end_time = str(datetime.datetime.now().time())
@@ -136,7 +137,7 @@ class LocusHandler(tornado.web.RequestHandler):
         #get time upon entering form
         self.application.start_time = str(datetime.datetime.now().time())
         #displays contents of locus.html
-        self.render("locus.html")
+        self.render("locus.html", userid = self.application.UserID)
     def post(self):
         #get time upon leaving form
         self.application.end_time = str(datetime.datetime.now().time())
@@ -190,6 +191,11 @@ class LocusHandler(tornado.web.RequestHandler):
         self.redirect('/mmd')
 
 
+class FixationHandler(tornado.web.RequestHandler):
+    def get(self):
+        self.write("Hello, world")
+
+        
 #main function is first thing to run when application starts
 def main():
     tornado.options.parse_command_line()
