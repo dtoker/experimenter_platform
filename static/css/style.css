@@ -1,3 +1,9 @@
+#theText{
+     width: 400px;
+     font-size: 18px;
+     text-align: justify;
+
+ }
 #thetextparagraph{
     width: 400px;
     font-size: 18px;
@@ -27,10 +33,22 @@ html {
 }
 
 body {
+
     display: table-cell;
     vertical-align: middle;
+    overflow: scroll;
+
 }
 
+#textandvis{
+    height: 960px;
+    width: 1280px;
+    overflow: scroll;
+    border-top: 4px solid #900;
+    border-bottom: 4px solid #900;
+    border-left: 4px solid #900;
+    border-right: 4px solid #900;
+}
 td {
   vertical-align: top;
   padding-right: 20px;

@@ -42,9 +42,9 @@ d3.json("static/data/conditions.json", function(data){
 
 function loadMMD(mmdName){
      d3.json("static/data/"+mmdName+".json", function(data){
-          $("#thetextparagraph").html(data.text);
+          $("#thetext").html(data.text);
           //console.log('<img src='+data.chart+'');
-          $("#visualization").html('<img src="static/'+data.chart+'">' );
+          $("#visualization").html('<img id="theChart" src="static/'+data.chart+'">' );
 
      });
 }
