@@ -1,3 +1,14 @@
+var deemphasis = true;
+var bolding = true;
+function toggleDeemphasis(){
+    deemphasis = !deemphasis;
+}
+
+function toggleBolding(){
+    bolding = !bolding;
+    console.log(bolding);
+}
+
 (function() {
 
 var AppCtrl = function($scope, $http, $location) {

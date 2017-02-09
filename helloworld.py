@@ -53,9 +53,9 @@ class MainHandler(tornado.web.RequestHandler):
         self.application.start_time = str(datetime.datetime.now().time())
         self.application.cur_mmd = 3
         self.application.cur_user = 100
-        #self.render('mmd.html', mmd="3")
+        self.render('mmd.html', mmd="3")
 
-        self.render('MMDIntervention.html', mmd="3")
+        #self.render('MMDIntervention.html', mmd="3")
 
     def post(self):
 

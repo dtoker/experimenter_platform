@@ -119,6 +119,7 @@
                 .transition()
                 .duration(TRANSITION_DURATION)
                 .attr('fill-opacity', 0)
+                  .attr('stroke', 'red')
                 .each('end', function() {
                   d3.select(this).classed('selected', true);  
                   //d3.select(this).classed('selected', !d3.select(this).classed('selected'));
@@ -133,7 +134,12 @@
                 });
             } else {
               d3.selectAll(marks.selected_marks).attr('fill-opacity', 0)
-                .classed('selected', 'true');
+                  .attr('stroke', function () {
+                  	console.log(bolding);
+                      return bolding? 'red': 'none';
+                  })//Enamul: bolding added
+
+				  .classed('selected', 'true');
               d3.selectAll(marks.unselected_marks)
                 .attr('fill-opacity', function(mark_data) {
                     return marks.selected_marks.length === 0 ? 0 : DESATURATION;
@@ -144,7 +150,8 @@
 					d3.selectAll('.visual_reference')
 					  .transition()
 					  .attr('fill-opacity', 0)
-					  .duration(TRANSITION_DURATION)
+                        .attr('stroke', 'none') //Enamul: bolding remove
+						.duration(TRANSITION_DURATION)
             .each('end', function() {
               d3.select(this).classed('selected', 'false');
             });
