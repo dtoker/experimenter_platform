@@ -24,7 +24,8 @@ class Application(tornado.web.Application):
             (r"/fixation", FixationHandler),
             (r"/mmd", MMDHandler),
             (r"/MMDIntervention", MMDInterventionHandler),
-			
+            (r"/Qurstionnaire", QuestionnaireHandler),
+
         ]
         #connects to database
         self.conn = sqlite3.connect('database.db')
@@ -56,6 +57,7 @@ class MainHandler(tornado.web.RequestHandler):
         self.render('mmd.html', mmd="3")
 
         #self.render('MMDIntervention.html', mmd="3")
+        #self.render('questionnaire.html', mmd="3")
 
     def post(self):
 
@@ -71,7 +73,23 @@ class MainHandler(tornado.web.RequestHandler):
 
         self.redirect('/prestudy')
 
-		
+		 
+class QuestionnaireHandler(tornado.web.RequestHandler):
+    def get(self):
+        #displays contents of index.html
+        self.application.start_time = str(datetime.datetime.now().time())
+        self.render('questionnaire.html', mmd="30")
+
+    def post(self):
+        #refers to database connected to in 'class Application'
+        #database = self.application.db.database
+        #empty entry to insert into database in order to generate a user id
+        #entry = {}
+        #inserts empty entry and saves it to UserID variable in 'class Application'
+        #self.application.UserID = database.insert_one(entry).inserted_id
+        #print self.application.UserID
+        self.redirect('/prestudy')
+
 class MMDInterventionHandler(tornado.web.RequestHandler):
     def get(self):
         #displays contents of index.html
@@ -86,7 +104,8 @@ class MMDInterventionHandler(tornado.web.RequestHandler):
         #inserts empty entry and saves it to UserID variable in 'class Application'
         #self.application.UserID = database.insert_one(entry).inserted_id
         #print self.application.UserID
-        self.redirect('/prestudy')		
+        self.redirect('/prestudy')
+
 class MMDHandler(tornado.web.RequestHandler):
     def get(self):
         #displays contents of index.html

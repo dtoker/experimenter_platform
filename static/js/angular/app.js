@@ -331,7 +331,7 @@ function highlightRelatedTuples($scope, references) {
   }
 
   $scope.curMarksManager.highlight($scope.refMapper.getReferringMarks(
-      referenced_tuples));
+      referenced_tuples),true);//true for animating
 }
 
 /**

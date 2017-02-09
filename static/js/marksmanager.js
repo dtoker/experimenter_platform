@@ -34,7 +34,7 @@
 	MarksManager.HIGHLIGHT = "highlight";
 	MarksManager.DESATURATE = "desaturate";
 	
-	var TRANSITION_DURATION = 250;
+	var TRANSITION_DURATION = 500;
   var DESATURATION = 0.45;
 	MarksManager.internal = {
 		highlights: {
@@ -113,13 +113,16 @@
 				"highlight": function(tuple_ids, animate) {
 					var self = this,
 						marks = self.getSelectedMarks(tuple_ids);
-					
+					console.log(animate);
             if(animate) {
               d3.selectAll(marks.selected_marks)
                 .transition()
                 .duration(TRANSITION_DURATION)
                 .attr('fill-opacity', 0)
-                  .attr('stroke', 'red')
+                  .attr('stroke', function () {
+                      //console.log(bolding);
+                      return bolding? 'red': 'none';
+                  })//Enamul: bolding added
                 .each('end', function() {
                   d3.select(this).classed('selected', true);  
                   //d3.select(this).classed('selected', !d3.select(this).classed('selected'));
