@@ -8,6 +8,7 @@ import os.path
 import sqlite3
 import datetime
 import json
+import random
 
 
 
@@ -25,7 +26,7 @@ class Application(tornado.web.Application):
             (r"/fixation", FixationHandler),
             (r"/mmd", MMDHandler),
             (r"/MMDIntervention", MMDInterventionHandler),
-            (r"/Qurstionnaire", QuestionnaireHandler),
+            (r"/questionnaire", QuestionnaireHandler),
 
         ]
         #connects to database
@@ -70,13 +71,15 @@ class MainHandler(tornado.web.RequestHandler):
 
         # 1)generate userid
         # 2)login with old userid
-
+        self.application.cur_user = random.randint(0, 1000)  #random number for now
         self.application.end_time = str(datetime.datetime.now().time())
         task_data = (self.application.cur_user, self.application.cur_mmd, self.application.start_time, self.application.end_time,"")
         self.application.conn.execute('INSERT INTO MMD_tasks VALUES (?,?,?,?,?)', task_data)
         self.application.conn.commit()
 
-        self.redirect('/prestudy')
+        self.redirect('/questionnaire')
+
+        #self.redirect('/prestudy')
 
     def loadMMDQuestions (self):
         conn = sqlite3.connect('database.db')
@@ -89,16 +92,7 @@ class MainHandler(tornado.web.RequestHandler):
         # query_results.fetchone()
 
 
-    def saveMMDQuestions (self):
 
-
-        self.application.end_time = str(datetime.datetime.now().time())
-        task_data = (self.application.cur_user, self.application.cur_mmd, self.application.start_time, self.application.end_time,"")
-        self.application.conn.execute('INSERT INTO MMD_tasks VALUES (?,?,?,?,?)', task_data)
-        self.application.conn.commit()
-
-
-        return json.dumps(query_results.fetchall())
 
 
 class QuestionnaireHandler(tornado.web.RequestHandler):
@@ -106,11 +100,33 @@ class QuestionnaireHandler(tornado.web.RequestHandler):
         #displays contents of index.html
         print 'questionnaire handler'
         self.application.start_time = str(datetime.datetime.now().time())
-        self.render('questionnaire.html', mmd="30")
+        mmdQuestions = self.loadMMDQuestions()
+        self.render('questionnaire.html', mmd="3", questions = mmdQuestions)
 
 
 
     def post(self):
+        print 'post'
+        answers = self.get_argument('answers')
+        print answers
+
+        answers = json.loads(answers)
+
+        print answers
+
+        self.application.end_time = str(datetime.datetime.now().time())
+        questionnaire_data = [
+        self.application.cur_user, self.application.cur_mmd, self.application.start_time, self.application.end_time]
+
+
+        for a in answers:
+            questionnaire_data.append(a)
+
+        print tuple(questionnaire_data)
+
+        self.application.conn.execute('INSERT INTO MMD_tasks VALUES (?,?,?,?,?)', questionnaire_data)
+        #self.application.conn.commit()
+
         #refers to database connected to in 'class Application'
         #database = self.application.db.database
         #empty entry to insert into database in order to generate a user id
@@ -119,6 +135,20 @@ class QuestionnaireHandler(tornado.web.RequestHandler):
         #self.application.UserID = database.insert_one(entry).inserted_id
         #print self.application.UserID
         self.redirect('/prestudy')
+
+    def loadMMDQuestions (self):
+        conn = sqlite3.connect('database.db')
+        query_results = conn.execute('select * from MMDQuestions')
+
+        return json.dumps(query_results.fetchall())
+
+    #
+    # def saveMMDQuestions(self):
+    #     self.application.end_time = str(datetime.datetime.now().time())
+    #     task_data = (
+    #     self.application.cur_user, self.application.cur_mmd, self.application.start_time, self.application.end_time, "")
+    #     self.application.conn.execute('INSERT INTO MMD_tasks VALUES (?,?,?,?,?)', task_data)
+    #     self.application.conn.commit()
 
 class MMDInterventionHandler(tornado.web.RequestHandler):
     def get(self):

@@ -11,6 +11,8 @@
     <link rel="stylesheet" href="static/css/rating.min.css">
     <link rel="stylesheet" href="static/css/rating.min.css">
     <link rel="stylesheet" href="static/css/view.css">
+    <script type="text/javascript" src="static/js/view.js"></script>
+
     <script>
       currentMMD = '{{mmd}}';
       console.log(currentMMD);
@@ -40,8 +42,9 @@
      </div>
     <div>Please rate how strongly you agree or disagree with each of the following statements with respect to the tool you have used (<b>more stars means higher agreement</b>).</div>
     <div id="star_rating" style="padding-left: 25px;"></div>
-    <form id="form_questionnaire" class="appnitro"  method="post" action="javascript:submitPostStudy();">
-
+    <form id="form_questionnaire" class="appnitro"  method="post" >
+        <!--action="javascript:submitPostStudy();"-->
+        <input type="hidden" id="answers" name="answers" value="">
         <ul id = 'questionList'>
 
             <!--<li id="li_1" >-->
@@ -99,12 +102,17 @@
 
         </ul>
         <ul>
+
+            <li id="ErrorContainer">
+
+            </li>
             <li class="buttons">
                 <input type="hidden" name="form_id" value="1124778" />
 
                 <input id="saveForm" class="button_text" type="submit" name="submit" value="Submit Answers" />
             </li>
         </ul>
+
     </form>
 
 </div>
