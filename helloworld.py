@@ -7,6 +7,7 @@ import os.path
 
 import sqlite3
 import datetime
+import json
 
 
 
@@ -54,10 +55,14 @@ class MainHandler(tornado.web.RequestHandler):
         self.application.start_time = str(datetime.datetime.now().time())
         self.application.cur_mmd = 3
         self.application.cur_user = 100
+        print 'hello'
+        mmdQuestions = self.loadMMDQuestions()
+
         self.render('mmd.html', mmd="3")
 
         #self.render('MMDIntervention.html', mmd="3")
-        #self.render('questionnaire.html', mmd="3")
+        #self.render('questionnaire.html', mmd="3", questions = mmdQuestions)
+
 
     def post(self):
 
@@ -73,12 +78,37 @@ class MainHandler(tornado.web.RequestHandler):
 
         self.redirect('/prestudy')
 
-		 
+    def loadMMDQuestions (self):
+        conn = sqlite3.connect('database.db')
+        query_results = conn.execute('select * from MMDQuestions')
+
+        return json.dumps(query_results.fetchall())
+        # query_results
+        # OR
+
+        # query_results.fetchone()
+
+
+    def saveMMDQuestions (self):
+
+
+        self.application.end_time = str(datetime.datetime.now().time())
+        task_data = (self.application.cur_user, self.application.cur_mmd, self.application.start_time, self.application.end_time,"")
+        self.application.conn.execute('INSERT INTO MMD_tasks VALUES (?,?,?,?,?)', task_data)
+        self.application.conn.commit()
+
+
+        return json.dumps(query_results.fetchall())
+
+
 class QuestionnaireHandler(tornado.web.RequestHandler):
     def get(self):
         #displays contents of index.html
+        print 'questionnaire handler'
         self.application.start_time = str(datetime.datetime.now().time())
         self.render('questionnaire.html', mmd="30")
+
+
 
     def post(self):
         #refers to database connected to in 'class Application'

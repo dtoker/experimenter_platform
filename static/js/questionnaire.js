@@ -8,29 +8,80 @@
 
     // SHOP ELEMENT
 var shop = document.querySelector('#star_rating');
+var questionList = document.querySelector('#questionList');
 
+console.log(questionObj);
 // DUMMY DATA
 var starData = [
     {
+        mmdid: '',
         id: "1",
-        description: "The article/snippet was easy to understand.",
-        rating: null
+        qid: "1",
+        questionBody: "The article/snippet was easy to understand.",
+        type: 'likert',
+        
+        //rating: null
     },
     {
         id: "2",
-        description: "I am interested in reading the full article.",
+        questionBody: "I am interested in reading the full article.",
+        type: 'likert',
         rating: null
     }
 
 ];
 
-// INITIALIZE
-(function init() {
-    for (var i = 0; i < starData.length; i++) {
-        addRatingWidget(buildShopItem(starData[i]), starData[i]);
-    }
-})();
+for(var i=0;i<questionObj.length;i++){
+  var questionData = {
+    mmdId: questionObj[i][0],
+    qid: questionObj[i][1],
+    questionBody: questionObj[i][2],
+    questionType: questionObj[i][3],
+    answers: questionObj[i][4],
+    rating: null
+  };
+  console.log(questionData);
+  if(questionData.questionType==='Likert'){
 
+      addRatingWidget(buildShopItem(questionData), questionData);
+  }
+  else if(questionData.questionType==='MC' || questionData.questionType==='TF'){
+    $( "#questionList" ).append( buildMultipleChoiceQuestion(questionData));
+  }
+}
+
+// // INITIALIZE
+// (function init() {
+//     for (var i = 0; i < starData.length; i++) {
+//         addRatingWidget(buildShopItem(starData[i]), starData[i]);
+//     }
+// })();
+
+ function buildMultipleChoiceQuestion(questionData){
+   var  questionID = questionData.qid;
+   var answers = questionData.answers.split(',');
+
+
+    var html = '<li id="li_'+questionID+'" >'+
+      '<label class="description" for="element_2">'+questionData.questionBody+'</label>'+
+      '<span>';
+
+   for(var i=0;i<answers.length;i++){
+     answers[i] = answers[i].substring(4, answers[i].length-2);
+
+
+     html+= '<input id="element_'+questionID+'_1" name="element_2" class="element radio" type="radio" value="1" />'+
+     '<label class="choice" for="element_2_1">'+answers[i]+'</label>';
+   }
+
+
+
+      //'<input id="element_'+questionID+'_2" name="element_1" class="element radio" type="radio" value="2" />'+
+      //'<label class="choice" for="element_2_2">False</label>'+
+   html+='</span>'+
+      '</li>';
+    return html;
+}
 // BUILD SHOP ITEM
 function buildShopItem(data) {
     var shopItem = document.createElement('div');
@@ -38,7 +89,7 @@ function buildShopItem(data) {
     var html = '<div class="c-shop-item__img"></div>' +
         '<div class="c-shop-item__details">' +
         // '<h3 class="c-shop-item__title">' + data.title + '</h3>' +
-        '<table><tr><td><p class="c-shop-item__description">' + data.description + '</p></td>' +
+        '<table><tr><td><p class="c-shop-item__questionBody">' + data.questionBody + '</p></td>' +
         '<td><ul class="c-rating"></ul></td></tr></table>' +
         '</div>';
 
@@ -99,7 +150,7 @@ function submitPostStudy() {
             getSelectedValue(f.element_1)+","+$('#element_6').val()+","+$('#element_7').val();
         console.log(userstring);
         //alert($('#element_6').val()+" "+$('#element_7').val());
-        $.getJSON('LogInteraction'+'?jsonp=?', {'text' : userid+","+userstring, 'filename' : '/SaveData/UserData/'+userid+'_post.csv', 'append' : "true"});
+        //$.getJSON('LogInteraction'+'?jsonp=?', {'text' : userid+","+userstring, 'filename' : '/SaveData/UserData/'+userid+'_post.csv', 'append' : "true"});
 
         if (typeof(Storage) !== "undefined") {
             localStorage.setItem("USERID", userid);
@@ -111,6 +162,6 @@ function submitPostStudy() {
         window.location.replace("user.html");
     }
     else {
-        $('#li_1 .description').css("color","red");
+        $('#li_1 .questionBody').css("color","red");
     }
 }

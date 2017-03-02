@@ -115,14 +115,35 @@
 						marks = self.getSelectedMarks(tuple_ids);
 					console.log(animate);
             if(animate) {
+            	console.log(marks.selected_marks);
+
+            	if(isArrowsIntervention){
+								self.arrowwidth = 25;
+                for(var i=0;i<marks.selected_marks.length;i++){
+                  var d3mark = d3.select(marks.selected_marks[i]);
+                  var mark_data = d3mark.data()[0];
+                  var arrowSize = Math.min(10, mark_data.height/2-2);
+                  console.log(mark_data);
+                  self.drawArrow(d3.select(this.overlay), mark_data.left+ mark_data.width+self.arrowwidth,
+																													mark_data.height/2+ mark_data.top,
+																													mark_data.left+ mark_data.width+2,
+																													mark_data.height/2+ mark_data.top, arrowSize, 'selectArrow');
+                }
+
+							}
+							else{
+                 d3.select(this.overlay).selectAll( '.arrow_selectArrow').remove();
+
+              }
+
               d3.selectAll(marks.selected_marks)
                 .transition()
                 .duration(TRANSITION_DURATION)
                 .attr('fill-opacity', 0)
                   .attr('stroke', function () {
-                      //console.log(bolding);
-                      return bolding? 'red': 'none';
-                  })//Enamul: bolding added
+                      //console.log(isBoldingIntervention);
+                      return isBoldingIntervention? 'red': 'none';
+                  })//Enamul: isBoldingIntervention added
                 .each('end', function() {
                   d3.select(this).classed('selected', true);  
                   //d3.select(this).classed('selected', !d3.select(this).classed('selected'));
@@ -135,12 +156,15 @@
                 }).each('end', function() {
                     d3.select(this).classed('selected', false);
                 });
+
+
+
             } else {
               d3.selectAll(marks.selected_marks).attr('fill-opacity', 0)
                   .attr('stroke', function () {
-                  	console.log(bolding);
-                      return bolding? 'red': 'none';
-                  })//Enamul: bolding added
+                  	console.log(isBoldingIntervention);
+                      return isBoldingIntervention? 'red': 'none';
+                  })//Enamul: isBoldingIntervention added
 
 				  .classed('selected', 'true');
               d3.selectAll(marks.unselected_marks)
@@ -153,15 +177,34 @@
 					d3.selectAll('.visual_reference')
 					  .transition()
 					  .attr('fill-opacity', 0)
-                        .attr('stroke', 'none') //Enamul: bolding remove
+                        .attr('stroke', 'none') //Enamul: to remove Bolding Intervention
 						.duration(TRANSITION_DURATION)
             .each('end', function() {
               d3.select(this).classed('selected', 'false');
             });
+
+
 				}
 			}
 		}
 	};
+
+
+  MarksManager.prototype.drawArrow = function(svgElement, x1, y1, x2, y2, size, id){
+    this.strokeWidth = 2;
+    var angle = Math.atan2(x1 - x2, y2 - y1);
+    angle = (angle / (2 * Math.PI)) * 360;
+    svgElement.append("path")
+        .attr("class", "arrow_" + id)
+        .attr("d", "M" + x2 + " " + y2 + " L" + (x2 - size) + " " + (y2 - size) + " L" + (x2 - size) + " " + (y2 + size) + " L" + x2 + " " + y2)
+        .attr("fill", "black")
+        .attr("transform", "rotate(" + (90 + angle)+ "," + x2 + "," + y2 +")");
+    svgElement.append("svg:line")
+        .attr("class", "arrow_"+id)
+        .attr("x1", x1).attr("y1", y1)
+        .attr("x2", x2).attr("y2", y2)
+        .style("stroke", "black").style("stroke-width", this.strokeWidth);
+  };
 	MarksManager.prototype.changeType = function(type) {
 		var marks;
 		

@@ -1,13 +1,19 @@
-var deemphasis = true;
-var bolding = true;
+var isDeemphasis = true;
+var isBoldingIntervention = true;
+var isArrowsIntervention = true;
 function toggleDeemphasis(){
-    deemphasis = !deemphasis;
+    isDeemphasis = !isDeemphasis;
 }
 
 function toggleBolding(){
-    bolding = !bolding;
-    console.log(bolding);
+    isBoldingIntervention = !isBoldingIntervention;
+    console.log(isBoldingIntervention);
 }
+function toggleArrow(){
+  isArrowsIntervention = !isArrowsIntervention;
+  console.log(isArrowsIntervention);
+}
+
 
 (function() {
 
