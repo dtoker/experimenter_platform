@@ -1,0 +1,55 @@
+<html>
+<h1>Hello World</h1>
+<style>
+#container {
+  width: 400px;
+  height: 400px;
+  position: relative;
+  background: white;
+}
+#animate {
+  width: 50px;
+  height: 50px;
+  position: absolute;
+  background-color: red;
+}
+</style>
+
+<div id ="container">
+<div id ="animate"></div>
+</div>
+
+<script>
+var ws = new WebSocket("ws://localhost:8888/websocket");
+ws.onopen = function() {
+   //ws.send("Hello, world");
+   //this button below is supposed to be in the body
+   //<button type="button" onclick="myFunction()">Try it</button>
+};
+
+var elem = document.getElementById("animate");
+var pos = 0;
+
+ws.onmessage = function (evt) {
+   //alert(evt.data);
+   
+   var obj = JSON.parse(evt.data);
+   document.getElementById("demo").innerHTML = evt.data;
+   pos++;
+   elem.style.top = obj.y;
+   elem.style.left = obj.x;
+};
+
+function myFunction() {
+    ws.send("Hello, world");
+}
+
+
+</script>
+
+<p id="demo">A Paragraph</p>
+
+
+
+
+</html>
