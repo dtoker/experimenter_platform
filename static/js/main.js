@@ -41,6 +41,12 @@ d3.json("static/data/conditions.json", function(data){
 });
 
 function loadMMD(mmdName){
+     setTimeout(function () {
+     $("#mmdOptions").val(parseInt(mmdName));
+     },500);
+
+     console.log(mmdName);
+
      d3.json("static/data/"+mmdName+".json", function(data){
           $("#theText").html(data.text);
           //console.log('<img src='+data.chart+'');

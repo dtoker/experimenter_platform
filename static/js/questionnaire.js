@@ -64,6 +64,7 @@ for(var i=0;i<questionObj.length;i++){
 
  function buildMultipleChoiceQuestion(questionData){
    var  questionID = questionData.qid;
+
    var answers = questionData.answers.split(',');
 
 
@@ -72,7 +73,7 @@ for(var i=0;i<questionObj.length;i++){
       '<span>';
 
    for(var i=0;i<answers.length;i++){
-     answers[i] = answers[i].substring(4, answers[i].length-2);
+     answers[i] = answers[i].substring(4, i===0?answers[i].length-1: answers[i].length-2);
 
 
      html+= '<input id="element_'+questionID+'_'+(i+1)+'" name="element_'+questionID+'" class="element radio" type="radio" value="'+answers[i]+'" />'+

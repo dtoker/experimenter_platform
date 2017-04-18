@@ -81,7 +81,7 @@ class MainHandler(tornado.web.RequestHandler):
             print 'new user id'
             print int(rows[0][0])+1 # maximum valued ID
             self.application.cur_user = int(rows[0][0])+1
-            self.application.mmd_order = [3,11]#[3,11,30,72]
+            self.application.mmd_order = [60,60,62,66,72,73,74,76]#[3,11,30,72]
             self.application.mmd_index = 0
 
             #store the new userID
@@ -210,7 +210,7 @@ class QuestionnaireHandler(tornado.web.RequestHandler):
         #self.redirect('/prestudy')
 
     def loadMMDQuestions (self):
-        conn = sqlite3.connect('database.db')
+        conn = sqlite3.connect('database_questions.db')
         query_results = conn.execute('select * from MMD_questions where mmd_id='+str(self.application.cur_mmd))
 
         questions = query_results.fetchall()
@@ -279,23 +279,24 @@ class PreStudyHandler(tornado.web.RequestHandler):
         #gets time upon entering form
         self.application.start_time = str(datetime.datetime.now().time())
         #display contents of prestudy.html
-        self.render("prestudy.html", userid = self.application.cur_user)
+        self.render("userid.html", userid = self.application.cur_user)
     def post(self):
         #gets time upon completing form
         self.application.end_time = str(datetime.datetime.now().time())
         #get contents submitted in the form for prestudy
-        age = self.get_argument('age')
-        gender = self.get_argument('gender')
-        occupation = self.get_argument('occupation')
-        field = self.get_argument('field')
-        simple_bar = self.get_argument('simple_bar')
-        complex_bar = self.get_argument('complex_bar')
-
-        #currently that number value is just a dummy user id
-        #organizes data to insert into table into a tuple
-        prestudy = (self.application.cur_user, age, gender, occupation, field, simple_bar, complex_bar, self.application.start_time, self.application.end_time)
-        self.application.conn.execute('INSERT INTO prestudy VALUES (?,?,?,?,?,?,?,?,?)', prestudy)
-        self.application.conn.commit()
+        self.application.cur_user = self.get_argument('userID')
+        # age = self.get_argument('age')
+        # gender = self.get_argument('gender')
+        # occupation = self.get_argument('occupation')
+        # field = self.get_argument('field')
+        # simple_bar = self.get_argument('simple_bar')
+        # complex_bar = self.get_argument('complex_bar')
+        #
+        # #currently that number value is just a dummy user id
+        # #organizes data to insert into table into a tuple
+        # prestudy = (self.application.cur_user, age, gender, occupation, field, simple_bar, complex_bar, self.application.start_time, self.application.end_time)
+        # self.application.conn.execute('INSERT INTO prestudy VALUES (?,?,?,?,?,?,?,?,?)', prestudy)
+        # self.application.conn.commit()
 
         #####TODO######
 
