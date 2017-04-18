@@ -2,34 +2,13 @@
 /**
  * Demo in action!
  */
-    // (function() {
-
-
 
     // SHOP ELEMENT
 var shop = document.querySelector('#star_rating');
 var questionList = document.querySelector('#questionList');
 
 console.log(questionObj);
-// DUMMY DATA
-// var starData = [
-//     {
-//         mmdid: '',
-//         id: "1",
-//         qid: "1",
-//         questionBody: "The article/snippet was easy to understand.",
-//         type: 'likert',
-//
-//         //rating: null
-//     },
-//     {
-//         id: "2",
-//         questionBody: "I am interested in reading the full article.",
-//         type: 'likert',
-//         rating: null
-//     }
-//
-// ];
+
 
 var questionArray = [];
 

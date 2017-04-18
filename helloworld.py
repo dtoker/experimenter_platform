@@ -81,7 +81,9 @@ class MainHandler(tornado.web.RequestHandler):
             print 'new user id'
             print int(rows[0][0])+1 # maximum valued ID
             self.application.cur_user = int(rows[0][0])+1
-            self.application.mmd_order = [60,60,62,66,72,73,74,76]#[3,11,30,72]
+            self.application.mmd_order = [3,5,9,11,18,20,27,28,30,60,62,66,72,73,74,76]#[3,11,30,72]
+            random.shuffle(self.application.mmd_order)
+            print self.application.mmd_order
             self.application.mmd_index = 0
 
             #store the new userID
@@ -161,7 +163,7 @@ class QuestionnaireHandler(tornado.web.RequestHandler):
         print 'questionnaire handler'
         self.application.start_time = str(datetime.datetime.now().time())
         mmdQuestions = self.loadMMDQuestions()
-        self.render('questionnaire.html', mmd="3", questions = mmdQuestions)
+        self.render('questionnaire.html', mmd=self.application.cur_mmd, questions = mmdQuestions)
 
 
 
@@ -252,7 +254,11 @@ class MMDHandler(tornado.web.RequestHandler):
         print 'mmd order',self.application.mmd_order, self.application.mmd_index
         if self.application.mmd_index<len(self.application.mmd_order):
             self.application.cur_mmd = self.application.mmd_order[self.application.mmd_index]
-            self.render('mmd.html', mmd=str(self.application.cur_mmd))
+
+            if (self.application.show_question_only):
+                self.redirect('/questionnaire')
+            else:
+                self.render('mmd.html', mmd=str(self.application.cur_mmd))
             self.application.mmd_index+=1
         else:
             self.redirect('/')
@@ -279,6 +285,7 @@ class PreStudyHandler(tornado.web.RequestHandler):
         #gets time upon entering form
         self.application.start_time = str(datetime.datetime.now().time())
         #display contents of prestudy.html
+        self.application.show_question_only = 1
         self.render("userid.html", userid = self.application.cur_user)
     def post(self):
         #gets time upon completing form

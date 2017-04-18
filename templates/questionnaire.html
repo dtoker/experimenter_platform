@@ -39,7 +39,8 @@
     <!--<h1><a>Your feedback</a></h1>-->
     <div class="form_description">
         <h2>Questions</h2>
-     </div>
+      </div>
+    <div id="MMDid"></div>
     <div>Please rate how strongly you agree or disagree with each of the following statements with respect to the tool you have used (<b>more stars means higher agreement</b>).</div>
     <div id="star_rating" style="padding-left: 25px;"></div>
     <form id="form_questionnaire" class="appnitro"  method="post" >
@@ -69,6 +70,12 @@
 <script type="text/javascript" src="static/js/rating.min.js"></script>
 
 <script src="static/js/questionnaire.js"></script>
+<script>
 
+  currentMMD = '{{mmd}}';
+  console.log(currentMMD);
+  $('#MMDid').append("<p><b>MMD ID:</b><i>"+currentMMD+'</i></p>');
+
+</script>
 </body>
 </html>
