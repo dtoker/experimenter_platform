@@ -108,7 +108,7 @@ form li
 {
     display:block;
     margin:0;
-    padding:4px 5px 2px 9px;
+    padding:4px 5px 22px 9px;
     position:relative;
 }
 input[type="radio"] {
@@ -323,7 +323,7 @@ label.description
     font-size:95%;
     font-weight:700;
     line-height:150%;
-    padding:20px 0 20px;
+    padding:0 0 20px;
 }
 
 span.symbol
@@ -411,7 +411,7 @@ label.choice
     font-size:100%;
     line-height:1.4em;
     margin:-1.55em 0 0 25px;
-    padding:10px 0 15px;
+    padding:5px 0 15px;
     width:98%;
 }
 
@@ -544,7 +544,7 @@ form .required
 /**** Guidelines and Error Highlight ****/
 form li.highlighted
 {
-    background-color:#fff7c0;
+    /*background-color:#fff7c0;*/
 }
 
 form .guidelines

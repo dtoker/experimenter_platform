@@ -74,7 +74,7 @@ function buildShopItem(data) {
     var html = '<div class="c-shop-item__img"></div>' +
         '<div class="c-shop-item__details">' +
         // '<h3 class="c-shop-item__title">' + data.title + '</h3>' +
-        '<table><tr><td><p id="label_'+questionArray[i].qid+'" class="c-shop-item__questionBody"><b>'+questionArray[i].qid+'. ' + data.questionBody + '</b></p></td>' +
+        '<table><tr><td width="320px"><p id="label_'+questionArray[i].qid+'" class="c-shop-item__questionBody"><b>'+questionArray[i].qid+'. ' + data.questionBody + '</b></p></td>' +
         '<td><ul class="c-rating"></ul></td></tr></table>' +
         '</div>';
 
