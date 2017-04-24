@@ -160,7 +160,7 @@ function setCOMPLEXITYBLOCK(data,start){
 			},500);
 
 			console.log("item ID: " + _environment.Block);
-
+            globalString+= "item ID: " + _environment.Block+'\n';
 		}else{
 			d3.select("#header")
 			.html(null);
@@ -205,7 +205,7 @@ function setTRIAL(data){
 	addDRAWBUTTON(data);
 
 	console.log("repetition ID: " + _environment.Trial);
-
+    globalString+= "repetition ID: " + _environment.Trial+"\n";
 	return null;
 };
 
@@ -1131,14 +1131,27 @@ function startENDSCENARIO(uuid){
 		"<p>The average level is 0 on this test. Your visualization "+
 		"literacy " + _mention +
 		"Thank you for participanting.");
-  localStorage.setItem('username', '100');
 
-  var str_json = _ability;
+    var userName = function() {
+        var query_string = {};
+        var query = window.location.search.substring(1);
+        //alert(query);
+        var vars = query.split("&");
+
+        var pair = vars[0].split("=");
+
+        return pair[1];
+    }();
+
+  localStorage.setItem('username', userName);
+
+  var final_score = _ability;
   var request= new XMLHttpRequest();
   request.open("POST", "VisLiteracySave.php?q=" +
-      localStorage.getItem('username'), true);
+      localStorage.getItem('username')+'&score='+final_score, true);
   request.setRequestHeader("Content-type", "application/json");
-  request.send(str_json);
+  console.log(globalString);
+  request.send(globalString);
 
 	setTimeout(function(){
 		d3.select("#header")
