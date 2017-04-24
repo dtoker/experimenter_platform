@@ -217,9 +217,9 @@ class QuestionnaireHandler(tornado.web.RequestHandler):
 
         questions = query_results.fetchall()
         # hard-coded two questions as they appear in all mmds
-        questions.append([self.application.cur_mmd, "1", "I am interested in reading the full article.", "Likert", "Subjective"])
+        #questions.append([self.application.cur_mmd, "1", "I am interested in reading the full article.", "Likert", "Subjective"])
 
-        questions.append([self.application.cur_mmd, "2", "The article/snippet was easy to understand.", "Likert", "Subjective"])
+        #questions.append([self.application.cur_mmd, "2", "The article/snippet was easy to understand.", "Likert", "Subjective"])
 
         return json.dumps(questions)
 

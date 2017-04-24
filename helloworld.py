@@ -81,7 +81,7 @@ class MainHandler(tornado.web.RequestHandler):
             print 'new user id'
             print int(rows[0][0])+1 # maximum valued ID
             self.application.cur_user = int(rows[0][0])+1
-            self.application.mmd_order = [3,5,9,11,18,20,27,28,30,60,62,66,72,73,74,76]#[3,11,30,72]
+            self.application.mmd_order = [3,5,9,11,18,20,27,28,30,60,62,66,72,73,74,76]
             random.shuffle(self.application.mmd_order)
             print self.application.mmd_order
             self.application.mmd_index = 0
@@ -285,7 +285,7 @@ class PreStudyHandler(tornado.web.RequestHandler):
         #gets time upon entering form
         self.application.start_time = str(datetime.datetime.now().time())
         #display contents of prestudy.html
-        self.application.show_question_only = 1
+        self.application.show_question_only = 0
         self.render("userid.html", userid = self.application.cur_user)
     def post(self):
         #gets time upon completing form
@@ -375,7 +375,7 @@ class FixationHandler(tornado.web.RequestHandler):
     def get(self):
         self.write("Hello, world")
 
-        
+
 #main function is first thing to run when application starts
 def main():
     tornado.options.parse_command_line()
