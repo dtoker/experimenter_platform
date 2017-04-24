@@ -17,6 +17,7 @@ function checkANSWER(ans){
 	_ans_array[parseInt(_environment.Block)-1][parseInt(_environment.Trial)] = err;
 
 	console.log("Score: " + err);
+    globalString+= "Score: " + err+'\n';
 
 	return null;
 };

@@ -1,11 +1,10 @@
 <?php
 /*
-Metroquest Study - Needcognition
-S�bastien Lall�
-2014/11/29
+MMD Study - VARK
+Enamul Hoque
 */
 
-$questions = array(" You have to make an important speech at a conference or special occasion. You would:",
+$questions = array("You have to make an important speech at a conference or special occasion. You would:",
 				"Do you prefer a teacher or a presenter who uses:",
 				"You want to learn a new program, skill or game on a computer. You would:",
 				"I like websites that have:",
@@ -128,7 +127,7 @@ if($UID_missing){
 		
 		for($j=0; $j<=3; $j++){
 			$checked = isset($_POST['Q'.$i]) && $_POST['Q'.$i] == ($j-2) ? "checked" : "";
-			print "<input type='radio' name='Q".$i."' value='".($j-2)."' ".$checked.">".$answers[$i][$j]."</input><br />";
+			print "<input type='checkbox' name='Q".$i."' value='".($j-2)."' ".$checked.">".$answers[$i][$j]."</input><br />";
 		}
 		print "</p>";
 	}
