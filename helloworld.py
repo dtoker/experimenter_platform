@@ -163,7 +163,9 @@ class QuestionnaireHandler(tornado.web.RequestHandler):
         print 'questionnaire handler'
         self.application.start_time = str(datetime.datetime.now().time())
         mmdQuestions = self.loadMMDQuestions()
-        self.render('questionnaire.html', mmd=self.application.cur_mmd, questions = mmdQuestions)
+        noofMMD = len(self.application.mmd_order)
+        progress = str(self.application.mmd_index)+ ' of '+ str(noofMMD)
+        self.render('questionnaire.html', mmd=self.application.cur_mmd, progress = progress, questions = mmdQuestions)
 
 
 

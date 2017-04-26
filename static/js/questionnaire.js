@@ -45,14 +45,14 @@ for(var i=0;i<questionObj.length;i++){
    var  questionID = questionData.qid;
 
    var answers = questionData.answers.split(',');
-
+    console.log(answers);
 
     var html = '<li id="li_'+questionID+'" >'+
       '<label class="description" id="label_'+questionData.qid + '" for="element_2">'+questionData.qid+'. '+questionData.questionBody+'</label>'+
       '<span>';
 
    for(var i=0;i<answers.length;i++){
-     answers[i] = answers[i].substring(4, i===0?answers[i].length-1: answers[i].length-2);
+     answers[i] = answers[i].substring(4, i===answers.length-1?answers[i].length-2: answers[i].length-1);
 
 
      html+= '<input id="element_'+questionID+'_'+(i+1)+'" name="element_'+questionID+'" class="element radio" type="radio" value="'+answers[i]+'" />'+
