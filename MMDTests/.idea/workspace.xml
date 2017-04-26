@@ -25,15 +25,31 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="VARK.php" pinned="false" current-in-tab="false">
+      <file leaf-file-name="VARK.php" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/VARK.php">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="702">
-              <caret line="86" column="60" lean-forward="true" selection-start-line="86" selection-start-column="60" selection-end-line="86" selection-end-column="62" />
+            <state relative-caret-position="803">
+              <caret line="48" column="2" lean-forward="false" selection-start-line="48" selection-start-column="2" selection-end-line="48" selection-end-column="2" />
               <folding>
                 <element signature="e#6#41#0#PHP" expanded="true" />
-                <marker date="1493015139838" expanded="true" signature="6226:6235" ph="..." />
-                <marker date="1493015139838" expanded="true" signature="6397:6406" ph="..." />
+                <marker date="1493196089807" expanded="true" signature="6527:6536" ph="..." />
+                <marker date="1493196089807" expanded="true" signature="6698:6707" ph="..." />
+              </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="VARK2.php" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/VARK2.php">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="81">
+              <caret line="6" column="0" lean-forward="false" selection-start-line="6" selection-start-column="0" selection-end-line="48" selection-end-column="6" />
+              <folding>
+                <marker date="1493196072864" expanded="true" signature="6452:6551" ph="..." />
+                <marker date="1493196072864" expanded="true" signature="6459:6507" ph="..." />
+                <marker date="1493196072864" expanded="true" signature="6515:6551" ph="..." />
+                <marker date="1493196072864" expanded="true" signature="6564:6573" ph="..." />
+                <marker date="1493196072864" expanded="true" signature="6735:6744" ph="..." />
               </folding>
             </state>
           </provider>
@@ -49,19 +65,19 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="set.trial.js" pinned="false" current-in-tab="true">
+      <file leaf-file-name="set.trial.js" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/Visualization-Literacy-101-master/_02_calibrated_VL_tests/_03_BC/js/set.trial.js">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="217">
-              <caret line="1145" column="45" lean-forward="true" selection-start-line="1145" selection-start-column="45" selection-end-line="1145" selection-end-column="45" />
+            <state relative-caret-position="3403">
+              <caret line="1155" column="26" lean-forward="true" selection-start-line="1155" selection-start-column="26" selection-end-line="1155" selection-end-column="26" />
               <folding>
-                <marker date="1493016839997" expanded="true" signature="2171:2186" ph="..." />
-                <marker date="1493016839997" expanded="true" signature="2234:2249" ph="..." />
-                <marker date="1493016839997" expanded="true" signature="6481:6496" ph="..." />
-                <marker date="1493016839997" expanded="true" signature="6544:6559" ph="..." />
-                <marker date="1493016839997" expanded="true" signature="10736:10751" ph="..." />
-                <marker date="1493016839997" expanded="true" signature="10800:10815" ph="..." />
-                <marker date="1493016839997" expanded="true" signature="36366:36380" ph="..." />
+                <marker date="1493017017734" expanded="true" signature="2171:2186" ph="..." />
+                <marker date="1493017017734" expanded="true" signature="2234:2249" ph="..." />
+                <marker date="1493017017734" expanded="true" signature="6481:6496" ph="..." />
+                <marker date="1493017017734" expanded="true" signature="6544:6559" ph="..." />
+                <marker date="1493017017734" expanded="true" signature="10736:10751" ph="..." />
+                <marker date="1493017017734" expanded="true" signature="10800:10815" ph="..." />
+                <marker date="1493017017734" expanded="true" signature="36366:36380" ph="..." />
               </folding>
             </state>
           </provider>
@@ -127,6 +143,10 @@
       <find>visl</find>
       <find>100</find>
       <find>localse</find>
+      <find>done</find>
+      <find>score</find>
+      <find>other than</find>
+      <find>go wi</find>
     </findStrings>
     <replaceStrings>
       <replace>$uid</replace>
@@ -139,11 +159,12 @@
         <option value="$PROJECT_DIR$/VisLiteracySave" />
         <option value="$PROJECT_DIR$/VisLiteracySave.php" />
         <option value="$PROJECT_DIR$/NC.php" />
-        <option value="$PROJECT_DIR$/VARK.php" />
         <option value="$PROJECT_DIR$/Visualization-Literacy-101-master/_02_calibrated_VL_tests/_03_BC/index.html" />
         <option value="$PROJECT_DIR$/Visualization-Literacy-101-master/_02_calibrated_VL_tests/_00_static/js/check.stuff.js" />
         <option value="$PROJECT_DIR$/Visualization-Literacy-101-master/_02_calibrated_VL_tests/_03_BC/VisLiteracySave.php" />
         <option value="$PROJECT_DIR$/Visualization-Literacy-101-master/_02_calibrated_VL_tests/_03_BC/js/set.trial.js" />
+        <option value="$PROJECT_DIR$/VARK2.php" />
+        <option value="$PROJECT_DIR$/VARK.php" />
       </list>
     </option>
   </component>
@@ -400,12 +421,12 @@
       <option name="presentableId" value="Default" />
       <updated>1492066147621</updated>
       <workItem from="1492066151059" duration="6636000" />
-      <workItem from="1493014908192" duration="2019000" />
+      <workItem from="1493014908192" duration="8616000" />
     </task>
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="8655000" />
+    <option name="totallyTimeSpent" value="15252000" />
   </component>
   <component name="ToolWindowManager">
     <frame x="-8" y="-8" width="1936" height="1056" extended-state="6" />
@@ -519,30 +540,52 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/VARK.php">
+    <entry file="file://$PROJECT_DIR$/Visualization-Literacy-101-master/_02_calibrated_VL_tests/_03_BC/js/set.trial.js">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="702">
-          <caret line="86" column="60" lean-forward="true" selection-start-line="86" selection-start-column="60" selection-end-line="86" selection-end-column="62" />
+        <state relative-caret-position="3403">
+          <caret line="1155" column="26" lean-forward="true" selection-start-line="1155" selection-start-column="26" selection-end-line="1155" selection-end-column="26" />
           <folding>
-            <element signature="e#6#41#0#PHP" expanded="true" />
-            <marker date="1493015139838" expanded="true" signature="6226:6235" ph="..." />
-            <marker date="1493015139838" expanded="true" signature="6397:6406" ph="..." />
+            <marker date="1493017017734" expanded="true" signature="2171:2186" ph="..." />
+            <marker date="1493017017734" expanded="true" signature="2234:2249" ph="..." />
+            <marker date="1493017017734" expanded="true" signature="6481:6496" ph="..." />
+            <marker date="1493017017734" expanded="true" signature="6544:6559" ph="..." />
+            <marker date="1493017017734" expanded="true" signature="10736:10751" ph="..." />
+            <marker date="1493017017734" expanded="true" signature="10800:10815" ph="..." />
+            <marker date="1493017017734" expanded="true" signature="36366:36380" ph="..." />
           </folding>
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/Visualization-Literacy-101-master/_02_calibrated_VL_tests/_03_BC/js/set.trial.js">
+    <entry file="jar://$APPLICATION_HOME_DIR$/plugins/php/lib/php.jar!/stubs/standard/standard_0.php">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="217">
-          <caret line="1145" column="45" lean-forward="true" selection-start-line="1145" selection-start-column="45" selection-end-line="1145" selection-end-column="45" />
+        <state relative-caret-position="379">
+          <caret line="422" column="9" lean-forward="false" selection-start-line="422" selection-start-column="9" selection-end-line="422" selection-end-column="9" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/VARK2.php">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="81">
+          <caret line="6" column="0" lean-forward="false" selection-start-line="6" selection-start-column="0" selection-end-line="48" selection-end-column="6" />
           <folding>
-            <marker date="1493016839997" expanded="true" signature="2171:2186" ph="..." />
-            <marker date="1493016839997" expanded="true" signature="2234:2249" ph="..." />
-            <marker date="1493016839997" expanded="true" signature="6481:6496" ph="..." />
-            <marker date="1493016839997" expanded="true" signature="6544:6559" ph="..." />
-            <marker date="1493016839997" expanded="true" signature="10736:10751" ph="..." />
-            <marker date="1493016839997" expanded="true" signature="10800:10815" ph="..." />
-            <marker date="1493016839997" expanded="true" signature="36366:36380" ph="..." />
+            <marker date="1493196072864" expanded="true" signature="6452:6551" ph="..." />
+            <marker date="1493196072864" expanded="true" signature="6459:6507" ph="..." />
+            <marker date="1493196072864" expanded="true" signature="6515:6551" ph="..." />
+            <marker date="1493196072864" expanded="true" signature="6564:6573" ph="..." />
+            <marker date="1493196072864" expanded="true" signature="6735:6744" ph="..." />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/VARK.php">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="803">
+          <caret line="48" column="2" lean-forward="false" selection-start-line="48" selection-start-column="2" selection-end-line="48" selection-end-column="2" />
+          <folding>
+            <element signature="e#6#41#0#PHP" expanded="true" />
+            <marker date="1493196089807" expanded="true" signature="6527:6536" ph="..." />
+            <marker date="1493196089807" expanded="true" signature="6698:6707" ph="..." />
           </folding>
         </state>
       </provider>
