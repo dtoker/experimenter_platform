@@ -15,6 +15,12 @@ import tobii.eye_tracking_io.eyetracker
 import tobii.eye_tracking_io.time.clock
 import tobii.eye_tracking_io.time.sync
 
+import numpy as np
+import thread 
+
+#new stuff i need to fix 
+#import helloworld
+
 
 class TobiiController:
 	
@@ -42,6 +48,13 @@ class TobiiController:
 		self.leftxarray = []
 		self.leftyarray = []
 		self.timearray = []
+		#Preetpal's code for fixation 
+		self.counter = 0
+		self.x = []
+		self.y = []
+		self.time = []
+		self.EndFixations = []
+		self.liveWebSocket = set()
 		
 		# initialize communications
 		tobii.eye_tracking_io.init()
@@ -213,6 +226,16 @@ class TobiiController:
 		self.eyetracker.events.OnGazeDataReceived += self.on_gazedata
 		self.eyetracker.StartTracking()
 
+		#Preetpal's Code 
+		self.x = []
+		self.y = []
+		self.time = []
+		
+
+		'''
+		online_fixation.onlinefix(xDataForFixation, yDataForFixation, timeDataForFixation)
+		'''
+
 
 	def stopTracking(self):
 		
@@ -253,7 +276,8 @@ class TobiiController:
 		None		--	appends gaze to self.gazeData list
 		"""
 		
-		self.gazeData.append(gaze)
+		#Don't need raw gaze so this code is commented out 
+		#self.gazeData.append(gaze)
 		'''
 		print 'Timestamp: ', gaze.Timestamp
 		print 'LeftGazePoint2D: ', gaze.LeftGazePoint2D
@@ -263,7 +287,8 @@ class TobiiController:
 		print 'LeftPupil: ', gaze.LeftPupil
 		print 'RightPupil: ', gaze.RightPupil
 		#Preetpal's code
-		print 'Leftxarray: ', self.leftxarray
+		print 'x: ', self.x
+		
 		print 'Leftyarray: ', self.leftyarray
 		print 'TimeArray: ', self.timearray
 		print '----------------------------------------'
@@ -275,14 +300,270 @@ class TobiiController:
 		else: 
 			self.leftx = 0 
 		'''
-		self.leftx = gaze.LeftGazePoint2D.x
-		self.lefty = gaze.LeftGazePoint2D.y
-		self.leftxarray.append(gaze.LeftGazePoint2D.x)
-		self.leftyarray.append(gaze.LeftGazePoint2D.y)
-		self.timearray.append(gaze.Timestamp)
+
+
+		#self.leftx = gaze.LeftGazePoint2D.x
+		#self.lefty = gaze.LeftGazePoint2D.y
+		#self.leftxarray.append(gaze.LeftGazePoint2D.x)
+		#self.leftyarray.append(gaze.LeftGazePoint2D.y)
+		#self.timearray.append(gaze.Timestamp)
+
+		'''
+		Preetpals Comment:
+		When gazeData array is 7 send it to fixation algorithm and erase array 
+		create a variable to act as a counter 
+		if counter reaches 7 send array to fixation detecter and set counter back to 0
+			and erase arrays 
+		'''
+		#Preetpal's code 
+		#self.counter = self.counter + 1 
+
+		#Multiplying by the dimensions of my laptop screen 
+		self.x.append(gaze.LeftGazePoint2D.x * 1440)
+		self.y.append(gaze.LeftGazePoint2D.y * 900)
+		self.time.append(gaze.Timestamp)
+
+	def fixation_detection(self, x, y, time, maxdist=35, mindur=60):
+    	
+        #Detects fixations, defined as consecutive samples with an inter-sample
+        #distance of less than a set amount of pixels (disregarding missing data)
+
+        #arguments
+        #x		-	numpy array of x positions
+        #y		-	numpy array of y positions
+        #time		-	numpy array of timestamps
+
+        #keyword arguments
+        #maxdist	-	maximal inter sample distance in pixels (default = 25)
+        #mindur	-	minimal duration of a fixation in milliseconds; detected
+                    #fixation candidates will be disregarded if they are below
+                    #this duration (default = 100)
+
+        #returns
+        #Sfix, Efix
+                    #Sfix	-	list of lists, each containing [starttime]
+                    #Efix	-	list of lists, each containing [starttime, endtime, duration, endx, endy]
+        
+
+        # empty list to contain data
+		Sfix = []
+		Efix = []
+
+		# loop through all coordinates
+		si = 0
+		fixstart = False
+
+
+		for i in range(1,len(x)):
+			# calculate Euclidean distance from the current fixation coordinate
+			# to the next coordinate
+			dist = ((x[si]-x[i])**2 + (y[si]-y[i])**2)**0.5
+			# check if the next coordinate is below maximal distance
+			if dist <= maxdist and not fixstart:
+			# start a new fixation
+				si = 0 + i
+				fixstart = True
+				Sfix.append([time[i]])
+			elif dist > maxdist and fixstart:
+				# end the current fixation
+				fixstart = False
+				# only store the fixation if the duration is ok
+				if time[i-1]-Sfix[-1][0] >= mindur:
+					Efix.append([Sfix[-1][0], time[i-1], time[i-1]-Sfix[-1][0], x[si], y[si]])
+				# delete the last fixation start if it was too short
+				else:
+					Sfix.pop(-1)
+				si = 0 + i
+			elif not fixstart:
+				si += 1
+		return Sfix, Efix
+
+	def onlinefix(self):
+		self.EndFixations = []
+		array_index = 0
+		array_iterator = 7
+
+		#this start variable is here so we can time out after 10 seconds 
+		start = time.time()
+
+		newX = []
+		newY = []
+		newTime = []
+
+		while(1):
+			#time.sleep(0.0583)
+			#function times out and returns after 10 seconds 
+			if(time.time() > start + 30):
+				print "timed out after ten seconds"
+				print self.EndFixations
+				return self.EndFixations
+
+			#Wait till array has enough data 
+			while(1):
+				if(len(self.x) - array_index > 7):
+					break
+
+			#print "in outter loop"
+			curX = self.x[array_index:(array_index + array_iterator)]
+			curY = self.y[array_index:(array_index + array_iterator)]
+			curTime = self.time[array_index:(array_index + array_iterator)]
+
+			newX = curX
+			newY = curY
+			newTime = curTime
+
+			#if(curX == []):
+				#break
+
+			print "before calling fixation_detection in outter loop"
+			print "printing curX and curY"
+			print curX
+			print curY
+			[Sfix, Efix] = self.fixation_detection(curX, curY, curTime)
+			print "after calling fixation_detection in outter loop"
+			print Sfix
+			print Efix
+			#When there is no fixation detected yet
+			while(1):
+				#time.sleep(0.0583)
+				print "in inner loop"
+ 				if(Sfix == []):
+					print "in inner loop if statement"
+					array_index = array_index + array_iterator
+
+					#Wait till array has enough data 
+					while(1):
+						if(len(self.x) - array_index > 7):
+							break
+
+					nextX = self.x[array_index:(array_index + array_iterator)]
+					nextY = self.y[array_index:(array_index + array_iterator)]
+					nextTime = self.time[array_index:(array_index + array_iterator)]
+
+                
+					print "newX in 1st while loop"
+					print newX
+					print "nextX in 1st while loop:"
+					print nextX
+
+					print "curX in 1st while loop:"
+					print curX 
+
+					newX = curX + nextX
+					print "newX after extending in 1st while loop"
+					print newX
+					newY = curY + nextY
+					newTime = curTime + nextTime
+					print "calling method in first inner loop"
+					[Sfix, Efix] = self.fixation_detection(newX, newY, newTime)
+					print "after calling in first inner loop"
+
+					curX = nextX
+					curY = nextY
+					curTime = nextTime
+				else:
+					#new stuff I need to fix 
+					#helloworld.EchoWebSocketHandler.updateSquare(0.5,0.5)
+					SfixTime = Sfix[0][0]
+					fixIndex = newTime.index(SfixTime)
+					xVal = newX[fixIndex]
+					yVal = newY[fixIndex]
+					print "************printing xVal and yVal *****************"
+					print xVal
+					print yVal
+					for ws in self.liveWebSocket:
+						if ((xVal != -1440) & (yVal != -900)):
+							ws.write_message('{"x":"%d", "y":"%d"}' % (xVal, yVal))
+
+					break 
+				#if(nextX == []):
+					#break
+
+			#When fixation is detected
+
+			#######
+			while(1):
+				#time.sleep(0.0583)
+				print "in second inner while loop"
+				if(Efix == []):
+					print "in second inner while loop if statement"
+					array_index = array_index + array_iterator
+
+					#Wait till array has enough data 
+					while(1):
+						if(len(self.x) - array_index > 7):
+							break
+
+					nextX = self.x[array_index:(array_index + array_iterator)]
+					nextY = self.y[array_index:(array_index + array_iterator)]
+					nextTime = self.time[array_index:(array_index + array_iterator)] 
+
+					
+
+					print "newX in 2nd while loop:"
+					print newX
+					print "nextX in 2nd while loop:"
+					print nextX
+
+					#newX should extend itself 
+					#newX = newX.extend(nextX)
+					newX.extend(nextX)
+					print "*******newX after extending in 2nd while loop*******"
+					print newX
+					newY.extend(nextY)
+					newTime.extend(nextTime)
+					
+
+					print "calling method in 2nd inner loop"
+					[Sfix, Efix] = self.fixation_detection(newX, newY, newTime)
+					print "after calling in 2nd inner loop"
+					print Sfix
+					print Efix
+				else:
+					self.EndFixations.append(Efix)
+					EfixEndTime = Efix[0][1]
+					'''
+					print "printing newTime" 
+					print newTime
+					print "printing size of newTime"
+					print len(newTime)
+					print "printing EfixEndTime"
+					print EfixEndTime
+					print "printing next time"
+					print nextTime
+					print "printing array_index"
+					print array_index
+					print "printing index of newTime"
+					print newTime.index(EfixEndTime)
+					#endTimeIndex = nextTime.index(EfixEndTime)
+					#array_index = array_index + endTimeIndex
+					'''
+					array_index = self.time.index(EfixEndTime) + 1
+
+					for ws in self.liveWebSocket:
+						ws.write_message('{"x":"%d", "y":"%d"}' % (-3000, -3000))
+
+					#Emptying the gaze data arrays 
+					self.x = []
+					self.y = []
+					self.time = []
+					array_index = 0
+
+					#print EndFixations
+					#print a
+					#array_index = array_index + array_iterator
+					print "**************************appending EndFixations***********************"
+					#print self.EndFixations
+					break
+				#if(nextX == []):
+				#    break
+
+		return self.EndFixations
+
 		
 
 """
+#this will be called from a tornado handler 
 if __name__ == "__main__":
     eb = TobiiController()
     eb.waitForFindEyeTracker()
