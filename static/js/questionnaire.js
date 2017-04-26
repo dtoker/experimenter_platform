@@ -2,34 +2,13 @@
 /**
  * Demo in action!
  */
-    // (function() {
-
-
 
     // SHOP ELEMENT
 var shop = document.querySelector('#star_rating');
 var questionList = document.querySelector('#questionList');
 
 console.log(questionObj);
-// DUMMY DATA
-// var starData = [
-//     {
-//         mmdid: '',
-//         id: "1",
-//         qid: "1",
-//         questionBody: "The article/snippet was easy to understand.",
-//         type: 'likert',
-//
-//         //rating: null
-//     },
-//     {
-//         id: "2",
-//         questionBody: "I am interested in reading the full article.",
-//         type: 'likert',
-//         rating: null
-//     }
-//
-// ];
+
 
 var questionArray = [];
 
@@ -64,15 +43,16 @@ for(var i=0;i<questionObj.length;i++){
 
  function buildMultipleChoiceQuestion(questionData){
    var  questionID = questionData.qid;
+
    var answers = questionData.answers.split(',');
 
 
     var html = '<li id="li_'+questionID+'" >'+
-      '<label class="description" id="label_'+questionData.qid + '" for="element_2">'+questionData.questionBody+'</label>'+
+      '<label class="description" id="label_'+questionData.qid + '" for="element_2">'+questionData.qid+'. '+questionData.questionBody+'</label>'+
       '<span>';
 
    for(var i=0;i<answers.length;i++){
-     answers[i] = answers[i].substring(4, answers[i].length-2);
+     answers[i] = answers[i].substring(4, i===0?answers[i].length-1: answers[i].length-2);
 
 
      html+= '<input id="element_'+questionID+'_'+(i+1)+'" name="element_'+questionID+'" class="element radio" type="radio" value="'+answers[i]+'" />'+
@@ -94,7 +74,7 @@ function buildShopItem(data) {
     var html = '<div class="c-shop-item__img"></div>' +
         '<div class="c-shop-item__details">' +
         // '<h3 class="c-shop-item__title">' + data.title + '</h3>' +
-        '<table><tr><td><p id="label_'+questionArray[i].qid+'" class="c-shop-item__questionBody">' + data.questionBody + '</p></td>' +
+        '<table><tr><td width="320px"><p id="label_'+questionArray[i].qid+'" class="c-shop-item__questionBody"><b>'+questionArray[i].qid+'. ' + data.questionBody + '</b></p></td>' +
         '<td><ul class="c-rating"></ul></td></tr></table>' +
         '</div>';
 
