@@ -1,4 +1,7 @@
-<?php
+<head>
+    <link rel="stylesheet" href="view.css">
+</head>
+    <?php
 /*
 MMD Study - VARK
 Enamul Hoque
@@ -36,7 +39,7 @@ $answers = array
   array("cook something you know without the need for instructions.","ask friends for suggestions.","look on the Internet or in some cookbooks for ideas from the pictures.","use a good recipe."),
   array("talk about, or arrange a talk for them about parks or wildlife reserves.","show them maps and internet pictures.","take them to a park or wildlife reserve and walk with them.","give them a book or pamphlets about the parks or wildlife reserves"),
   array("Trying or testing it.","Reading the details or checking its features online.","It is a modern design and looks good.","The salesperson telling me about its features."),
-  array("watching a demonstration.","listening to somebody explaining it and asking questions.","diagrams, maps, and charts - visual clues.","written instructions – e.g. a manual or book."),
+  array("watching a demonstration.","listening to somebody explaining it and asking questions.","diagrams, maps, and charts - visual clues.","written instructions - e.g., a manual or book."),
   array("gave you a something to read to explain what was wrong.","used a plastic model to show what was wrong.","described what was wrong.","showed you a diagram of what was wrong."),
   array("read the written instructions that came with the program.","talk with people who know about the program.","use the controls or keyboard.","follow the diagrams in the book that came with it."),
   array("things I can click on, shift or try.","interesting design and visual features.","interesting written descriptions, lists and explanations.","audio channels where I can hear music, radio programs or interviews."),
@@ -47,6 +50,28 @@ $answers = array
   array("choose something that you have had there before.","listen to the waiter or ask friends to recommend choices.","choose from the descriptions in the menu.","look at what others are eating or look at pictures of each dish."),
   array("make diagrams or get graphs to help explain things.","write a few key words and practice saying your speech over and over.","write out your speech and learn from reading it over several times.","gather many examples and stories to make the talk real and practical")
 );
+
+$scoring_chart = array
+(
+    array("K","A","R","V"),
+    array("V","A","R","K"),
+    array("K","V","R","A"),
+    array("K","A","V","R"),
+    array("A","V","K","R"),
+    array("K","R","V","A"),
+    array("K","A","V","R"),
+    array("R","K","A","V"),
+    array("R","A","K","V"),
+    array("K","V","R","A"),
+    array("V","R","A","K"),
+    array("A","R","V","K"),
+    array("K","A","R","V"),
+    array("K","R","A","V"),
+    array("K","A","R","V"),
+    array("V","A","R","K")
+);
+
+
 $missing_fields = FALSE;
 $UID_missing = FALSE;
 $missing_q = "";
@@ -61,7 +86,7 @@ if(isset($_POST['submitted'])){
         $checkboxValues = "";
         foreach($_POST['Q'.$i] as $check) {
             print $check."</br>";
-          $checkboxValues .= intval(htmlspecialchars($check))." ";
+          $checkboxValues .= htmlspecialchars($check)."";
         }
         $test_results[] = $checkboxValues;
       }
@@ -88,7 +113,7 @@ if(isset($_POST['submitted'])){
 		$answers = $test_results[0];
 		for($i=1; $i<$nb_q; $i++){
 			$answers .= ",".$test_results[$i];
-			print "answers:".",".$test_results[$i]."</br>";
+			#print "answers:".",".$test_results[$i]."</br>";
 		}
 
 		//compute the score
@@ -133,7 +158,8 @@ if($UID_missing){
 }
 ?>
 
-<form id="testform" action="VARK.php<?php if(isset($_GET['uid'])) print "?uid=".addslashes(htmlentities($_GET['uid']));  ?>" method="POST">
+<form id="testform" class="appnitro" action="VARK.php<?php if(isset($_GET['uid'])) print "?uid=".addslashes(htmlentities($_GET['uid']));  ?>" method="POST">
+    <ul id = 'questionList'>
     <div>
 		<p>User ID: <input type='text' name='uid' size='3'  value="<?php if(isset($_GET['uid'])) print addslashes(htmlentities($_GET['uid']));  ?>"></input><br /></p>
         <p>
@@ -143,18 +169,20 @@ if($UID_missing){
     <div>
 <?php
 	for($i=0; $i<count($questions); $i++){
-		print "<p>".($i+1).". ".$questions[$i]."<br />";
-		
+		print "<li>"." <label class=\"description\">".($i+1)." ".$questions[$i]."</label>";
+		print "<span>";
 		for($j=0; $j<=3; $j++){
 			$checked = isset($_POST['Q'.$i]) && $_POST['Q'.$i] == ($j+1) ? "checked" : "";
-			print "<input type='checkbox' name='Q".$i."[]' value='".($j+1)."' ".$checked.">".$answers[$i][$j]."</input><br />";
+			print "<input type='checkbox' class='element checkbox' name='Q".$i."[]' value='".($scoring_chart[$i][$j])."' ".$checked.">"."<label class=\"choice\">".$answers[$i][$j]."</label></input>";
 		}
-		print "</p>";
+        print "</span>";
+		print "</li>";
 	}
 ?>
 
         <p><br /><input type='submit' name="submitted" value="Submit" /><br /></p>
     </div>
+    </ul>
 </form>
 </body>
 </html>

@@ -1,7 +1,10 @@
+<head>
+    <link rel="stylesheet" href="view.css">
+</head>
 <?php
 /*
 Metroquest Study - Needcognition
-Sébastien Lallé
+Sï¿½bastien Lallï¿½
 2014/11/29
 */
 
@@ -13,15 +16,15 @@ $questions = array("I would prefer complex to simple problems.",
 				"I find satisfaction in deliberating hard and for long hours.", 
 				"I only think as hard as I have to.", 
 				"I prefer to think about small, daily projects to long-term ones.",
-				"I like tasks that require little thought once I’ve learned them.", 
+				"I like tasks that require little thought once Iï¿½ve learned them.", 
 				"The idea of relying on thought to make my way to the top appeals to me.",
 				"I really enjoy a task that involves coming up with new solutions to problems.", 
-				"Learning new ways to think doesn’t excite me very much.",
+				"Learning new ways to think doesnï¿½t excite me very much.",
 				"I prefer my life to be filled with puzzles that I must solve.", 
 				"The notion of thinking abstractly is appealing to me.", 
 				"I would prefer a task that is intellectual, difficult, and important to one that is somewhat important but does not require much thought.",
 				"I feel relief rather than satisfaction after completing a task that required a lot of mental effort.",
-				"It’s enough for me that something gets the job done; I don’t care how or why it works.",
+				"Itï¿½s enough for me that something gets the job done; I donï¿½t care how or why it works.",
 				"I usually end up deliberating about issues even when they do not affect me personally.");
 
 $answers = array("extremely uncharacteristic", "somewhat uncharacteristic", " uncertain", " somewhat characteristic", " extremely characteristic");
@@ -98,7 +101,9 @@ if($UID_missing){
 }
 ?>
 
-<form id="testform" action="NC.php<?php if(isset($_GET['uid'])) print "?uid=".addslashes(htmlentities($_GET['uid']));  ?>" method="POST">
+<form id="testform" class="appnitro" action="NC.php<?php if(isset($_GET['uid'])) print "?uid=".addslashes(htmlentities($_GET['uid']));  ?>" method="POST">
+    <ul id = 'questionList'>
+
     <div>
 		<p>User ID: <input type='text' name='uid' size='3'  value="<?php if(isset($_GET['uid'])) print addslashes(htmlentities($_GET['uid']));  ?>"></input><br /></p>
         <p>
@@ -107,14 +112,16 @@ if($UID_missing){
     </div>
     <div>
 <?php
+
 	for($i=0; $i<count($questions); $i++){
-		print "<p>".($i+1).". ".$questions[$i]."<br />";
+      print "<li>"." <label class=\"description\">".($i+1)." ".$questions[$i]."</label>";
 		
 		for($j=0; $j<=4; $j++){
 			$checked = isset($_POST['Q'.$i]) && $_POST['Q'.$i] == ($j-2) ? "checked" : "";
-			print "<input type='radio' name='Q".$i."' value='".($j-2)."' ".$checked.">".$answers[$j]."</input><br />";
+			print "<input type='radio' class='element checkbox' name='Q".$i."' value='".($j-2)."' ".$checked.">"."<label class=\"choice\">".$answers[$j]."</label></input>";
 		}
-		print "</p>";
+      print "</span>";
+      print "</li>";
 	}
 ?>
 

@@ -1,7 +1,10 @@
+<head>
+    <link rel="stylesheet" href="view.css">
+</head>
 <?php
 /*
 Metroquest Study - Pre-questionnaire
-Sébastien Lallé
+Sï¿½bastien Lallï¿½
 2014/11/29
 */
 if(isset($_POST['submitted'])){
@@ -45,7 +48,7 @@ if(isset($missing_fields)){
 }
 ?>
 
-<form id="preform" action="prequestionnaire.php" method="POST">
+<form id="preform" class="appnitro" action="prequestionnaire.php" method="POST">
     <div>
         <p>
             <h3><b>Please answer each of the following questions.</b></h3>
@@ -53,20 +56,26 @@ if(isset($missing_fields)){
     </div>
     <div>
         <p>User ID: <input type='text' name='uid' size='3'></input></p>
-        <p>How often do you need to make preferential choice (e.g., buying a car or a cellphone, choosing a university, etc)?<br />
-            <input type='radio' name='freq_pref_choice' value='never'>Never<br />
-            <input type='radio' name='freq_pref_choice' value='rarely'>Rarely (few times a year)<br />
-            <input type='radio' name='freq_pref_choice' value='occasionally'>Occasionally (several times a year)<br />
-            <input type='radio' name='freq_pref_choice' value='frequently'>Frequently (several times a month)<br />
-            <input type='radio' name='freq_pref_choice' value='very frequently'>Very frequently (several times a week)
-		</p>
-        <p>How often do you use visualization tool to make such preferential choice?  <br />
-            <input type='radio' name='freq_vis_choice' value='never'>Never<br />
-            <input type='radio' name='freq_vis_choice' value='rarely'>Rarely (few times a year)<br />
-            <input type='radio' name='freq_vis_choice' value='occasionally'>Occasionally (several times a year)<br />
-            <input type='radio' name='freq_vis_choice' value='frequently'>Frequently (several times a month)<br />
-            <input type='radio' name='freq_vis_choice' value='very frequently'>Very frequently (several times a week)
-		</p>
+        <ul id = 'questionList'>
+            <li> <label class="description">How often do you need to make preferential choice (e.g., buying a car or a cellphone, choosing a university, etc)?</label>
+                <span>
+                    <input type="radio" class="element radio" name="freq_pref_choice" value="never"><label class="choice">Never</label>
+                    <input type="radio" class="element radio" name="freq_pref_choice" value="rarely"><label class="choice">Rarely (few times a year)</label>
+                    <input type="radio" class="element radio" name="freq_pref_choice" value="occasionally"><label class="choice">Occasionally (several times a year)</label>
+                    <input type="radio" class="element radio" name="freq_pref_choice" value="frequently"><label class="choice">Frequently (several times a month)</label>
+                    <input type="radio" class="element radio" name="freq_pref_choice" value="frequently"><label class="choice">Very frequently (several times a week)</label>
+                </span>
+            </li>
+            <li> <label class="description">How often do you use visualization tool to make such preferential choice?</label>
+                <span>
+                    <input type="radio" class="element radio" name="freq_pref_choice" value="never"><label class="choice">Never</label>
+                    <input type="radio" class="element radio" name="freq_pref_choice" value="rarely"><label class="choice">Rarely (few times a year)</label>
+                    <input type="radio" class="element radio" name="freq_pref_choice" value="occasionally"><label class="choice">Occasionally (several times a year)</label>
+                    <input type="radio" class="element radio" name="freq_pref_choice" value="frequently"><label class="choice">Frequently (several times a month)</label>
+                    <input type="radio" class="element radio" name="freq_pref_choice" value="frequently"><label class="choice">Very frequently (several times a week)</label>
+                </span>
+            </li>
+        </ul>
 
         <p><br /><input type='submit' name="submitted" value="Submit" /></p>
     </div>
