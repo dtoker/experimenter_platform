@@ -1,25 +1,27 @@
 <html>
-<h1>Hello World</h1>
 <style>
-#container {
-  width: 400px;
-  height: 400px;
-  position: relative;
-  background: white;
+body{
+  background-image: url("https://wallpaperscraft.com/image/cat_face_glasses_thick_65455_1280x1024.jpg");
+  background-color: black;
 }
+
 #animate {
-  width: 50px;
-  height: 50px;
+  width: 125px;
+  height: 125px;
   position: absolute;
-  background-color: red;
+  background-color: blue;
+  left:400;
+  top:400;
 }
 </style>
 
-<div id ="container">
-<div id ="animate"></div>
+<div id ="animate">
+
 </div>
 
 <script>
+//elem.style.top = 0;
+//elem.style.left = 0;
 var ws = new WebSocket("ws://localhost:8888/websocket");
 ws.onopen = function() {
    //ws.send("Hello, world");
@@ -28,28 +30,38 @@ ws.onopen = function() {
 };
 
 var elem = document.getElementById("animate");
-var pos = 0;
 
 ws.onmessage = function (evt) {
    //alert(evt.data);
-   
+
    var obj = JSON.parse(evt.data);
-   document.getElementById("demo").innerHTML = evt.data;
-   pos++;
-   elem.style.top = obj.y;
-   elem.style.left = obj.x;
+   document.getElementById("demo").innerHTML =  evt.data;
+
+   elem.style.top = obj.y-75;
+   elem.style.left = obj.x-75;
 };
 
 function myFunction() {
     ws.send("Hello, world");
 }
 
+function myCloseFunction() {
+    ws.send("stop");
+}
+
 
 </script>
 
-<p id="demo">A Paragraph</p>
+<button onclick="myFunction()">Start</button>
+<button onclick="myCloseFunction()">Close</button>
 
 
+ <p id="demo">A Paragraph</p>
+
+ <form method="post">
+ <input type="submit">
+ </form>
 
 
+</body>
 </html>
