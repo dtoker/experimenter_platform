@@ -15,7 +15,7 @@ import random
 import eye_tracker
 from eye_tracker import TobiiController
 
-import csv 
+import csv
 
 
 
@@ -282,18 +282,6 @@ class LocusHandler(tornado.web.RequestHandler):
 class FixationHandler(tornado.web.RequestHandler):
     def get(self):
         self.render("fixations.html")
-        '''
-        eb = TobiiController()
-        eb.waitForFindEyeTracker()
-        print eb.eyetrackers
-        eb.activate(eb.eyetrackers.keys()[0])
-
-        eb.startTracking()
-        time.sleep(10)
-        eb.stopTracking()
-
-        eb.destroy()
-        '''
 
 class EchoWebSocketHandler(tornado.websocket.WebSocketHandler):
 
@@ -305,96 +293,37 @@ class EchoWebSocketHandler(tornado.websocket.WebSocketHandler):
             #eb.leftxarray = []
             #eb.leftyarray = []
             #eb.timearray = []
-        
+
             self.write_message('{"x":"%d", "y":"%d"}' % (eb.leftx * 1440,eb.lefty * 900))
 
     def updateSquare(self, x, y):
         self.write_message('{"x":"%d", "y":"%d"}' % (x * 1440,y * 900))
-    
+
     def open(self):
+        print "WebSocket opened"
         eb = TobiiController()
+        #Add self(which is a websocket) to the eyetracker object
         eb.liveWebSocket.add(self)
         print "eb created"
         eb.waitForFindEyeTracker()
         print eb.eyetrackers
         eb.activate(eb.eyetrackers.keys()[0])
 
-        var = 1
+        #Start tracking gaze data
         eb.startTracking()
-        
-        #Returns online fixations and loads them onto a file 
+        print "tracking started"
+
+        #Returns online fixations and loads them onto a file: myOnlineFixations
         myOnlineFixations =  eb.onlinefix()
-        fl = open('myOnlineFixations.csv', 'w')
+        fl = open('myOnlineFixations.csv', 'wb')
         writer = csv.writer(fl)
-        writer.writerow(['start_time', 'end_time', 'duration', 'end_x', 'end_Y'])
+        writer.writerow(['fixation_index', 'start_time', 'end_time', 'duration', 'end_x', 'end_Y'])
+        fixation_index = 1
         for values in myOnlineFixations:
-            writer.writerow(values[0])
+            writer.writerow([fixation_index] + values[0])
+            fixation_index = fixation_index + 1
         fl.close()
 
-
-        #thread.start_new_thread(eb.onlinefix())
-        #thread.start_new_thread(self.updateSquare1(eb))
-
-        #t1 = Thread(target = eb.onlinefix())
-        #t2 = Thread(target = self.updateSquare(eb))
-
-        #t2.start()
-        #t1.start()
-        
-        
-
-        
-        
-
-        #time.sleep(5)
-        #while var == 1:
-            #print eb.leftxarray;
-        #print fixation_detection(eb.leftxarray, eb.leftyarray, eb.timearray, 19.88, 60)
-        
-        
-        
-
-
-        
-            
-
-
-        
-        
-        '''
-        var = 1
-        x = 0
-        y = 0
-        while var == 1: 
-            #self.write_message(u"Time Stamp: " + str(time.time()))
-            if (x < 500 and y == 0): 
-                x = x + 1
-            if (x == 500 and y < 500):
-                y = y + 1
-            if (y == 500 and x > 0):
-                x = x - 1
-            if (y <= 500 and x == 0):
-                y = y - 1
-
-            self.write_message('{"x":"%d", "y":"%d"}' % (x,y))
-            time.sleep(.01)
-            print("in loop")
-        '''
-        
-
-        '''
-        eb = TobiiController()
-        print "view works"
-        eb.waitForFindEyeTracker()
-        print eb.eyetrackers
-        eb.activate(eb.eyetrackers.keys()[0])
-        eb.startTracking()
-        time.sleep(10)
-        print "Stop Tracking"
-        eb.stopTracking()
-        eb.destroy()
-        '''
-        print("WebSocket opened")
 
 
     def on_message(self, message):
@@ -404,7 +333,7 @@ class EchoWebSocketHandler(tornado.websocket.WebSocketHandler):
     def on_close(self):
         print("WebSocket closed")
 
-        
+
 #main function is first thing to run when application starts
 def main():
     tornado.options.parse_command_line()
