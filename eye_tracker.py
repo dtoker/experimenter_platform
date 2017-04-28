@@ -3,7 +3,7 @@ import sys
 
 #This sets the path in our computer to where the eyetracker stuff is located
 #sys.path.append('/Users/Preetpal/desktop/ubc_4/experimenter_platform/modules')
-sys.path.append('C:\\Users\\admin\\Desktop\\experimenter_platform-master\\modules')
+sys.path.append('C:\\Users\\admin\\Desktop\\experimenter_platform\\modules')
 
 from tobii.eye_tracking_io.basic import EyetrackerException
 
@@ -36,16 +36,11 @@ class TobiiController:
 		# eye tracking
 		self.eyetracker = None
 		self.eyetrackers = {}
+
 		self.gazeData = []
 		self.eventData = []
 		self.datafile = None
 
-		#Preetpal's code/Can delete/not relevant for fixations
-		#self.leftx = 0
-		#self.lefty = 0
-		#self.leftxarray = []
-		#self.leftyarray = []
-		#self.timearray = []
 
 		#Preetpal's code for fixation
 		self.x = []
@@ -54,6 +49,7 @@ class TobiiController:
 		self.EndFixations = []
 		#This contains the websocket to send data to be displayed on front end
 		self.liveWebSocket = set()
+		self.runOnlineFix = True
 
 		# initialize communications
 		tobii.eye_tracking_io.init()
@@ -308,35 +304,14 @@ class TobiiController:
 			self.x.append(-1 * 1280)
 			self.y.append(-1 * 1024)
 
-		#Below code does the same thing as above but it uses the validity field
-		#This didnt end up working
-		'''
-		if ((gaze.LeftValidity != 0) & (gaze.RightValidity != 0)):
-			#
-			self.x.append(-1 * 1280)
-			self.y.append(-1 * 1024)
-		else if ((gaze.LeftValidity == 0) & (gaze.RightValidity == 0)):
-			self.x.append(((gaze.LeftGazePoint2D.x + gaze.RightGazePoint2D.x)/2) * 1280)
-			self.y.append(((gaze.LeftGazePoint2D.y + gaze.RightGazePoint2D.y)/2) * 1024)
-		else if (gaze.RightValidity == 0):
-			self.x.append(gaze.RightGazePoint2D.x * 1280)
-			self.y.append(gaze.RightGazePoint2D.y * 1024)
-		else if (gaze.LeftValidity == 0):
-			self.x.append(gaze.LeftGazePoint2D.x * 1280)
-			self.y.append(gaze.LeftGazePoint2D.y * 1024)
-		else: #Returning -1 for now
-			self.x.append(-1 * 1280)
-			self.y.append(-1 * 1024)
-		'''
+		#Future work: Validity Checking
+		#if ((gaze.LeftValidity != 0) & (gaze.RightValidity != 0)):
 
-		#Multiplying by the dimensions of my laptop screen
-		#self.x.append(((gaze.LeftGazePoint2D.x + gaze.RightGazePoint2D.x)/2) * 1280)
-		#self.y.append(((gaze.LeftGazePoint2D.y + gaze.RightGazePoint2D.y)/2) * 1024)
 		self.time.append(gaze.Timestamp)
 
 
 
-	#Fixation algorithm from pygaze
+	#Pygaze: Offline fixation algorithm (*note mindur has to be defined here in microseconds)
 	def fixation_detection(self, x, y, time, maxdist=35, mindur=60000):
 
         #Detects fixations, defined as consecutive samples with an inter-sample
@@ -395,7 +370,7 @@ class TobiiController:
 
 
 
-	#Online/Realtime fixation algorithm
+	#Preetpal's Online/Realtime fixation algorithm
 	def onlinefix(self):
 		#list of lists, each containing [starttime, endtime, duration, endx, endy]
 		self.EndFixations = []
@@ -411,12 +386,13 @@ class TobiiController:
 		newY = []
 		newTime = []
 
-		while(1):
+		while(self.runOnlineFix):
+
 			#function times out and returns after 45 seconds
-			if(time.time() > start + 45):
+			#if(time.time() > start + 10):
 				#print "timed out after ten seconds"
 				#print self.EndFixations
-				return self.EndFixations
+				#return self.EndFixations
 
 			#Wait till array has enough data
 			while(1):
@@ -442,7 +418,7 @@ class TobiiController:
  				if(Sfix == []):
 					array_index += array_iterator
 
-					#Wait till array has enough data
+					#Wait till array has filled with enough data
 					while(1):
 						if(len(self.x) > array_index + array_iterator):
 							break
@@ -462,7 +438,7 @@ class TobiiController:
 					[Sfix, Efix] = self.fixation_detection(newX, newY, newTime)
 
 
-					#May not need curX stuff for realtime stuff
+					#If no start detected, then we can use this to drop the first |array_iterator| items
 					curX = nextX
 					curY = nextY
 					curTime = nextTime
@@ -472,15 +448,16 @@ class TobiiController:
 					fixIndex = newTime.index(SfixTime)
 					xVal = newX[fixIndex]
 					yVal = newY[fixIndex]
+
 					#Get the open websocket and send x and y values through it to front end
+					# A start fixation has been detected!
 					for ws in self.liveWebSocket:
 						if ((xVal != -1280) & (yVal != -1024)):
 							ws.write_message('{"x":"%d", "y":"%d"}' % (xVal, yVal))
-							#ws.write_message('{"x":"%d", "y":"%d"}' % (1280, 0))
 
 					break
 
-			#When fixation is detected
+			#We are here because start fixation was detected
 			while(1):
 				if(Efix == []):
 					array_index = array_index + array_iterator
@@ -509,6 +486,7 @@ class TobiiController:
 						if (EfixEndTime == self.time[-1]):
 							Efix = []
 
+			    #a genuine end fixation has been found!
 				else:
 					#Add the newly found end fixation to our collection of end fixations
 					self.EndFixations.append(Efix)
@@ -522,7 +500,7 @@ class TobiiController:
 					for ws in self.liveWebSocket:
 						ws.write_message('{"x":"%d", "y":"%d"}' % (-3000, -3000))
 
-					#Emptying the gaze data arrays, and only retaining the last elemets that are AFTER the endFIX
+					#May wanrt to use something like this in the future in there are performace issues
 					#self.x = self.x[array_index:]
 					#self.y = self.y[array_index:]
 					#self.time = self.time[array_index:]
