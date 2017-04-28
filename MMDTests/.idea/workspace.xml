@@ -10,28 +10,6 @@
     <option name="LAST_RESOLUTION" value="IGNORE" />
   </component>
   <component name="DockManager">
-    <window id="2">
-      <content type="file-editors">
-        <state>
-          <leaf>
-            <file leaf-file-name="NC.php" pinned="false" current-in-tab="true">
-              <entry file="file://$PROJECT_DIR$/NC.php">
-                <provider selected="true" editor-type-id="text-editor">
-                  <state relative-caret-position="648">
-                    <caret line="120" column="0" lean-forward="false" selection-start-line="120" selection-start-column="0" selection-end-line="120" selection-end-column="0" />
-                    <folding>
-                      <element signature="e#65#130#0#PHP" expanded="true" />
-                      <marker date="1493282619263" expanded="true" signature="3077:3086" ph="..." />
-                      <marker date="1493282619263" expanded="true" signature="3248:3257" ph="..." />
-                    </folding>
-                  </state>
-                </provider>
-              </entry>
-            </file>
-          </leaf>
-        </state>
-      </content>
-    </window>
     <window id="1">
       <content type="file-editors">
         <state>
@@ -39,10 +17,24 @@
             <file leaf-file-name="prequestionnaire.php" pinned="false" current-in-tab="false">
               <entry file="file://$PROJECT_DIR$/prequestionnaire.php">
                 <provider selected="true" editor-type-id="text-editor">
-                  <state relative-caret-position="528">
-                    <caret line="76" column="17" lean-forward="false" selection-start-line="76" selection-start-column="17" selection-end-line="76" selection-end-column="17" />
+                  <state relative-caret-position="362">
+                    <caret line="73" column="38" lean-forward="false" selection-start-line="73" selection-start-column="38" selection-end-line="73" selection-end-column="38" />
                     <folding>
                       <marker date="1493282276907" expanded="true" signature="1220:1229" ph="..." />
+                    </folding>
+                  </state>
+                </provider>
+              </entry>
+            </file>
+            <file leaf-file-name="VARK.php" pinned="false" current-in-tab="false">
+              <entry file="file://$PROJECT_DIR$/VARK.php">
+                <provider selected="true" editor-type-id="text-editor">
+                  <state relative-caret-position="324">
+                    <caret line="171" column="63" lean-forward="false" selection-start-line="171" selection-start-column="63" selection-end-line="171" selection-end-column="63" />
+                    <folding>
+                      <element signature="e#69#104#0#PHP" expanded="true" />
+                      <marker date="1493410012885" expanded="true" signature="7061:7070" ph="..." />
+                      <marker date="1493410012885" expanded="true" signature="7232:7241" ph="..." />
                     </folding>
                   </state>
                 </provider>
@@ -51,10 +43,12 @@
             <file leaf-file-name="OP.php" pinned="false" current-in-tab="true">
               <entry file="file://$PROJECT_DIR$/OP.php">
                 <provider selected="true" editor-type-id="text-editor">
-                  <state relative-caret-position="-202">
-                    <caret line="0" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
+                  <state relative-caret-position="321">
+                    <caret line="365" column="50" lean-forward="false" selection-start-line="365" selection-start-column="50" selection-end-line="365" selection-end-column="50" />
                     <folding>
-                      <marker date="1492060942567" expanded="true" signature="5390:5396" ph=" " />
+                      <element signature="n#style#0;n#div#0;n#body#0;n#html#0;n#!!top" expanded="true" />
+                      <element signature="n#style#0;n#button#0;n#p#0;n#div#0;n#body#0;n#html#0;n#!!top" expanded="true" />
+                      <marker date="1493410262741" expanded="true" signature="5390:5396" ph=" " />
                     </folding>
                   </state>
                 </provider>
@@ -88,11 +82,11 @@
               <caret line="175" column="199" lean-forward="true" selection-start-line="175" selection-start-column="179" selection-end-line="175" selection-end-column="199" />
               <folding>
                 <element signature="e#69#104#0#PHP" expanded="true" />
-                <marker date="1493281493505" expanded="true" signature="6949:7048" ph="..." />
-                <marker date="1493281493505" expanded="true" signature="6956:7004" ph="..." />
-                <marker date="1493281493505" expanded="true" signature="7012:7048" ph="..." />
-                <marker date="1493281493505" expanded="true" signature="7061:7070" ph="..." />
-                <marker date="1493281493505" expanded="true" signature="7232:7241" ph="..." />
+                <marker date="1493410012885" expanded="true" signature="6949:7048" ph="..." />
+                <marker date="1493410012885" expanded="true" signature="6956:7004" ph="..." />
+                <marker date="1493410012885" expanded="true" signature="7012:7048" ph="..." />
+                <marker date="1493410012885" expanded="true" signature="7061:7070" ph="..." />
+                <marker date="1493410012885" expanded="true" signature="7232:7241" ph="..." />
               </folding>
             </state>
           </provider>
@@ -193,6 +187,7 @@
       <find>.55</find>
       <find>manual</find>
       <find>Q0[]</find>
+      <find>click h</find>
     </findStrings>
     <replaceStrings>
       <replace>$uid</replace>
@@ -212,9 +207,10 @@
         <option value="$PROJECT_DIR$/Visualization-Literacy-101-master/_02_calibrated_VL_tests/_03_BC/js/set.trial.js" />
         <option value="$PROJECT_DIR$/VARK2.php" />
         <option value="$PROJECT_DIR$/view.css" />
-        <option value="$PROJECT_DIR$/VARK.php" />
         <option value="$PROJECT_DIR$/prequestionnaire.php" />
         <option value="$PROJECT_DIR$/NC.php" />
+        <option value="$PROJECT_DIR$/VARK.php" />
+        <option value="$PROJECT_DIR$/OP.php" />
       </list>
     </option>
   </component>
@@ -471,15 +467,15 @@
       <option name="presentableId" value="Default" />
       <updated>1492066147621</updated>
       <workItem from="1492066151059" duration="6636000" />
-      <workItem from="1493014908192" duration="15040000" />
+      <workItem from="1493014908192" duration="16006000" />
     </task>
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="21676000" />
+    <option name="totallyTimeSpent" value="22642000" />
   </component>
   <component name="ToolWindowManager">
-    <frame x="-8" y="-8" width="1936" height="1056" extended-state="6" />
+    <frame x="-8" y="-8" width="1936" height="1056" extended-state="7" />
     <editor active="true" />
     <layout>
       <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.18020834" sideWeight="0.5" order="0" side_tool="false" content_ui="combo" />
@@ -636,49 +632,48 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/VARK.php">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="432">
-          <caret line="175" column="199" lean-forward="true" selection-start-line="175" selection-start-column="179" selection-end-line="175" selection-end-column="199" />
-          <folding>
-            <element signature="e#69#104#0#PHP" expanded="true" />
-            <marker date="1493281493505" expanded="true" signature="6949:7048" ph="..." />
-            <marker date="1493281493505" expanded="true" signature="6956:7004" ph="..." />
-            <marker date="1493281493505" expanded="true" signature="7012:7048" ph="..." />
-            <marker date="1493281493505" expanded="true" signature="7061:7070" ph="..." />
-            <marker date="1493281493505" expanded="true" signature="7232:7241" ph="..." />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/NC.php">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="648">
-          <caret line="120" column="0" lean-forward="false" selection-start-line="120" selection-start-column="0" selection-end-line="120" selection-end-column="0" />
+        <state relative-caret-position="540">
+          <caret line="116" column="61" lean-forward="false" selection-start-line="116" selection-start-column="61" selection-end-line="116" selection-end-column="61" />
           <folding>
             <element signature="e#65#130#0#PHP" expanded="true" />
-            <marker date="1493282619263" expanded="true" signature="3077:3086" ph="..." />
-            <marker date="1493282619263" expanded="true" signature="3248:3257" ph="..." />
+            <marker date="1493409906919" expanded="true" signature="3077:3086" ph="..." />
+            <marker date="1493409906919" expanded="true" signature="3248:3257" ph="..." />
           </folding>
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/prequestionnaire.php">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="528">
-          <caret line="76" column="17" lean-forward="false" selection-start-line="76" selection-start-column="17" selection-end-line="76" selection-end-column="17" />
+        <state relative-caret-position="362">
+          <caret line="73" column="38" lean-forward="false" selection-start-line="73" selection-start-column="38" selection-end-line="73" selection-end-column="38" />
           <folding>
             <marker date="1493282276907" expanded="true" signature="1220:1229" ph="..." />
           </folding>
         </state>
       </provider>
     </entry>
+    <entry file="file://$PROJECT_DIR$/VARK.php">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="324">
+          <caret line="171" column="63" lean-forward="false" selection-start-line="171" selection-start-column="63" selection-end-line="171" selection-end-column="63" />
+          <folding>
+            <element signature="e#69#104#0#PHP" expanded="true" />
+            <marker date="1493410012885" expanded="true" signature="7061:7070" ph="..." />
+            <marker date="1493410012885" expanded="true" signature="7232:7241" ph="..." />
+          </folding>
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/OP.php">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="-202">
-          <caret line="0" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
+        <state relative-caret-position="321">
+          <caret line="365" column="50" lean-forward="false" selection-start-line="365" selection-start-column="50" selection-end-line="365" selection-end-column="50" />
           <folding>
-            <marker date="1492060942567" expanded="true" signature="5390:5396" ph=" " />
+            <element signature="n#style#0;n#div#0;n#body#0;n#html#0;n#!!top" expanded="true" />
+            <element signature="n#style#0;n#button#0;n#p#0;n#div#0;n#body#0;n#html#0;n#!!top" expanded="true" />
+            <marker date="1493410262741" expanded="true" signature="5390:5396" ph=" " />
           </folding>
         </state>
       </provider>

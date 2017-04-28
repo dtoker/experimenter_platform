@@ -333,9 +333,9 @@ function terminate(){
 
 </head>
 
-<body>
+<body >
 
-<div id="instruction">
+<div id="instruction" style="    margin: auto;width: 900px">
 <h1>Instruction for Online Operation-Word Task</h1>
 <p>Thanks for taking this task. It consists of 60 trials. In every trial there is a pair of an arithmetic operation and a word.  e.g.<br />
 <br />
@@ -363,7 +363,7 @@ You are suggested to avoid any disturbance during the task as it will only take 
 <br /><br />
 <strong>Please enter your participant number here:</strong> <input type="text" id="uid" value="<?php if(isset($_GET['uid'])) print addslashes(htmlentities($_GET['uid'])); ?>"/>
 <br /><br />
-<button onclick="init()" >Click here to start the task once you have read and understood the instruction.</button>
+<button onclick="init()" style="font-size : 20px;"> Click here to start the task once you have read and understood the instruction.</button>
 </p>
 </div>
 

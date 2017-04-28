@@ -114,7 +114,7 @@ if($UID_missing){
 <?php
 
 	for($i=0; $i<count($questions); $i++){
-      print "<li>"." <label class=\"description\">".($i+1)." ".$questions[$i]."</label>";
+      print "<li>"." <label class=\"description\">".($i+1).". ".$questions[$i]."</label>";
 		
 		for($j=0; $j<=4; $j++){
 			$checked = isset($_POST['Q'.$i]) && $_POST['Q'.$i] == ($j-2) ? "checked" : "";
