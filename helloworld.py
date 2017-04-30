@@ -187,10 +187,10 @@ class QuestionnaireHandler(tornado.web.RequestHandler):
         i =1
         for a in answers:
             #questionnaire_data.append(a)
-            answer_data = (self.application.cur_user, self.application.cur_mmd,i, a)
+            answer_data = (self.application.cur_user, self.application.cur_mmd,i, a[0],a[1])
             print 'question results:'
             print answer_data
-            self.application.conn.execute('INSERT INTO Questions_results VALUES (?,?,?,?)', answer_data)
+            self.application.conn.execute('INSERT INTO Questions_results VALUES (?,?,?,?,?)', answer_data)
             i = i+1
 
         #print tuple(questionnaire_data)
@@ -215,11 +215,13 @@ class QuestionnaireHandler(tornado.web.RequestHandler):
         conn = sqlite3.connect('database_questions.db')
         query_results = conn.execute('select * from MMD_questions where mmd_id='+str(self.application.cur_mmd))
 
-        questions = query_results.fetchall()
         # hard-coded two questions as they appear in all mmds
+        questions = []
         questions.append([self.application.cur_mmd, "1", "I am interested in reading the full article.", "Likert", "Subjective"])
 
         questions.append([self.application.cur_mmd, "2", "The article/snippet was easy to understand.", "Likert", "Subjective"])
+
+        questions.extend(query_results.fetchall())
 
         return json.dumps(questions)
 
