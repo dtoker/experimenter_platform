@@ -105,7 +105,7 @@ if($UID_missing){
     <ul id = 'questionList'>
 
     <div>
-		<p>User ID: <input type='text' name='uid' size='3'  value="<?php if(isset($_GET['uid'])) print addslashes(htmlentities($_GET['uid']));  ?>"></input><br /></p>
+		<p>User ID: <label><b><?php if(isset($_GET['uid'])) print addslashes(htmlentities($_GET['uid']));  ?></b></label><br /></p>
         <p>
             <h3><b>For each of the statements below, please indicate to what extent the statement is characteristic of you.</b></h3>
         </p>
@@ -115,7 +115,8 @@ if($UID_missing){
 
 	for($i=0; $i<count($questions); $i++){
       print "<li>"." <label class=\"description\">".($i+1).". ".$questions[$i]."</label>";
-		
+      print "<span>";
+
 		for($j=0; $j<=4; $j++){
 			$checked = isset($_POST['Q'.$i]) && $_POST['Q'.$i] == ($j-2) ? "checked" : "";
 			print "<input type='radio' class='element checkbox' name='Q".$i."' value='".($j-2)."' ".$checked.">"."<label class=\"choice\">".$answers[$j]."</label></input>";

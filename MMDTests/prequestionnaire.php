@@ -50,12 +50,13 @@ if(isset($missing_fields)){
 
 <form id="preform" class="appnitro" action="prequestionnaire.php" method="POST">
     <div>
+        <p>User ID: <label><b><?php if(isset($_GET['uid'])) print addslashes(htmlentities($_GET['uid']));  ?></b></label><br /></p>
+
         <p>
             <h3><b>Please answer each of the following questions.</b></h3>
         </p>
     </div>
     <div>
-        <p>User ID: <input type='text' name='uid' size='3'></input></p>
         <ul id = 'questionList'>
             <li> <label class="description">How often do you need to make preferential choice (e.g., buying a car or a cellphone, choosing a university, etc)?</label>
                 <span>

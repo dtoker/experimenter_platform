@@ -161,7 +161,7 @@ if($UID_missing){
 <form id="testform" class="appnitro" action="VARK.php<?php if(isset($_GET['uid'])) print "?uid=".addslashes(htmlentities($_GET['uid']));  ?>" method="POST">
     <ul id = 'questionList'>
     <div>
-		<p>User ID: <input type='text' name='uid' size='3'  value="<?php if(isset($_GET['uid'])) print addslashes(htmlentities($_GET['uid']));  ?>"></input><br /></p>
+        <p>User ID: <label><b><?php if(isset($_GET['uid'])) print addslashes(htmlentities($_GET['uid']));  ?></b></label><br /></p>
         <p>
             <h3><b>Choose the answer which best explains your preference and click the box next to it. Please click more than one if a single answer does not match your perception. Leave blank any question that does not apply.</b></h3>
         </p>

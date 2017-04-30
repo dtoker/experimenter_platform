@@ -361,7 +361,7 @@ No pen/paper or other tools are allowed in the test (<strong>time is recorded an
 <br /><br />
 You are suggested to avoid any disturbance during the task as it will only take about 10min.<br />
 <br /><br />
-<strong>Please enter your participant number here:</strong> <input type="text" id="uid" value="<?php if(isset($_GET['uid'])) print addslashes(htmlentities($_GET['uid'])); ?>"/>
+    <p>User ID: <label><b><?php if(isset($_GET['uid'])) print addslashes(htmlentities($_GET['uid']));  ?></b></label><br /></p>
 <br /><br />
 <button onclick="init()" style="font-size : 20px;"> Click here to start the task once you have read and understood the instruction.</button>
 </p>
