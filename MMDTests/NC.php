@@ -102,10 +102,11 @@ if($UID_missing){
 ?>
 
 <form id="testform" class="appnitro" action="NC.php<?php if(isset($_GET['uid'])) print "?uid=".addslashes(htmlentities($_GET['uid']));  ?>" method="POST">
+    <input type="hidden" name="uid" value="<?php  if(isset($_GET['uid'])) echo addslashes(htmlentities($_GET['uid'])); ?>" />
     <ul id = 'questionList'>
 
     <div>
-		<p>User ID: <label><b><?php if(isset($_GET['uid'])) print addslashes(htmlentities($_GET['uid']));  ?></b></label><br /></p>
+		<p>User ID: <label><b><?php if(isset($_GET['uid'])) {print addslashes(htmlentities($_GET['uid'])); $_POST['uid'] = (htmlentities($_GET['uid']));} ?></b></label><br /></p>
         <p>
             <h3><b>For each of the statements below, please indicate to what extent the statement is characteristic of you.</b></h3>
         </p>
@@ -119,7 +120,7 @@ if($UID_missing){
 
 		for($j=0; $j<=4; $j++){
 			$checked = isset($_POST['Q'.$i]) && $_POST['Q'.$i] == ($j-2) ? "checked" : "";
-			print "<input type='radio' class='element checkbox' name='Q".$i."' value='".($j-2)."' ".$checked.">"."<label class=\"choice\">".$answers[$j]."</label></input>";
+			print "<input type='radio' class='element radio' name='Q".$i."' value='".($j-2)."' ".$checked.">"."<label class=\"choice\">".$answers[$j]."</label></input>";
 		}
       print "</span>";
       print "</li>";
