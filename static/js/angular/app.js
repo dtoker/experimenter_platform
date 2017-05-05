@@ -14,6 +14,11 @@ function toggleArrow(){
   console.log(isArrowsIntervention);
 }
 
+function setAllInterventionsFalse(){
+    isDeemphasis = false;
+    isBoldingIntervention = false;
+    isArrowsIntervention = false;
+}
 
 (function() {
 
@@ -344,13 +349,13 @@ function highlightRelatedTuples($scope, references) {
   // Determine the tuple IDs that the text references refer to.
   var referenced_tuples = [];
   var data = $scope.datatable.data;
-  
+
   function matched_tuple(tuple_a, tuple_b) {
     return tuple_a.map(function(val, ind) {
       return val == tuple_b[ind]; // Match strings and floats that are the same number
     }).reduce(function(acc, val) { return acc && val; });
   }
-  
+
   for(var i=0; i<references.length; i++) {
     for(var j=0; j<references[i].tuples.length; j++) {
       for(var k=0; k<data.length; k++) {
@@ -486,7 +491,7 @@ function highlightRelatedPhrases($scope, references, selection) {
         phrases.splice(i, 0, middle);
         highlightAndReferenceSpans.push(middle);
         i++;
-        
+
         var right = {
           start: middle.end,
           end: i >= phrases.length - 1 ? selection.end :
@@ -512,7 +517,7 @@ function highlightRelatedPhrases($scope, references, selection) {
         phrases.splice(i, 0, left);
         highlightSpans.push(left);
         i++;
-        
+
         var middle = {
           start: left.end,
           end: i >= phrases.length - 1 ? selection.end :
@@ -558,21 +563,21 @@ function createSpans(phrases, selection,
       i++;
       continue;
     }
-    
+
     // Phrases are identical
     if(phrases[i].start === phrases[i-1].start &&
        phrases[i].end === phrases[i-1].end) {
       phrases.splice(i,1);
       continue;
     }
-    
+
     // Create at least two spans: the text before phrases[i]
     // and the overlap text between phrases[i-1] and phrases[i]
     var new_spans = [{
       'start': phrases[i-1].start,
       'end': phrases[i].start,
     }];
-    
+
     // Case 1: phrase[i-1] contains phrase[i]
     if(phrases[i].end <= phrases[i-1].end) {
       new_spans.push(phrases[i]);
@@ -584,7 +589,7 @@ function createSpans(phrases, selection,
         });
       }
     }
-    // Case 2: phrase[i-1] ends before phrase[i]							
+    // Case 2: phrase[i-1] ends before phrase[i]
     else if(phrases[i].end > phrases[i-1].end) {
       var new_tuple_ids = phrases[i-1].tuple_ids;
       new_spans.push({
@@ -596,10 +601,10 @@ function createSpans(phrases, selection,
         'end': phrases[i].end,
       });
     }
-    
+
     // Replace phrases[i-1] by the objects in new_spans
     phrases.splice.apply(phrases, new_spans.splice(0,0,i-1,1));
-    
+
     i += new_spans.length-1;
   }
   // Add the selection to the phrases
@@ -657,7 +662,7 @@ function initReferences($scope) {
   var text_references =  $scope.curReference;
 
   var refMapper = new ReferenceMapper(visual_references);
-  
+
   // Merge the data tables
   var data = datatable.data,
     marksHash = {};
@@ -670,17 +675,17 @@ function initReferences($scope) {
       marksHash[tuple_id] = { 'mark_id': visual_reference.mark_id };
     });
   });
-  
+
   // Determine the tuple IDs that the text references refer to.
   var textrefs = text_references;
   var referenced_tuples = [];
-  
+
   function matched_tuple(tuple_a, tuple_b) {
     return tuple_a.map(function(val, ind) {
       return val == tuple_b[ind]; // Match strings and floats that are the same number
     }).reduce(function(acc, val) { return acc && val; });
   }
-  
+
   for(var i=0; i<textrefs.length; i++) {
     for(var j=0; j<textrefs[i].tuples.length; j++) {
       for(var k=0; k<data.length; k++) {
@@ -695,7 +700,7 @@ function initReferences($scope) {
       }
     }
   }
-  
+
   // Add the marks that have associated text
 
   referenced_tuples.forEach(function(tuple) {
@@ -706,7 +711,7 @@ function initReferences($scope) {
     marksHash[tuple['id']]['tuple'] = tuple;
   });
   $scope.reference_tuples = referenced_tuples;
-  
+
   var marksManager = new MarksManager(marks.marks, document.getElementById('theChart'));
   marksManager.createOverlay();
   marksManager.changeType(MarksManager.DESATURATE);
@@ -740,7 +745,7 @@ function clone(obj) {
       out[i] = clone(obj[i]);
     }
   }
-  else if(this instanceof Object) {						
+  else if(this instanceof Object) {
     out = {};
     for(var attr in obj) {
       if(obj.hasOwnProperty(attr)) {
@@ -748,41 +753,85 @@ function clone(obj) {
       }
     }
   }
-  return out;	
+  return out;
 }
     $( "#button_text" ).click(function() {
+        highlightTextOnly(0);
+    });
+    $( "#button_targets" ).click(function() {
+        highlightVisOnly(0);
+
+    });
+
+    $( "#button_both" ).click(function() {
+        highlightbothTextVis(0);
+
+    });
+    $( "#button_remove_intervention" ).click(function() {
+        removeALlinterventions(0);
+    });
+    function highlightbothTextOnly(referenceID) {
         console.log('highlight text');
         var overlappedReferences = [];
 
         //for (var i=0; i<$scopeGlobal.curReference.length; i++) {
-        var reference = $scopeGlobal.curReference[0];
+        var reference = $scopeGlobal.curReference[referenceID];
         overlappedReferences.push(reference);
         //}
         console.log(overlappedReferences);
         //highlightRelatedTuples($scopeGlobal, overlappedReferences);
         highlightRelatedPhrases($scopeGlobal, overlappedReferences);
-    });
-    $( "#button_targets" ).click(function() {
+    }
+
+    function highlightVisOnly(referenceID) {
         var overlappedReferences = [];
 
         //for (var i=0; i<$scopeGlobal.curReference.length; i++) {
-        var reference = $scopeGlobal.curReference[0];
+        var reference = $scopeGlobal.curReference[referenceID];
         overlappedReferences.push(reference);
         //}
         console.log(overlappedReferences);
         highlightRelatedTuples($scopeGlobal, overlappedReferences);
-    });
+    }
 
-    $( "#button_both" ).click(function() {
-        var overlappedReferences = [];
-        console.log($scopeGlobal.curReference);
-        //for (var i=0; i<$scopeGlobal.curReference.length; i++) {
-        var reference = $scopeGlobal.curReference[1];
-        overlappedReferences.push(reference);
-        //}
-        console.log(overlappedReferences);
-        highlightRelatedTuples($scopeGlobal, overlappedReferences);
-        highlightRelatedPhrases($scopeGlobal, overlappedReferences);
 
-    });
+    function highlightbothTextVis(referenceID){
+      var overlappedReferences = [];
+      console.log($scopeGlobal.curReference);
+      //for (var i=0; i<$scopeGlobal.curReference.length; i++) {
+      var reference = $scopeGlobal.curReference[referenceID];
+      overlappedReferences.push(reference);
+      //}
+      console.log(overlappedReferences);
+      highlightRelatedTuples($scopeGlobal, overlappedReferences);
+      highlightRelatedPhrases($scopeGlobal, overlappedReferences);
+
+    }
+    function removeALlinterventions(referenceID) {
+        setAllInterventionsFalse();
+        highlightbothTextVis(referenceID)
+
+    }
+        //small delay to load the mmd first
+    setTimeout(function () {
+        var ws = new WebSocket("ws://localhost:8888/websocket");
+
+        ws.onmessage = function (evt) {
+            var obj = JSON.parse(evt.data);
+            if (obj.x > 800 && obj.y > 500) {
+                console.log("trigger highlight");
+                highlightbothTextVis(0);
+            }
+        }
+
+    }, 500);
+/*    var ws = new WebSocket("ws://localhost:8888/websocket");
+
+    ws.onmessage = function (evt) {
+        var obj = JSON.parse(evt.data);
+        if (obj.x > 800) {
+            console.log("trigger highlight");
+            highlightbothTextVis(0);
+        }
+    }*/
 }());
