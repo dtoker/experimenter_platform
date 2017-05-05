@@ -71,7 +71,7 @@ var AppCtrl = function($scope, $http, $location) {
   $scope.curSpanManager;
   console.log(currentMMD);
   // Fetch the conditions
-  $http.get('static/data/conditions.json').
+  $http.get('static/dataIntervention/conditions.json').
       success(function(data, status, headers) {
         $scope.conditions = data;
         if (data.length > 0) {
@@ -90,10 +90,34 @@ var AppCtrl = function($scope, $http, $location) {
     if ($scope.curSpanManager) {
       $scope.curSpanManager.clearSpans();
     }
-    console.log('static/data/' + $scope.curConditionId + '.json');
+    //console.log('static/data/' + $scope.curConditionId + '.json');
     // Load the new condition
-    $http.get('static/data/' + $scope.curConditionId + '.json').
+    $http.get('static/dataIntervention/' + $scope.curConditionId + '.json').
         success(function(data, status, headers) {
+
+        //  The following code was used to adjust the mmd references due to changes made to the original ones
+        //MMD: offset
+        // 30: 106, 60=0, 62=0, 66=312, 72 =0,
+        //74: 146, 76 = 146
+        //merge:TODO
+
+          /*var offset =146;
+          angular.forEach(data.references, function(reference) {
+            console.log(JSON.stringify(reference.reference));
+            for (var i=0;i<reference.reference.length;i++){
+              for (var j=0;j<reference.reference[i].phrases.length;j++){
+                //console.log(JSON.stringify(reference.reference[i].phrases[j].start));
+                //console.log(JSON.stringify(reference.reference[i].phrases[j].end));
+                reference.reference[i].phrases[j].start+= offset;
+                reference.reference[i].phrases[j].end+= offset;
+
+              }
+
+            }
+
+          });
+          console.log(JSON.stringify(data.references));*/
+
           // Reset the worker filter
           $scope.imgSrc = 'static/' + data.chart;
           $scope.curText = data.text;
@@ -108,6 +132,8 @@ var AppCtrl = function($scope, $http, $location) {
           $scope.curReference = $scope.allReferences[0].reference;
 
           document.getElementById("theText").innerHTML =$scope.curText;
+
+
 
           // Add names and select grouping to the references
           angular.forEach($scope.allReferences, function(reference) {
@@ -729,7 +755,7 @@ function clone(obj) {
         var overlappedReferences = [];
 
         //for (var i=0; i<$scopeGlobal.curReference.length; i++) {
-        var reference = $scopeGlobal.curReference[1];
+        var reference = $scopeGlobal.curReference[0];
         overlappedReferences.push(reference);
         //}
         console.log(overlappedReferences);
@@ -740,7 +766,7 @@ function clone(obj) {
         var overlappedReferences = [];
 
         //for (var i=0; i<$scopeGlobal.curReference.length; i++) {
-        var reference = $scopeGlobal.curReference[1];
+        var reference = $scopeGlobal.curReference[0];
         overlappedReferences.push(reference);
         //}
         console.log(overlappedReferences);
@@ -749,7 +775,7 @@ function clone(obj) {
 
     $( "#button_both" ).click(function() {
         var overlappedReferences = [];
-
+        console.log($scopeGlobal.curReference);
         //for (var i=0; i<$scopeGlobal.curReference.length; i++) {
         var reference = $scopeGlobal.curReference[1];
         overlappedReferences.push(reference);

@@ -59,10 +59,10 @@ class MainHandler(tornado.web.RequestHandler):
         print 'hello'
         #mmdQuestions = self.loadMMDQuestions()
 
-        self.render('index.html', mmd="3")
+        #self.render('index.html', mmd="3")
         #self.render('mmd.html', mmd="3")
 
-        #self.render('MMDIntervention.html', mmd="3")
+        self.render('MMDIntervention.html', mmd="3")
         #self.render('questionnaire.html', mmd="3", questions = mmdQuestions)
 
 
