@@ -813,11 +813,18 @@ function clone(obj) {
 
     }
         //small delay to load the mmd first
+
+
     setTimeout(function () {
         var ws = new WebSocket("ws://localhost:8888/websocket");
 
         ws.onmessage = function (evt) {
             var obj = JSON.parse(evt.data);
+
+            var elem = document.getElementById("animated_square");
+            elem.style.top = (obj.y-40)+'px';
+            elem.style.left = (obj.x-40)+'px';
+
             if (obj.x > 800 && obj.y > 500) {
                 console.log("trigger highlight");
                 highlightbothTextVis(0);
