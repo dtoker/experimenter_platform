@@ -39,7 +39,8 @@
 
     <!--<h1><a>Your feedback</a></h1>-->
     <div class="form_description">
-        <h2>Questions</h2>
+        <table width='900px'><tr><td><h2>Questions</h2></td><td id ="progress" style="text-align:right"></td></tr></table>
+
       </div>
     <div id="MMDid"></div>
      <div style="width:700px">Please rate how strongly you agree or disagree with each of the following statements with respect to the snippet you read (<b>more stars means higher agreement</b>).</div>
@@ -77,8 +78,9 @@
   currentMMD = '{{mmd}}';
   progress = '{{progress}}';
   console.log(currentMMD);
-  $('#MMDid').append("<table width='900px'><td><b>MMD ID:</b><i>"+currentMMD+'</td><td  style="text-align:right"></i> <b>Progress:</b> <font style="color: green;">'+progress+'<font></td></table>');
+  //$('#MMDid').append("<table width='900px'><td><b>MMD ID:</b><i>"+currentMMD+'</td><td  style="text-align:right"></i> <b>Progress:</b> <font style="color: green;">'+progress+'<font></td></table>');
 
+  $('#progress').append('<font style="color: green;">'+'<b>Progress:</b> '+progress+'<font>');
 </script>
 </body>
 </html>

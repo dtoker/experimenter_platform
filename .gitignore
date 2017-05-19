@@ -26,3 +26,6 @@ MMDTests/.idea/workspace.xml
 MMDTests/.idea/workspace.xml
 *.db
 MMDTests/.idea/workspace.xml
+*.db-journal
+database.db
+*.db

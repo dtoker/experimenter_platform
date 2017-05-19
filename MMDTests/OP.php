@@ -21,8 +21,7 @@ body
   -webkit-user-select: none;
 } 
 </style>
-
-<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script>
+<script src="jquery.js"></script>
 
 <script type="text/javascript">
 var MAX_WORDS = 60; //should be coherent with the number of REPETITION_SEQUENCE and MIN/MAX_LENGTH_SEQUENCE

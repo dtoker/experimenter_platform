@@ -52,8 +52,7 @@ class Application(tornado.web.Application):
 
 class MainHandler(tornado.web.RequestHandler):
     def get(self):
-        #displays contents of index.html
-        #self.render('index.html')
+
         self.application.start_time = str(datetime.datetime.now().time())
         #self.application.cur_user = 100
         print 'hello'

@@ -1,6 +1,8 @@
 var isDeemphasis = true;
 var isBoldingIntervention = true;
 var isArrowsIntervention = true;
+
+
 function toggleDeemphasis(){
     isDeemphasis = !isDeemphasis;
 }
@@ -104,9 +106,12 @@ var AppCtrl = function($scope, $http, $location) {
         //MMD: offset
         // 30: 106, 60=0, 62=0, 66=312, 72 =0,
         //74: 146, 76 = 146
+        //MERGED ONES
+        //4: 687
         //merge:TODO
 
-          /*var offset =146;
+/*
+          var offset =603;
           angular.forEach(data.references, function(reference) {
             console.log(JSON.stringify(reference.reference));
             for (var i=0;i<reference.reference.length;i++){
@@ -121,7 +126,9 @@ var AppCtrl = function($scope, $http, $location) {
             }
 
           });
-          console.log(JSON.stringify(data.references));*/
+          console.log(JSON.stringify(data.references));
+*/
+
 
           // Reset the worker filter
           $scope.imgSrc = 'static/' + data.chart;
@@ -134,9 +141,32 @@ var AppCtrl = function($scope, $http, $location) {
           $scope.marks = data.marks;
           $scope.visualReferences = data.visual_references;
           $scope.allReferences = data.references;
-          $scope.curReference = $scope.allReferences[0].reference;
+          $scope.curReference = $scope.allReferences[1].reference; // '1== gold reference
+          $scope.selectedReference = 0
+
+          console.log(JSON.stringify($scope.curReference));
 
           document.getElementById("theText").innerHTML =$scope.curText;
+
+
+//select ref from drop-down
+          var selectHtml = "";
+
+            for(var j=0;j<$scope.curReference.length;j++){
+              selectHtml+= '<option value="'+j+'">'+j+'</option>';
+            }
+
+
+            $("#referenceSelect").html(selectHtml);
+
+            $("#referenceSelect").change(function() {
+              //alert($(this).find("option:selected").text()+' clicked!');
+              currentReference = $(this).find("option:selected").text();
+              $scope.selectedReference = parseInt(currentReference);
+              //loadMMD(currentMMD);
+            });
+
+
 
 
 
@@ -756,26 +786,26 @@ function clone(obj) {
   return out;
 }
     $( "#button_text" ).click(function() {
-        highlightTextOnly(0);
+        highlightTextOnly($scopeGlobal.selectedReference);
     });
     $( "#button_targets" ).click(function() {
-        highlightVisOnly(0);
+        highlightVisOnly($scopeGlobal.selectedReference);
 
     });
 
     $( "#button_both" ).click(function() {
-        highlightbothTextVis(0);
+        highlightbothTextVis($scopeGlobal.selectedReference);
 
     });
     $( "#button_remove_intervention" ).click(function() {
-        removeALlinterventions(0);
+        removeALlinterventions($scopeGlobal.selectedReference);
     });
-    function highlightbothTextOnly(referenceID) {
+    function highlightTextOnly(referenceID) {
         console.log('highlight text');
         var overlappedReferences = [];
 
         //for (var i=0; i<$scopeGlobal.curReference.length; i++) {
-        var reference = $scopeGlobal.curReference[referenceID];
+        var reference = $scopeGlobal.curReference[$scopeGlobal.selectedReference];
         overlappedReferences.push(reference);
         //}
         console.log(overlappedReferences);
@@ -787,7 +817,7 @@ function clone(obj) {
         var overlappedReferences = [];
 
         //for (var i=0; i<$scopeGlobal.curReference.length; i++) {
-        var reference = $scopeGlobal.curReference[referenceID];
+        var reference = $scopeGlobal.curReference[$scopeGlobal.selectedReference];
         overlappedReferences.push(reference);
         //}
         console.log(overlappedReferences);
@@ -799,7 +829,7 @@ function clone(obj) {
       var overlappedReferences = [];
       console.log($scopeGlobal.curReference);
       //for (var i=0; i<$scopeGlobal.curReference.length; i++) {
-      var reference = $scopeGlobal.curReference[referenceID];
+      var reference = $scopeGlobal.curReference[$scopeGlobal.selectedReference];
       overlappedReferences.push(reference);
       //}
       console.log(overlappedReferences);
