@@ -82,10 +82,10 @@ if(isset($_POST['submitted'])){
 	for($i=0; $i<$nb_q; $i++){
 
       if(!empty($_POST['Q'.$i])) {
-        print $_POST['Q'.$i]."</br></br></br>";
+        //print $_POST['Q'.$i]."</br></br></br>";
         $checkboxValues = "";
         foreach($_POST['Q'.$i] as $check) {
-            print $check."</br>";
+            //print $check."</br>";
           $checkboxValues .= htmlspecialchars($check)."";
         }
         $test_results[] = $checkboxValues;
@@ -113,7 +113,7 @@ if(isset($_POST['submitted'])){
 		$answers = $test_results[0];
 		for($i=1; $i<$nb_q; $i++){
 			$answers .= ",".$test_results[$i];
-			#print "answers:".",".$test_results[$i]."</br>";
+//			print "answers:".",".$test_results[$i]."</br>";
 		}
 
 		//compute the score
@@ -121,7 +121,9 @@ if(isset($_POST['submitted'])){
 //		for($i=0; $i<$nb_q; $i++){
 //			$score += $test_results[$i];
 //		}
-		
+
+
+
 		$f = fopen($dir."VARK_P".$uid."_".$date.".txt", "w");
 		//fwrite($f, $uid.",".$score.",".$answers.";\n");
         fwrite($f, $uid.",".$answers.";\n");
@@ -159,9 +161,10 @@ if($UID_missing){
 ?>
 
 <form id="testform" class="appnitro" action="VARK.php<?php if(isset($_GET['uid'])) print "?uid=".addslashes(htmlentities($_GET['uid']));  ?>" method="POST">
+    <input type="hidden" name="uid" value="<?php  if(isset($_GET['uid'])) echo addslashes(htmlentities($_GET['uid'])); ?>" />
     <ul id = 'questionList'>
     <div>
-		<p>User ID: <input type='text' name='uid' size='3'  value="<?php if(isset($_GET['uid'])) print addslashes(htmlentities($_GET['uid']));  ?>"></input><br /></p>
+        <p>User ID: <label><b><?php if(isset($_GET['uid'])) print addslashes(htmlentities($_GET['uid']));  ?></b></label><br /></p>
         <p>
             <h3><b>Choose the answer which best explains your preference and click the box next to it. Please click more than one if a single answer does not match your perception. Leave blank any question that does not apply.</b></h3>
         </p>
@@ -169,7 +172,7 @@ if($UID_missing){
     <div>
 <?php
 	for($i=0; $i<count($questions); $i++){
-		print "<li>"." <label class=\"description\">".($i+1)." ".$questions[$i]."</label>";
+		print "<li>"." <label class=\"description\">".($i+1).". ".$questions[$i]."</label>";
 		print "<span>";
 		for($j=0; $j<=3; $j++){
 			$checked = isset($_POST['Q'.$i]) && $_POST['Q'.$i] == ($j+1) ? "checked" : "";

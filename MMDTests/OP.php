@@ -21,8 +21,7 @@ body
   -webkit-user-select: none;
 } 
 </style>
-
-<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script>
+<script src="jquery.js"></script>
 
 <script type="text/javascript">
 var MAX_WORDS = 60; //should be coherent with the number of REPETITION_SEQUENCE and MIN/MAX_LENGTH_SEQUENCE
@@ -333,9 +332,9 @@ function terminate(){
 
 </head>
 
-<body>
+<body >
 
-<div id="instruction">
+<div id="instruction" style="    margin: auto;width: 900px">
 <h1>Instruction for Online Operation-Word Task</h1>
 <p>Thanks for taking this task. It consists of 60 trials. In every trial there is a pair of an arithmetic operation and a word.  e.g.<br />
 <br />
@@ -361,9 +360,10 @@ No pen/paper or other tools are allowed in the test (<strong>time is recorded an
 <br /><br />
 You are suggested to avoid any disturbance during the task as it will only take about 10min.<br />
 <br /><br />
-<strong>Please enter your participant number here:</strong> <input type="text" id="uid" value="<?php if(isset($_GET['uid'])) print addslashes(htmlentities($_GET['uid'])); ?>"/>
+    <input type="hidden" id = "uid" name="uid" value="<?php  if(isset($_GET['uid'])) echo addslashes(htmlentities($_GET['uid'])); ?>" />
+    <p>User ID: <label><b><?php if(isset($_GET['uid'])) print addslashes(htmlentities($_GET['uid']));  ?></b></label><br /></p>
 <br /><br />
-<button onclick="init()" >Click here to start the task once you have read and understood the instruction.</button>
+<button onclick="init()" style="font-size : 20px;"> Click here to start the task once you have read and understood the instruction.</button>
 </p>
 </div>
 

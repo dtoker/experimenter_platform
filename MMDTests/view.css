@@ -170,7 +170,7 @@ form li span
 {
     color:#444;
     float:left;
-    margin:0 4px 0 0;
+    margin:0 4px 0 30px;
     padding:0 0 8px;
 }
 
@@ -411,7 +411,7 @@ label.choice
     font-size:100%;
     line-height:1.4em;
     margin:-1.3em 0 0 25px;
-    padding:5px 0 15px;
+    padding:6px 0 15px;
     width:98%;
 }
 

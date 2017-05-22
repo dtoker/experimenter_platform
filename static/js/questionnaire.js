@@ -17,19 +17,20 @@ for(var i=0;i<questionObj.length;i++){
     mmdId: questionObj[i][0],
     qid: questionObj[i][1],
     questionBody: questionObj[i][2],
-    questionType: questionObj[i][3],
+    responseType: questionObj[i][3],
     answers: questionObj[i][4],
+    correctAnswer: questionObj[i][6],
     rating: null
   };
   console.log(questionData);
 
   questionArray.push(questionData);
 
-  if(questionData.questionType==='Likert'){
+  if(questionData.responseType==='Likert'){
 
       addRatingWidget(buildShopItem(questionData), questionData);
   }
-  else if(questionData.questionType==='MC' || questionData.questionType==='TF'){
+  else if(questionData.responseType==='MC' || questionData.responseType==='TF'){
     $( "#questionList" ).append( buildMultipleChoiceQuestion(questionData));
   }
 }
@@ -45,6 +46,7 @@ for(var i=0;i<questionObj.length;i++){
    var  questionID = questionData.qid;
 
    var answers = questionData.answers.split(',');
+
     console.log(answers);
 
     var html = '<li id="li_'+questionID+'" >'+
@@ -52,11 +54,11 @@ for(var i=0;i<questionObj.length;i++){
       '<span>';
 
    for(var i=0;i<answers.length;i++){
-     answers[i] = answers[i].substring(4, i===answers.length-1?answers[i].length-2: answers[i].length-1);
+     var answerOnly = answers[i].substring(4, i===answers.length-1?answers[i].length-2: answers[i].length-1);
 
 
-     html+= '<input id="element_'+questionID+'_'+(i+1)+'" name="element_'+questionID+'" class="element radio" type="radio" value="'+answers[i]+'" />'+
-     '<label class="choice" >' +answers[i]+'</label>';
+     html+= '<input id="element_'+questionID+'_'+(i+1)+'" name="element_'+questionID+'" class="element radio" type="radio" value="'+answers[i].substring(2,3)+'" />'+
+     '<label class="choice" >' +answerOnly+'</label>';
    }
 
 
@@ -74,7 +76,7 @@ function buildShopItem(data) {
     var html = '<div class="c-shop-item__img"></div>' +
         '<div class="c-shop-item__details">' +
         // '<h3 class="c-shop-item__title">' + data.title + '</h3>' +
-        '<table><tr><td width="320px"><p id="label_'+questionArray[i].qid+'" class="c-shop-item__questionBody"><b>'+questionArray[i].qid+'. ' + data.questionBody + '</b></p></td>' +
+        '<table><tr><td width="520px"><p id="label_'+questionArray[i].qid+'" class="c-shop-item__questionBody"><b>'+questionArray[i].qid+'. ' + data.questionBody + '</b></p></td>' +
         '<td><ul class="c-rating"></ul></td></tr></table>' +
         '</div>';
 
@@ -119,21 +121,28 @@ function getSelectedValue(element){
 
 $( "form" ).submit(function( event ) {
   console.log('form');
-  var f = document.forms[0];
-  var answerList=[];
-  var i;
+   var answerList=[];
+  var i, isCorrect = "";
   var questionUnanswered = false;
   for (i=0;i<questionArray.length;i++) {
     var answer = null;
     //console.log(questionArray[i]);
-    if(questionArray[i].questionType==='Likert'){
+    if(questionArray[i].responseType==='Likert'){
       console.log(questionArray[i].rating);
       answer = questionArray[i].rating;
     }
-    else if(questionArray[i].questionType==='MC' || questionArray[i].questionType==='TF'){
+    else if(questionArray[i].responseType==='MC' || questionArray[i].responseType==='TF'){
       //console.log(getSelectedValue("element_"+ questionArray[i].qid));
+        console.log(questionArray[i]);
       console.log($('input[name='+"element_"+ questionArray[i].qid+']:checked', '#form_questionnaire').val());
       answer = $('input[name='+"element_"+ questionArray[i].qid+']:checked', '#form_questionnaire').val();
+      if(questionArray[i].responseType==='TF'){
+        isCorrect = $('input[name='+"element_"+ questionArray[i].qid+']:checked', '#form_questionnaire').val() ==='T'? "Correct": "Incorrect";
+      }
+      else if(questionArray[i].responseType==='MC'){
+        isCorrect = questionArray[i].correcAnswer===$('input[name='+"element_"+ questionArray[i].qid+']:checked', '#form_questionnaire').val()? "Correct": "Incorrect";
+      }
+
     }
     //console.log(questionArray[i].qid);
     //$("#li_"+questionArray[i].qid).css("color","red");
@@ -145,10 +154,10 @@ $( "form" ).submit(function( event ) {
     }
     else{
       //answerList.push( {question:questionArray[i].qid, answer: answer});
-      answerList.push( answer);
+      answerList.push( [answer,isCorrect]);
       $("#label_"+questionArray[i].qid).css("color","black");
     }
-
+    isCorrect ="";
   }
 
   if(!questionUnanswered){
@@ -173,11 +182,11 @@ function submitPostStudy() {
     for (i=0;i<questionArray.length;i++) {
       var answer = null;
       //console.log(questionArray[i]);
-      if(questionArray[i].questionType==='Likert'){
+      if(questionArray[i].responseType==='Likert'){
         console.log(questionArray[i].rating);
         answer = questionArray[i].rating;
       }
-      else if(questionArray[i].questionType==='MC' || questionArray[i].questionType==='TF'){
+      else if(questionArray[i].responseType==='MC' || questionArray[i].responseType==='TF'){
         //console.log(getSelectedValue("element_"+ questionArray[i].qid));
         console.log($('input[name='+"element_"+ questionArray[i].qid+']:checked', '#form_questionnaire').val());
         answer = $('input[name='+"element_"+ questionArray[i].qid+']:checked', '#form_questionnaire').val();

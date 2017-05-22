@@ -52,17 +52,16 @@ class Application(tornado.web.Application):
 
 class MainHandler(tornado.web.RequestHandler):
     def get(self):
-        #displays contents of index.html
-        #self.render('index.html')
+
         self.application.start_time = str(datetime.datetime.now().time())
         #self.application.cur_user = 100
         print 'hello'
         #mmdQuestions = self.loadMMDQuestions()
 
-        self.render('index.html', mmd="3")
+        #self.render('index.html', mmd="3")
         #self.render('mmd.html', mmd="3")
 
-        #self.render('MMDIntervention.html', mmd="3")
+        self.render('MMDIntervention.html', mmd="3")
         #self.render('questionnaire.html', mmd="3", questions = mmdQuestions)
 
 
@@ -76,19 +75,16 @@ class MainHandler(tornado.web.RequestHandler):
         q1 = self.get_argument('element_1')
         print q1
         if(int(q1)==1): #genereate new userid
-            query_results = self.application.conn.execute('SELECT * FROM User_data ORDER BY user_id DESC LIMIT 1')
-            rows =  query_results.fetchall()
-            print 'new user id'
-            print int(rows[0][0])+1 # maximum valued ID
-            self.application.cur_user = int(rows[0][0])+1
+            #query_results = self.application.conn.execute('SELECT * FROM User_data ORDER BY user_id DESC LIMIT 1')
+            #rows =  query_results.fetchall()
+            #print 'new user id'
+            #print int(rows[0][0])+1 # maximum valued ID
+            #self.application.cur_user = int(rows[0][0])+1
             self.application.mmd_order = [3,5,9,11,18,20,27,28,30,60,62,66,72,74,76] #removed MMD 73
             random.shuffle(self.application.mmd_order)
             print self.application.mmd_order
             self.application.mmd_index = 0
 
-            #store the new userID
-            user_data = [self.application.cur_user, str(datetime.datetime.now().time()), str(self.application.mmd_order)]
-            self.application.conn.execute('INSERT INTO User_data VALUES (?,?,?)', user_data)
 
             #self.redirect('/mmd')
 
@@ -157,6 +153,7 @@ class ResumeHandler(tornado.web.RequestHandler):
                     counter+=1
             else:
                 print 'ERROR! Cannot resule this user'
+
 class QuestionnaireHandler(tornado.web.RequestHandler):
     def get(self):
         #displays contents of index.html
@@ -189,10 +186,10 @@ class QuestionnaireHandler(tornado.web.RequestHandler):
         i =1
         for a in answers:
             #questionnaire_data.append(a)
-            answer_data = (self.application.cur_user, self.application.cur_mmd,i, a)
+            answer_data = (self.application.cur_user, self.application.cur_mmd,i, a[0],a[1])
             print 'question results:'
             print answer_data
-            self.application.conn.execute('INSERT INTO Questions_results VALUES (?,?,?,?)', answer_data)
+            self.application.conn.execute('INSERT INTO Questions_results VALUES (?,?,?,?,?)', answer_data)
             i = i+1
 
         #print tuple(questionnaire_data)
@@ -217,11 +214,13 @@ class QuestionnaireHandler(tornado.web.RequestHandler):
         conn = sqlite3.connect('database_questions.db')
         query_results = conn.execute('select * from MMD_questions where mmd_id='+str(self.application.cur_mmd))
 
-        questions = query_results.fetchall()
         # hard-coded two questions as they appear in all mmds
+        questions = []
         questions.append([self.application.cur_mmd, "1", "I am interested in reading the full article.", "Likert", "Subjective"])
 
         questions.append([self.application.cur_mmd, "2", "The article/snippet was easy to understand.", "Likert", "Subjective"])
+
+        questions.extend(query_results.fetchall())
 
         return json.dumps(questions)
 
@@ -288,12 +287,18 @@ class PreStudyHandler(tornado.web.RequestHandler):
         self.application.start_time = str(datetime.datetime.now().time())
         #display contents of prestudy.html
         self.application.show_question_only = 0
-        self.render("userid.html", userid = self.application.cur_user)
+        self.render("userid.html")
     def post(self):
         #gets time upon completing form
         self.application.end_time = str(datetime.datetime.now().time())
         #get contents submitted in the form for prestudy
         self.application.cur_user = self.get_argument('userID')
+
+        # store the new userID
+        user_data = [self.application.cur_user, str(self.application.start_time), str(self.application.mmd_order)]
+        self.application.conn.execute('INSERT INTO User_data VALUES (?,?,?)', user_data)
+
+
         # age = self.get_argument('age')
         # gender = self.get_argument('gender')
         # occupation = self.get_argument('occupation')

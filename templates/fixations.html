@@ -10,6 +10,8 @@ body{
   height: 125px;
   position: absolute;
   background-color: blue;
+  left:400;
+  top:400;
 }
 </style>
 
@@ -43,11 +45,22 @@ function myFunction() {
     ws.send("Hello, world");
 }
 
+function myCloseFunction() {
+    ws.send("stop");
+}
+
 
 </script>
 
+<button onclick="myFunction()">Start</button>
+<button onclick="myCloseFunction()">Close</button>
+
 
  <p id="demo">A Paragraph</p>
+
+ <form method="post">
+ <input type="submit">
+ </form>
 
 
 </body>
