@@ -34,8 +34,7 @@
 	MarksManager.HIGHLIGHT = "highlight";
 	MarksManager.DESATURATE = "desaturate";
 	
-	var TRANSITION_DURATION = 500;
-  var DESATURATION = 0.45;
+  var DESATURATION = 0.7;
 	MarksManager.internal = {
 		highlights: {
 			"highlight": {
@@ -123,7 +122,7 @@
                   var d3mark = d3.select(marks.selected_marks[i]);
                   var mark_data = d3mark.data()[0];
                   var arrowSize = Math.min(10, mark_data.height/2-2);
-                  console.log(mark_data);
+                  //console.log(mark_data);
                   self.drawArrow(d3.select(this.overlay), mark_data.left+ mark_data.width+self.arrowwidth,
 																													mark_data.height/2+ mark_data.top,
 																													mark_data.left+ mark_data.width+2,
@@ -132,27 +131,33 @@
 
 							}
 							else{
-                 d3.select(this.overlay).selectAll( '.arrow_selectArrow').remove();
+            		console.log('remove');
+                 d3.select(this.overlay).selectAll( '.arrow_selectArrow')
+                     .transition()
+                     .duration(TRANSITION_DURATION)
+										 .remove();
 
               }
 
               d3.selectAll(marks.selected_marks)
+                .attr('stroke', "none")
+                  .attr('stroke-width', 2)
                 .transition()
                 .duration(TRANSITION_DURATION)
-                .attr('fill-opacity', 0)
+                //.attr('fill-opacity', 0)
                   .attr('stroke', function () {
                       //console.log(isBoldingIntervention);
                       return isBoldingIntervention? 'red': 'none';
                   })//Enamul: isBoldingIntervention added
                 .each('end', function() {
-                  d3.select(this).classed('selected', true);  
+                  d3.select(this).classed('selected', true);
                   //d3.select(this).classed('selected', !d3.select(this).classed('selected'));
                 });
               d3.selectAll(marks.unselected_marks)
                 .transition()
                 .duration(TRANSITION_DURATION)
                 .attr('fill-opacity', function(mark_data) {
-                    return marks.selected_marks.length === 0 ? 0 : DESATURATION;
+                    return marks.selected_marks.length === 0 ? 0 : isDeemphasis? DESATURATION: 0;
                 }).each('end', function() {
                     d3.select(this).classed('selected', false);
                 });
@@ -160,7 +165,11 @@
 
 
             } else {
-              d3.selectAll(marks.selected_marks).attr('fill-opacity', 0)
+              d3.selectAll(marks.selected_marks)
+									//.attr('fill-opacity', 0)
+                  .attr('stroke', "none")
+                  .attr('stroke-width', 2)
+                  .duration(TRANSITION_DURATION)
                   .attr('stroke', function () {
                   	console.log(isBoldingIntervention);
                       return isBoldingIntervention? 'red': 'none';
@@ -168,8 +177,9 @@
 
 				  .classed('selected', 'true');
               d3.selectAll(marks.unselected_marks)
+                  .duration(TRANSITION_DURATION)
                 .attr('fill-opacity', function(mark_data) {
-                    return marks.selected_marks.length === 0 ? 0 : DESATURATION;
+                    return marks.selected_marks.length === 0 ? 0 : isDeemphasis? DESATURATION: 0;
                 }).classed('selected', false);
             }
 				},
@@ -197,13 +207,23 @@
     svgElement.append("path")
         .attr("class", "arrow_" + id)
         .attr("d", "M" + x2 + " " + y2 + " L" + (x2 - size) + " " + (y2 - size) + " L" + (x2 - size) + " " + (y2 + size) + " L" + x2 + " " + y2)
+        .attr("transform", "rotate(" + (90 + angle)+ "," + x2 + "," + y2 +")")
         .attr("fill", "black")
-        .attr("transform", "rotate(" + (90 + angle)+ "," + x2 + "," + y2 +")");
+        .style("opacity", 0)
+        .transition()
+        .duration(TRANSITION_DURATION)
+        .style("opacity", 1)
     svgElement.append("svg:line")
+
         .attr("class", "arrow_"+id)
         .attr("x1", x1).attr("y1", y1)
         .attr("x2", x2).attr("y2", y2)
-        .style("stroke", "black").style("stroke-width", this.strokeWidth);
+        .style("stroke", "black")
+        .style("opacity", 0)
+				.style("stroke-width", this.strokeWidth)
+        .transition()
+        .duration(TRANSITION_DURATION)
+        .style("opacity", 1);
   };
 	MarksManager.prototype.changeType = function(type) {
 		var marks;

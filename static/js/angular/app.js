@@ -1,6 +1,7 @@
 var isDeemphasis = true;
 var isBoldingIntervention = true;
 var isArrowsIntervention = true;
+var TRANSITION_DURATION = 1000;
 
 
 function toggleDeemphasis(){
@@ -143,7 +144,7 @@ var AppCtrl = function($scope, $http, $location) {
           $scope.allReferences = data.references;
           $scope.curReference = $scope.allReferences[1].reference; // '1== gold reference
           $scope.selectedReference = 0
-
+          $scope.lastSelectedReference = -1
           console.log(JSON.stringify($scope.curReference));
 
           document.getElementById("theText").innerHTML =$scope.curText;
@@ -161,8 +162,8 @@ var AppCtrl = function($scope, $http, $location) {
 
             $("#referenceSelect").change(function() {
               //alert($(this).find("option:selected").text()+' clicked!');
-              currentReference = $(this).find("option:selected").text();
-              $scope.selectedReference = parseInt(currentReference);
+              var currentReference = $(this).find("option:selected").text();
+              onReferenceChange(parseInt(currentReference));
               //loadMMD(currentMMD);
             });
 
@@ -196,6 +197,7 @@ var AppCtrl = function($scope, $http, $location) {
   $scope.updateCondition = function() {
     initReferences($scope);
   };
+
 
   $scope.onReferenceSelect = function(ref) {
     ref.selected = !ref.selected;
@@ -582,8 +584,8 @@ function highlightRelatedPhrases($scope, references, selection) {
 function createSpans(phrases, selection,
     highlightAndReferenceSpans, highlightSpans) {
   var paragraph = document.getElementById('theTextParagraph');
-  console.log(paragraph);
-  console.log(phrases);
+  //console.log(paragraph);
+  //console.log(phrases);
 
   // Create distinct spans
   i = 1;
@@ -798,7 +800,7 @@ function clone(obj) {
 
     });
     $( "#button_remove_intervention" ).click(function() {
-        removeALlinterventions($scopeGlobal.selectedReference);
+        removeAllInterventions($scopeGlobal.selectedReference);
     });
     function highlightTextOnly(referenceID) {
         console.log('highlight text');
@@ -826,21 +828,50 @@ function clone(obj) {
 
 
     function highlightbothTextVis(referenceID){
-      var overlappedReferences = [];
-      console.log($scopeGlobal.curReference);
-      //for (var i=0; i<$scopeGlobal.curReference.length; i++) {
-      var reference = $scopeGlobal.curReference[$scopeGlobal.selectedReference];
-      overlappedReferences.push(reference);
-      //}
-      console.log(overlappedReferences);
-      highlightRelatedTuples($scopeGlobal, overlappedReferences);
-      highlightRelatedPhrases($scopeGlobal, overlappedReferences);
+      var temp_isDeemphasis = isDeemphasis;
+      var temp_isBoldingIntervention = isBoldingIntervention;
+      var temp_isArrowIntervention = isArrowsIntervention;
+
+      removeAllInterventions(referenceID);
+
+      setTimeout(function () {
+        isDeemphasis = temp_isDeemphasis;
+        isBoldingIntervention = temp_isBoldingIntervention;
+        isArrowsIntervention = temp_isArrowIntervention;
+
+        var overlappedReferences = [];
+        console.log($scopeGlobal.curReference);
+        //for (var i=0; i<$scopeGlobal.curReference.length; i++) {
+        var reference = $scopeGlobal.curReference[$scopeGlobal.selectedReference];
+        overlappedReferences.push(reference);
+        //}
+        console.log(overlappedReferences);
+        highlightRelatedTuples($scopeGlobal, overlappedReferences);
+        highlightRelatedPhrases($scopeGlobal, overlappedReferences);
+
+      },TRANSITION_DURATION*1.2);
 
     }
-    function removeALlinterventions(referenceID) {
-        setAllInterventionsFalse();
-        highlightbothTextVis(referenceID)
+    function removeAllInterventions(referenceID) {
 
+      if($scopeGlobal.lastSelectedReference!=-1){//remove previous intervention
+
+        setAllInterventionsFalse();
+
+        var reference = $scopeGlobal.curReference[$scopeGlobal.lastSelectedReference];
+        console.log(reference);
+        var overlappedReferences =[reference];
+        highlightRelatedTuples($scopeGlobal, overlappedReferences);
+        highlightRelatedPhrases($scopeGlobal, overlappedReferences);
+
+      }
+
+    }
+
+
+    function onReferenceChange(currentReference) {
+      $scopeGlobal.lastSelectedReference = $scopeGlobal.selectedReference;
+      $scopeGlobal.selectedReference = parseInt(currentReference);
     }
         //small delay to load the mmd first
 
