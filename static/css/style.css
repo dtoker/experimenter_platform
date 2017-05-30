@@ -1,5 +1,6 @@
 #theText{
      width: 450px;
+     min-height: 500px;
      font-size: 18px;
      text-align: justify;
 
@@ -36,18 +37,23 @@ body {
 
     display: table-cell;
     vertical-align: middle;
-    overflow: scroll;
+
 
 }
 
+#container{
+   position: absolute;
+   width: 100%;
+   left: 50%;
+   margin-left: -500px;
+}
+
 #textandvis{
-    height: 960px;
-    width: 1280px;
-    overflow: scroll;
-    border-top: 4px solid #900;
-    border-bottom: 4px solid #900;
-    border-left: 4px solid #900;
-    border-right: 4px solid #900;
+    height: 940px;
+    width: 1200px;
+    padding-left: 0px;
+    padding-top: 70px;
+
 }
 td {
   vertical-align: top;

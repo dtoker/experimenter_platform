@@ -9,7 +9,7 @@ body
 #form_container
 {
     background:#fff;
-
+    padding-top: 80px;
     margin:0 auto;
     text-align:left;
     width:900px;
@@ -411,7 +411,7 @@ label.choice
     font-size:100%;
     line-height:1.4em;
     margin:-1.55em 0 0 25px;
-    padding:12px 0 15px;
+    padding:4px 0 15px;
     width:98%;
 }
 
