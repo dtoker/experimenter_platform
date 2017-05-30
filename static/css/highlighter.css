@@ -136,3 +136,10 @@ label.failed {
   -webkit-transform: rotate(-90deg);
   -moz-transform: rotate(-90deg);
 }
+.overlay {
+  position: absolute;
+  border: 1px solid red;
+  background: #dff;
+  margin: -1px;
+  z-index: -1;
+}
