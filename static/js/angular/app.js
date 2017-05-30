@@ -1,7 +1,8 @@
 var isDeemphasis = true;
 var isBoldingIntervention = true;
 var isArrowsIntervention = true;
-var TRANSITION_DURATION = 1000;
+var TRANSITION_DURATION = 300;
+
 
 
 function toggleDeemphasis(){
@@ -942,7 +943,11 @@ function clone(obj) {
 
 
     function highlightbothTextVis(referenceID){
-      var temp_isDeemphasis = isDeemphasis;
+      if($scopeGlobal.lastSelectedReference === referenceID) return; // no intervention if the reference is same as previous
+      console.log("highlighting "+referenceID);
+      console.log($scopeGlobal.lastSelectedReference, referenceID);
+
+        var temp_isDeemphasis = isDeemphasis;
       var temp_isBoldingIntervention = isBoldingIntervention;
       var temp_isArrowIntervention = isArrowsIntervention;
 
@@ -954,12 +959,12 @@ function clone(obj) {
         isArrowsIntervention = temp_isArrowIntervention;
 
         var overlappedReferences = [];
-        console.log($scopeGlobal.curReference);
+        //console.log($scopeGlobal.curReference);
         //for (var i=0; i<$scopeGlobal.curReference.length; i++) {
         var reference = $scopeGlobal.curReference[$scopeGlobal.selectedReference];
         overlappedReferences.push(reference);
         //}
-        console.log(overlappedReferences);
+        //console.log(overlappedReferences);
         highlightRelatedTuples($scopeGlobal, overlappedReferences);
         highlightRelatedPhrases($scopeGlobal, overlappedReferences);
 
@@ -1000,10 +1005,22 @@ function clone(obj) {
             elem.style.top = (obj.y-40)+'px';
             elem.style.left = (obj.x-40)+'px';
 
-            if (obj.x > 800 && obj.y > 500) {
-                console.log("trigger highlight");
+            if (obj.x > 50 && obj.y > 700) {
+                console.log("trigger highlight 2");
+                onReferenceChange(2);
+                highlightbothTextVis(2);
+            }
+            else if (obj.x > 50 && obj.y > 400) {
+                console.log("trigger highlight 2");
+                onReferenceChange(1);
+                highlightbothTextVis(1);
+            }
+            else if (obj.x > 50 && obj.y > 150) {
+                console.log("trigger highlight 0");
+                onReferenceChange(0);
                 highlightbothTextVis(0);
             }
+
         }
 
     }, 500);

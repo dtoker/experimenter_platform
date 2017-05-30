@@ -112,9 +112,9 @@
 				"highlight": function(tuple_ids, animate) {
 					var self = this,
 						marks = self.getSelectedMarks(tuple_ids);
-					console.log(animate);
+					//console.log(animate);
             if(animate) {
-            	console.log(marks.selected_marks);
+            	//console.log(marks.selected_marks);
 
             	if(isArrowsIntervention){
 								self.arrowwidth = 25;
