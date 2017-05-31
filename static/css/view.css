@@ -239,6 +239,7 @@ form li .datepicker
 {
     border-bottom:1px dotted #ccc;
     clear:both;
+    width: 725px;
     display:inline-block;
     margin:0 0 1em;
 }
