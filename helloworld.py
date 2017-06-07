@@ -27,6 +27,7 @@ class Application(tornado.web.Application):
             (r"/mmd", MMDHandler),
             (r"/MMDIntervention", MMDInterventionHandler),
             (r"/questionnaire", QuestionnaireHandler),
+            (r"/saveCoordinates", AjaxHandler),
             (r"/resume", ResumeHandler),
 
         ]
@@ -281,6 +282,15 @@ class MMDHandler(tornado.web.RequestHandler):
         self.application.conn.commit()
         self.redirect('/questionnaire')
 
+class AjaxHandler(tornado.web.RequestHandler):
+    def post(self):
+        print self.request.body
+        #jsonobj = json.loads(self.request.body)
+        print 'Post data received'
+
+        file = open('static/AOICoordinates/test.json', 'w')
+        file.write(self.request.body)
+        file.close()
 
 class PreStudyHandler(tornado.web.RequestHandler):
     def get(self):

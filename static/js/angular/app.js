@@ -146,26 +146,43 @@ var AppCtrl = function($scope, $http, $location) {
           $scope.curReference = $scope.allReferences[1].reference; // '1== GOLD reference
           $scope.selectedReference = 0
           $scope.lastSelectedReference = -1
-          console.log(JSON.stringify($scope.curReference));
+          //console.log(JSON.stringify($scope.curReference));
 
           document.getElementById("theText").innerHTML =$scope.curText;
 
-          //findCoordinatesofCharacters();
-          $scope.coordinatesofSentences = findCoordinatesofSentences();
-          drawOverlay($scope.coordinatesofSentences[0]);
+          $scope.coordinatesofChar = findCoordinatesofCharacters("#theTextParagraph");
+          $scope.sentencePolygonCoordinates = findCoordinatesofSentences("#theTextParagraph", $scope.coordinatesofChar);
 
+          console.log(JSON.stringify($scope.sentencePolygonCoordinates));
+          //console.log(JSON.stringify($scope.sentencePolygonCoordinates[0]));
+          drawOverlay($scope.sentencePolygonCoordinates[2]);
           // array of coordinates of each vertex of the polygon
-          var polygon = [ [$scope.coordinatesofSentences[0].left, $scope.coordinatesofSentences[0].top],
-            [$scope.coordinatesofSentences[0].left, $scope.coordinatesofSentences[0].top+ $scope.coordinatesofSentences[0].height],
-            [$scope.coordinatesofSentences[0].left+ $scope.coordinatesofSentences[0].width, $scope.coordinatesofSentences[0].top+ $scope.coordinatesofSentences[0].height],
-            [$scope.coordinatesofSentences[0].left+$scope.coordinatesofSentences[0].width, $scope.coordinatesofSentences[0].top]
-              ];
-          console.log(polygon);
-//      polygon = [ [ 1, 1 ], [ 1, 2 ], [ 2, 2 ], [ 2, 1 ] ];
-       // true
-      console.log(polygon);
-      //console.log(inside([ 1.5, 1.5 ], polygon)); // true*/
-      console.log(inside([ 420.0, 300.0 ], polygon)); // true*/
+
+/*          for(var i=0; i<$scope.coordinatesofSentences.length;i++){
+            var paragraphText = $("#theTextParagraph").text();
+            var sentenceStartPosition = paragraphText.indexOf($scope.coordinatesofSentences[i].sentence);
+            var sentenceEndPosition = paragraphText.indexOf($scope.coordinatesofSentences[i].sentence)+$scope.coordinatesofSentences[i].sentence.length;
+            //console.log(sentenceStartPosition,sentenceEndPosition);
+            var coordinateofSentenceStartPosition = $scope.coordinatesofChar[sentenceStartPosition];
+            var coordinateofSentenceEndPosition = $scope.coordinatesofChar[sentenceEndPosition];
+
+            var polygon = [ [coordinateofSentenceStartPosition.left, coordinateofSentenceStartPosition.top],
+              [$scope.coordinatesofSentences[i].left, $scope.coordinatesofSentences[i].top+ $scope.coordinatesofSentences[i].height],
+              [coordinateofSentenceEndPosition.left+coordinateofSentenceEndPosition.width, coordinateofSentenceEndPosition.top],
+              [$scope.coordinatesofSentences[i].left + $scope.coordinatesofSentences[i].width, $scope.coordinatesofSentences[i].top]
+            ];
+            var polygon2 = [ [$scope.coordinatesofSentences[i].left, $scope.coordinatesofSentences[i].top],
+              [$scope.coordinatesofSentences[i].left, $scope.coordinatesofSentences[i].top+ $scope.coordinatesofSentences[i].height],
+              [$scope.coordinatesofSentences[i].left+ $scope.coordinatesofSentences[i].width, $scope.coordinatesofSentences[i].top+ $scope.coordinatesofSentences[i].height],
+              [$scope.coordinatesofSentences[i].left+$scope.coordinatesofSentences[i].width, $scope.coordinatesofSentences[i].top]
+            ];
+            console.log(JSON.stringify(polygon));
+            console.log(JSON.stringify(polygon2));
+            drawOverlay($scope.coordinatesofSentences[1]);
+
+            console.log(inside([ 420.0, 300.0 ], polygon)); // true*!/
+
+          }*/
 
           //select ref from drop-down
           var selectHtml = "";
@@ -811,66 +828,11 @@ function clone(obj) {
 * New codes added by Enamul
  */
 
-  function findCoordinatesofCharacters() {
-    var coordinatesChars = [];
-    var newText =  "";
-    var oldText = $("#theTextParagraph").text();
-    console.log($("#theTextParagraph").text());
 
-    for (var i = 0, len = oldText.length; i < len; i++) {
-      newText+= '<span>'+oldText[i]+ '</span>';
-    }
-    //console.log(newText);
 
-    $("#theTextParagraph").html(newText);
-
-    $spans = $("#theTextParagraph").find('span');
-    $spans.each(function(){
-      var $span = $(this),
-          $offset = $span.offset();
-          $offset.width = $span.innerWidth();
-          $offset.height = $span.innerHeight();
-          coordinatesChars.push($offset);
-          console.log($offset);
-    });
-    $("#theTextParagraph").html(oldText);
-    return coordinatesChars;
-  }
-
-  function findCoordinatesofSentences() {
-    var coordinatesChars = [];
-    var newText =  "";
-    var oldText = $("#theTextParagraph").text();
-    console.log($("#theTextParagraph").text());
-
-    var result = oldText.match( /[^\.!\?]+[\.!\?]+/g ); // regular expression for splitting into sentences
-
-    for (var i = 0, len = result.length; i < len; i++) {
-      newText+= '<span>'+result[i]+ '</span>';
-    }
-
-    //console.log(newText);
-
-    $("#theTextParagraph").html(newText);
-
-    $spans = $("#theTextParagraph").find('span');
-    $spans.each(function(){
-      var $span = $(this),
-          $offset = $span.offset();
-      $offset.width = $span.innerWidth();
-      $offset.height = $span.innerHeight();
-      $offset.sentence = $span.text();
-      coordinatesChars.push($offset);
-      console.log($offset);
-    });
-    $("#theTextParagraph").html(oldText);
-
-    return coordinatesChars;
-  };
-
-  function drawOverlay(coordinate){
-    console.log(coordinate);
-    $overlay = $('<div class="overlay"/>');
+/*  function drawOverlay(coordinate){
+    //console.log(coordinate);
+    $overlay = $('<div class="overlayText"/>');
 
     $overlay
         .offset({top:coordinate.top, left:coordinate.left-1})
@@ -880,26 +842,8 @@ function clone(obj) {
         });
 
     $(document.body).append($overlay);
-  }
+  }*/
 
-  function inside(point, vs) {
-    // ray-casting algorithm based on
-    // http://www.ecse.rpi.edu/Homepages/wrf/Research/Short_Notes/pnpoly.html
-
-    var x = point[0], y = point[1];
-
-    var inside = false;
-    for (var i = 0, j = vs.length - 1; i < vs.length; j = i++) {
-      var xi = vs[i][0], yi = vs[i][1];
-      var xj = vs[j][0], yj = vs[j][1];
-
-      var intersect = ((yi > y) != (yj > y))
-          && (x < (xj - xi) * (y - yi) / (yj - yi) + xi);
-      if (intersect) inside = !inside;
-    }
-
-    return inside;
-  };
 
 
     $( "#button_text" ).click(function() {
