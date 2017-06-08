@@ -80,7 +80,7 @@ var AppCtrl = function($scope, $http, $location) {
   $scope.curSpanManager;
   console.log(currentMMD);
   // Fetch the conditions
-  $http.get('static/dataIntervention/conditions.json').
+  $http.get('static/data/conditions.json').
       success(function(data, status, headers) {
         $scope.conditions = data;
         if (data.length > 0) {
@@ -101,7 +101,7 @@ var AppCtrl = function($scope, $http, $location) {
     }
     //console.log('static/data/' + $scope.curConditionId + '.json');
     // Load the new condition
-    $http.get('static/dataIntervention/' + $scope.curConditionId + '.json').
+    $http.get('static/data/' + $scope.curConditionId + '.json').
         success(function(data, status, headers) {
 
         //  The following code was used to adjust the mmd references due to changes made to the original ones
@@ -151,11 +151,14 @@ var AppCtrl = function($scope, $http, $location) {
           document.getElementById("theText").innerHTML =$scope.curText;
 
           $scope.coordinatesofChar = findCoordinatesofCharacters("#theTextParagraph");
-          $scope.sentencePolygonCoordinates = findCoordinatesofSentences("#theTextParagraph", $scope.coordinatesofChar);
+          $scope.coordinatesofSentences = findCoordinatesofSentences("#theTextParagraph", $scope.coordinatesofChar);
+          //$scope.coordinatesofWords = findCoordinatesofWords("#theTextParagraph", $scope.coordinatesofChar);
 
-          console.log(JSON.stringify($scope.sentencePolygonCoordinates));
+
+          console.log(JSON.stringify($scope.coordinatesofSentences));
+          //console.log(JSON.stringify($scope.coordinatesofWords));
           //console.log(JSON.stringify($scope.sentencePolygonCoordinates[0]));
-          drawOverlay($scope.sentencePolygonCoordinates[2]);
+          drawOverlay($scope.coordinatesofSentences[3].polygonCoords);
           // array of coordinates of each vertex of the polygon
 
 /*          for(var i=0; i<$scope.coordinatesofSentences.length;i++){
