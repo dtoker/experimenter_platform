@@ -284,11 +284,14 @@ class MMDHandler(tornado.web.RequestHandler):
 
 class AjaxHandler(tornado.web.RequestHandler):
     def post(self):
-        print self.request.body
-        #jsonobj = json.loads(self.request.body)
+
+
+        jsonobj = json.loads(self.request.body)
+        print jsonobj
+
         print 'Post data received'
 
-        file = open('static/AOICoordinates/test.json', 'w')
+        file = open('static/AOICoordinates/'+jsonobj['filename'], 'w')
         file.write(self.request.body)
         file.close()
 

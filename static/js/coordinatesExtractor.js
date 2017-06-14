@@ -4,8 +4,7 @@
 function findCoordinatesofCharacters(textElementID) {
   var coordinatesChars = [];
   var newText =  "";
-  var oldText = $(textElementID).text();
-  //console.log($(textElementID).text());
+  var oldText = $(textElementID).text().trim();
 
   for (var i = 0, len = oldText.length; i < len; i++) {
     newText+= '<span>'+oldText[i]+ '</span>';
@@ -31,8 +30,7 @@ function findCoordinatesofCharacters(textElementID) {
 function findCoordinatesofSentences(textElementID, coordinatesofChar) {
   var sentSpanCoord = [], sentencePolygonCoordinates = [];
   var newText =  "";
-  var oldText = $(textElementID).text();
-  console.log($(textElementID).text());
+  var oldText = $(textElementID).text().trim();
 
   var result = oldText.match( /[^\.!\?]+[\.!\?]+/g ); // regular expression for splitting into sentences
 
@@ -84,15 +82,16 @@ function findCoordinatesofSentences(textElementID, coordinatesofChar) {
 };
 //coordinates of each sentence with index, each word within sentence with index, num of word in each sentence
 function aggregateDataIntoJSON(charData, sentenceData, wordData){
-
-
+  var aggregatedData = {charData:charData, sentenceData:sentenceData, wordData:wordData};
+  return aggregatedData;
 }
 
 //function to sav coordinates
-function sendJSONtoTornado(jsonObj){
+function sendJSONtoTornado(jsonObj, MMDid){
+  jsonObj.filename = MMDid+'.json';
   $.ajax({
     url: '/saveCoordinates',
-    //headers: {'X-XSRFToken' : "" },
+
     data: JSON.stringify(jsonObj),
     dataType: "JSON",
     type: "POST",
@@ -128,20 +127,20 @@ function inside(point, vs) {
 
 //assumption is that word would not be in multiple lines
 function findCoordinatesofWords(textElementID,coordinatesofChar) {
-  var oldText = $(textElementID).text();
+  var oldText = $(textElementID).text().trim();
   var words = oldText.split(" ");
   var wordCoordintes = [];
-  console.log(coordinatesofChar[0]);
   //for the first word
   wordCoordintes.push({word:words[0], start:0, end:words[0].length,
     coords:[{x:coordinatesofChar[0].left,y:coordinatesofChar[0].top},
       {x:coordinatesofChar[words[0].length-1].left+coordinatesofChar[words[0].length-1].width,
        y:coordinatesofChar[words[0].length-1].top+coordinatesofChar[words[0].length-1].height}]});
 
+
   //for the remaining words
   for(var i=1;i<words.length;i++){
-    var startPos = words.slice(0,i).join(" "); //get the length of all previous characters
-    wordCoordintes.push({word:words[i], start:startPos, end:startPos + words[i].length,
+    var startPos = words.slice(0,i).join(" ").length; //get the length of all previous characters
+     wordCoordintes.push({word:words[i], start:startPos, end:startPos + words[i].length,
       coords:[{x:coordinatesofChar[startPos].left,y:coordinatesofChar[startPos].top},
         {x:coordinatesofChar[words[i].length-1].left+coordinatesofChar[words[i].length-1].width,
          y:coordinatesofChar[words[i].length-1].top+coordinatesofChar[words[i].length-1].height}]});

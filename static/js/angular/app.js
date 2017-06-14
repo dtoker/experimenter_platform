@@ -152,40 +152,15 @@ var AppCtrl = function($scope, $http, $location) {
 
           $scope.coordinatesofChar = findCoordinatesofCharacters("#theTextParagraph");
           $scope.coordinatesofSentences = findCoordinatesofSentences("#theTextParagraph", $scope.coordinatesofChar);
-          //$scope.coordinatesofWords = findCoordinatesofWords("#theTextParagraph", $scope.coordinatesofChar);
+          $scope.coordinatesofWords = findCoordinatesofWords("#theTextParagraph", $scope.coordinatesofChar);
+          $scope.aggregatedData = aggregateDataIntoJSON($scope.coordinatesofChar, $scope.coordinatesofSentences, $scope.coordinatesofWords);
+          console.log($scope.aggregatedData);
+          sendJSONtoTornado($scope.aggregatedData,$scope.curConditionId );
 
 
-          console.log(JSON.stringify($scope.coordinatesofSentences));
-          //console.log(JSON.stringify($scope.coordinatesofWords));
-          //console.log(JSON.stringify($scope.sentencePolygonCoordinates[0]));
-          drawOverlay($scope.coordinatesofSentences[3].polygonCoords);
-          // array of coordinates of each vertex of the polygon
+          //drawOverlay($scope.coordinatesofSentences[3].polygonCoords);
 
-/*          for(var i=0; i<$scope.coordinatesofSentences.length;i++){
-            var paragraphText = $("#theTextParagraph").text();
-            var sentenceStartPosition = paragraphText.indexOf($scope.coordinatesofSentences[i].sentence);
-            var sentenceEndPosition = paragraphText.indexOf($scope.coordinatesofSentences[i].sentence)+$scope.coordinatesofSentences[i].sentence.length;
-            //console.log(sentenceStartPosition,sentenceEndPosition);
-            var coordinateofSentenceStartPosition = $scope.coordinatesofChar[sentenceStartPosition];
-            var coordinateofSentenceEndPosition = $scope.coordinatesofChar[sentenceEndPosition];
 
-            var polygon = [ [coordinateofSentenceStartPosition.left, coordinateofSentenceStartPosition.top],
-              [$scope.coordinatesofSentences[i].left, $scope.coordinatesofSentences[i].top+ $scope.coordinatesofSentences[i].height],
-              [coordinateofSentenceEndPosition.left+coordinateofSentenceEndPosition.width, coordinateofSentenceEndPosition.top],
-              [$scope.coordinatesofSentences[i].left + $scope.coordinatesofSentences[i].width, $scope.coordinatesofSentences[i].top]
-            ];
-            var polygon2 = [ [$scope.coordinatesofSentences[i].left, $scope.coordinatesofSentences[i].top],
-              [$scope.coordinatesofSentences[i].left, $scope.coordinatesofSentences[i].top+ $scope.coordinatesofSentences[i].height],
-              [$scope.coordinatesofSentences[i].left+ $scope.coordinatesofSentences[i].width, $scope.coordinatesofSentences[i].top+ $scope.coordinatesofSentences[i].height],
-              [$scope.coordinatesofSentences[i].left+$scope.coordinatesofSentences[i].width, $scope.coordinatesofSentences[i].top]
-            ];
-            console.log(JSON.stringify(polygon));
-            console.log(JSON.stringify(polygon2));
-            drawOverlay($scope.coordinatesofSentences[1]);
-
-            console.log(inside([ 420.0, 300.0 ], polygon)); // true*!/
-
-          }*/
 
           //select ref from drop-down
           var selectHtml = "";
