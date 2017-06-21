@@ -20,7 +20,7 @@ function findCoordinatesofCharacters(textElementID) {
     $offset.width = $span.innerWidth();
     $offset.height = $span.innerHeight();
     coordinatesChars.push($offset);
-    console.log($offset);
+    //console.log($offset);
   });
   $(textElementID).html(oldText);
   return coordinatesChars;
