@@ -24,12 +24,15 @@ var vis = d3.select("#overlayText"),//.append("svg")
 
 /*drawOverlay(poly);*/
 function drawOverlay(poly) {
+    console.log(JSON.stringify(poly));
+  vis.selectAll("polygon").remove();
+
   vis.selectAll("polygon")
       .data([poly])
       .enter().append("polygon")
       .attr("points",function(d) {
         //offset from the initial screen coordinats: 450, 190
-        return d.map(function(d) { return [d.x-450,d.y-195].join(","); }).join(" ");})
+        return d.map(function(d) { return [d.x-130,d.y-195].join(","); }).join(" ");})
       .attr("fill","yellow")
       .attr("stroke","black")
       .attr("stroke-width",.5)

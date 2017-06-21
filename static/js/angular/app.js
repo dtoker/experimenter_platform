@@ -159,8 +159,8 @@ var AppCtrl = function($scope, $http, $location) {
           //uncomment this to store the json data
           //sendJSONtoTornado($scope.aggregatedData,$scope.curConditionId );
 
-
-          //drawOverlay($scope.coordinatesofSentences[3].polygonCoords);
+          //console.log($scope.coordinatesofSentences[1].polygonCoords);
+          //drawOverlay($scope.coordinatesofSentences[1].polygonCoords);
 
 
 
@@ -929,14 +929,25 @@ function clone(obj) {
             elem.style.top = (obj.y-40)+'px';
             elem.style.left = (obj.x-40)+'px';
 
-            var point = [elem.style.left,elem.style.top];
-            for(var i=0;i<$scope.coordinatesofSentences.length;i++){
-              if(inside(point, $scope.coordinatesofSentences[i].polygonCoords)){
-                //find which referene falls within this sentence.
-                console.log('yes');
-                highlightbothTextVis(2);
+            var point = [obj.y-40,obj.x-40];
+            //point = [200,300];
+            for(var i=0;i<$scopeGlobal.coordinatesofSentences.length;i++){
+              var polygonCoordinatesArray = [];
+              for(var j=0;j<$scopeGlobal.coordinatesofSentences[i].polygonCoords.length;j++){
+                polygonCoordinatesArray.push([$scopeGlobal.coordinatesofSentences[i].polygonCoords[j].x,
+                    $scopeGlobal.coordinatesofSentences[i].polygonCoords[j].y]);
               }
-              else console.log('no');
+
+              //console.log(polygonCoordinatesArray);
+              if(inside(point, polygonCoordinatesArray)){
+                //find which referene falls within this sentence.
+                console.log('yes'+i);
+                //console.log($scopeGlobal.coordinatesofSentences[i].sentence);
+
+                drawOverlay($scopeGlobal.coordinatesofSentences[i].polygonCoords);
+                //highlightbothTextVis(2);
+              }
+              //else console.log('no');
             }
 
 
