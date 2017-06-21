@@ -154,8 +154,10 @@ var AppCtrl = function($scope, $http, $location) {
           $scope.coordinatesofSentences = findCoordinatesofSentences("#theTextParagraph", $scope.coordinatesofChar);
           $scope.coordinatesofWords = findCoordinatesofWords("#theTextParagraph", $scope.coordinatesofChar);
           $scope.aggregatedData = aggregateDataIntoJSON($scope.coordinatesofChar, $scope.coordinatesofSentences, $scope.coordinatesofWords);
-          console.log($scope.aggregatedData);
-          sendJSONtoTornado($scope.aggregatedData,$scope.curConditionId );
+          //console.log($scope.aggregatedData);
+
+          //uncomment this to store the json data
+          //sendJSONtoTornado($scope.aggregatedData,$scope.curConditionId );
 
 
           //drawOverlay($scope.coordinatesofSentences[3].polygonCoords);
@@ -927,7 +929,18 @@ function clone(obj) {
             elem.style.top = (obj.y-40)+'px';
             elem.style.left = (obj.x-40)+'px';
 
-            if (obj.x > 50 && obj.y > 700) {
+            var point = [elem.style.left,elem.style.top];
+            for(var i=0;i<$scope.coordinatesofSentences.length;i++){
+              if(inside(point, $scope.coordinatesofSentences[i].polygonCoords)){
+                //find which referene falls within this sentence.
+                console.log('yes');
+                highlightbothTextVis(2);
+              }
+              else console.log('no');
+            }
+
+
+/*            if (obj.x > 50 && obj.y > 700) {
                 console.log("trigger highlight 2");
                 onReferenceChange(2);
                 highlightbothTextVis(2);
@@ -941,7 +954,7 @@ function clone(obj) {
                 console.log("trigger highlight 0");
                 onReferenceChange(0);
                 highlightbothTextVis(0);
-            }
+            }*/
 
         }
 
