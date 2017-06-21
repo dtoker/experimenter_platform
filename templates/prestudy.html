@@ -3,18 +3,14 @@
 <html>
 
 <head>
-<link rel="stylesheet" href="static/css/view.css">
-	<title>PreStudy</title></head>
+<!-- <link rel="stylesheet" href="static/css/view.css"> -->
+	<title>PreStudy Questionnaire</title></head>
 <body>
-<h1>Please input a new user ID:</h1>
-<!--<p>userid: {{userid}}<p>-->
-<form method="post" action="/prestudy">
-User ID:
-<input type="text" name="userID">
-<br><br>
-<p>Please answer each of the following questions.</p>
-<br>
-	Age:
+	<form method="post">
+		<br><br>
+		<p>Please answer each of the following questions.</p>
+		<br>
+		Age:
   	<input type="text" name="age">
   	<br><br>
 
@@ -30,16 +26,7 @@ User ID:
   	<input type="text" name="field">
   	<br><br>
 
-  	How often do you look at simple Bar Charts, like the one below:
-  	<br>
-  	<input type="radio" name="simple_bar" value="never"> Never<br>
-  	<input type="radio" name="simple_bar" value="rarely"> Rarely (several times a year)<br>
-  	<input type="radio" name="simple_bar" value="occasionally"> Occasionally (several times a month)<br>
-  	<input type="radio" name="simple_bar" value="frequently"> Frequently (several times a week)<br>
-  	<input type="radio" name="simple_bar" value="very_frequently"> Very frequently (several times a day)<br>
-  	<br>
-
-  	How often do you look at complex Bar Charts, like the one below:
+  	How often do you look at Bar Charts (an example Bar chart is shown below):
   	<br>
   	<input type="radio" name="complex_bar" value="never"> Never<br>
   	<input type="radio" name="complex_bar" value="rarely"> Rarely (several times a year)<br>

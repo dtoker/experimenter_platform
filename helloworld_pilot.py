@@ -21,14 +21,17 @@ class Application(tornado.web.Application):
         #connects url with code
         handlers = [
             (r"/", MainHandler),
-            (r"/prestudy", PreStudyHandler),
             (r"/mmd", MMDHandler),
             (r"/questionnaire", QuestionnaireHandler),
             (r"/resume", ResumeHandler),
+            (r"/userID", UserIDHandler),
+            (r"/prestudy", PreStudyHandler),
             (r"/sample_MMD", SampleHandler), (r"/(ExampleMMD.png)", tornado.web.StaticFileHandler, {'path':'./'}),
             (r"/sample_Q", SampleHandler2), (r"/(ExampleQ.png)", tornado.web.StaticFileHandler, {'path':'./'}),
             (r"/calibration", CalibrationHandler), (r"/(blank_cross.jpg)", tornado.web.StaticFileHandler, {'path':'./'}),
-            (r"/ready", ReadyHandler)
+            (r"/tobii", TobiiHandler),
+            (r"/ready", ReadyHandler),
+            (r"/done", DoneHandler)
         ]
         #connects to database
         self.conn = sqlite3.connect('database.db')
@@ -67,11 +70,11 @@ class MainHandler(tornado.web.RequestHandler):
         q1 = self.get_argument('element_1')
         if(int(q1)==1):
             self.application.mmd_order = [3,5,9,11,18,20,27,28,30,60,62,66,72,74,76] #removed MMD 73
-            #random.shuffle(self.application.mmd_order)
+            random.shuffle(self.application.mmd_order)
             self.application.mmd_index = 0
 
             #self.redirect('/mmd')
-            self.redirect('/prestudy')
+            self.redirect('/userID')
         else:
             self.redirect('/resume')
 
@@ -220,7 +223,7 @@ class MMDHandler(tornado.web.RequestHandler):
                 self.render('mmd.html', mmd=str(self.application.cur_mmd))
             self.application.mmd_index+=1
         else:
-            self.redirect('/')
+            self.redirect('/done')
 
     def post(self):
         #refers to database connected to in 'class Application'
@@ -239,7 +242,7 @@ class MMDHandler(tornado.web.RequestHandler):
         self.redirect('/questionnaire')
 
 
-class PreStudyHandler(tornado.web.RequestHandler):
+class UserIDHandler(tornado.web.RequestHandler):
     def get(self):
         #gets time upon entering form
         self.application.start_time = str(datetime.datetime.now().time())
@@ -256,24 +259,21 @@ class PreStudyHandler(tornado.web.RequestHandler):
         user_data = [self.application.cur_user, str(self.application.start_time), str(self.application.mmd_order)]
         self.application.conn.execute('INSERT INTO User_data VALUES (?,?,?)', user_data)
 
-        self.redirect('/sample_MMD')
+        self.redirect('/prestudy')
 
 class PreStudyHandler(tornado.web.RequestHandler):
     def get(self):
         #gets time upon entering form
         self.application.start_time = str(datetime.datetime.now().time())
-        #display contents of prestudy.html
-        self.application.show_question_only = 0
-        self.render("userid.html")
+
+        self.render("prestudy.html")
     def post(self):
         #gets time upon completing form
         self.application.end_time = str(datetime.datetime.now().time())
         #get contents submitted in the form for prestudy
-        self.application.cur_user = self.get_argument('userID')
-
         # store the new userID
-        user_data = [self.application.cur_user, str(self.application.start_time), str(self.application.mmd_order)]
-        self.application.conn.execute('INSERT INTO User_data VALUES (?,?,?)', user_data)
+        #user_data = [self.application.cur_user, str(self.application.start_time), str(self.application.mmd_order)]
+        #self.application.conn.execute('INSERT INTO User_data VALUES (?,?,?)', user_data)
 
         self.redirect('/sample_MMD')
 
@@ -286,6 +286,12 @@ class SampleHandler(tornado.web.RequestHandler):
 class SampleHandler2(tornado.web.RequestHandler):
     def get(self):
         self.render("sample_questionnaire.html")
+    def post(self):
+        self.redirect('/tobii')
+
+class TobiiHandler(tornado.web.RequestHandler):
+    def get(self):
+        self.render("load_tobii.html")
     def post(self):
         self.redirect('/calibration')
 
@@ -300,6 +306,10 @@ class ReadyHandler(tornado.web.RequestHandler):
         self.render("ready.html")
     def post(self):
         self.redirect('/mmd')
+
+class DoneHandler(tornado.web.RequestHandler):
+    def get(self):
+        self.render("done.html")
 
 #main function is first thing to run when application starts
 def main():
