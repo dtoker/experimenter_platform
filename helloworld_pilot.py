@@ -56,8 +56,7 @@ class MainHandler(tornado.web.RequestHandler):
         self.application.start_time = str(datetime.datetime.now().time())
         #self.application.cur_user = 100
         print 'hello'
-        self.mmdQuestions = self.loadMMDQuestions()
-
+        
         self.render('index.html', mmd="3")
         #self.render('mmd.html', mmd="3")
 
