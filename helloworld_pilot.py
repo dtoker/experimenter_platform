@@ -25,7 +25,8 @@ class Application(tornado.web.Application):
             (r"/questionnaire", QuestionnaireHandler),
             (r"/resume", ResumeHandler),
             (r"/userID", UserIDHandler),
-            (r"/prestudy", PreStudyHandler),
+            (r"/prestudy", PreStudyHandler), (r"/(Sample_bars.png)", tornado.web.StaticFileHandler, {'path':'./'}),
+                                             (r"/(Sample_bars_2.png)", tornado.web.StaticFileHandler, {'path':'./'}),
             (r"/sample_MMD", SampleHandler), (r"/(ExampleMMD.png)", tornado.web.StaticFileHandler, {'path':'./'}),
             (r"/sample_Q", SampleHandler2), (r"/(ExampleQ.png)", tornado.web.StaticFileHandler, {'path':'./'}),
             (r"/calibration", CalibrationHandler), (r"/(blank_cross.jpg)", tornado.web.StaticFileHandler, {'path':'./'}),
@@ -56,7 +57,7 @@ class MainHandler(tornado.web.RequestHandler):
         self.application.start_time = str(datetime.datetime.now().time())
         #self.application.cur_user = 100
         print 'hello'
-        
+
         self.render('index.html', mmd="3")
         #self.render('mmd.html', mmd="3")
 
