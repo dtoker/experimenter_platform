@@ -32,7 +32,9 @@ class Application(tornado.web.Application):
             (r"/calibration", CalibrationHandler), (r"/(blank_cross.jpg)", tornado.web.StaticFileHandler, {'path':'./'}),
             (r"/tobii", TobiiHandler),
             (r"/ready", ReadyHandler),
-            (r"/done", DoneHandler)
+            (r"/done", DoneHandler),
+            (r"/final_question", FinalHandler), (r"/(post_question.png)", tornado.web.StaticFileHandler, {'path':'./'}),
+            (r"/done2", DoneHandler2)
         ]
         #connects to database
         self.conn = sqlite3.connect('database.db')
@@ -259,22 +261,31 @@ class UserIDHandler(tornado.web.RequestHandler):
         # store the new userID
         user_data = [self.application.cur_user, str(self.application.start_time), str(self.application.mmd_order)]
         self.application.conn.execute('INSERT INTO User_data VALUES (?,?,?)', user_data)
+        self.application.conn.commit()
 
         self.redirect('/prestudy')
 
 class PreStudyHandler(tornado.web.RequestHandler):
     def get(self):
         #gets time upon entering form
-        self.application.start_time = str(datetime.datetime.now().time())
-
         self.render("prestudy.html")
     def post(self):
-        #gets time upon completing form
-        self.application.end_time = str(datetime.datetime.now().time())
+
         #get contents submitted in the form for prestudy
-        # store the new userID
-        #user_data = [self.application.cur_user, str(self.application.start_time), str(self.application.mmd_order)]
-        #self.application.conn.execute('INSERT INTO User_data VALUES (?,?,?)', user_data)
+        q1 = self.get_argument('age')
+        q2 = self.get_argument('gender')
+        q3 = self.get_argument('occupation')
+        q4 = self.get_argument('field')
+        q5 = self.get_argument('first_language')
+        q6 = self.get_argument('pref_language')
+        q7 = self.get_argument('enlish_proficiency')
+        q8 = self.get_argument('read_freq')
+        q9 = self.get_argument('distrcted')
+        q10 = self.get_argument('complex_bar')
+
+        pre_data = [self.application.cur_user, q1, q2, q3, q4, q5, q6, q7, q8, q9, q10]
+        self.application.conn.execute('INSERT INTO prestudy VALUES (?,?,?,?,?,?,?,?,?,?,?)', pre_data)
+        self.application.conn.commit()
 
         self.redirect('/sample_MMD')
 
@@ -311,6 +322,24 @@ class ReadyHandler(tornado.web.RequestHandler):
 class DoneHandler(tornado.web.RequestHandler):
     def get(self):
         self.render("done.html")
+    def post(self):
+        self.redirect('/final_question')
+
+class FinalHandler(tornado.web.RequestHandler):
+    def get(self):
+        self.render("final_question.html")
+    def post(self):
+        q1 = self.get_argument('viz_pref')
+
+        pre_data = [self.application.cur_user, q1]
+        self.application.conn.execute('INSERT INTO final_question VALUES (?,?)', pre_data)
+        self.application.conn.commit()
+
+        self.redirect('/done2')
+
+class DoneHandler2(tornado.web.RequestHandler):
+    def get(self):
+        self.render("done2.html")
 
 #main function is first thing to run when application starts
 def main():
