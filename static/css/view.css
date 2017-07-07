@@ -325,6 +325,7 @@ label.description
     font-weight:700;
     line-height:150%;
     padding:0 0 20px;
+    width: 700px;
 }
 
 span.symbol
