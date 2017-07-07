@@ -93,6 +93,9 @@ var AppCtrl = function($scope, $http, $location) {
         }
       });
 
+
+
+
   $scope.changeConditions = function() {
     console.log('change conditions');
 
@@ -103,6 +106,7 @@ var AppCtrl = function($scope, $http, $location) {
     // Load the new condition
     $http.get('static/data/' + $scope.curConditionId + '.json').
         success(function(data, status, headers) {
+
 
         //  The following code was used to adjust the mmd references due to changes made to the original ones
         //MMD: offset
@@ -205,6 +209,21 @@ var AppCtrl = function($scope, $http, $location) {
                 }
             }
           });
+
+//Highlighting bassed on marked references
+      console.log($scope.datatable);
+      $http.get('static/data/' + "combined_references" + '.json').
+      success(function(data, status, headers) {
+        console.log(data);
+        for(var i=0;i<data.length;i++){
+          console.log(data[i].mmd_id,$scope.curConditionId);
+          if (data[i].mmd_id===$scope.curConditionId){
+            $scope.merged_refs = data[i].merged_refs;
+          }
+        }
+
+      });
+
         });
 
 
@@ -415,6 +434,7 @@ function highlightRelatedTuples($scope, references) {
     }
   }
 
+  console.log(referenced_tuples);
   $scope.curMarksManager.highlight($scope.refMapper.getReferringMarks(
       referenced_tuples),true);//true for animating
 }
@@ -841,6 +861,9 @@ function clone(obj) {
     $( "#button_remove_intervention" ).click(function() {
         removeAllInterventions($scopeGlobal.selectedReference);
     });
+  $( "#button_merged" ).click(function() {
+    highlightMergedReferences("A");
+  });
     function highlightTextOnly(referenceID) {
         console.log('highlight text');
         var overlappedReferences = [];
@@ -895,6 +918,28 @@ function clone(obj) {
       },TRANSITION_DURATION*1.2);
 
     }
+
+    function highlightMergedReferences(mergedID) {
+      var overlappedReferences = [];
+      //console.log($scope.merged_refs[0].original_ref_index);
+      if($scopeGlobal.merged_refs){
+        for(var i=0;i<$scopeGlobal.merged_refs.length;i++){
+          console.log(JSON.stringify($scopeGlobal.merged_refs[i]));
+          if($scopeGlobal.merged_refs[i].ref_id===mergedID){
+            for(var j=0;j<$scopeGlobal.merged_refs[i].original_ref_index.length;j++){
+              console.log($scopeGlobal.merged_refs[i].original_ref_index[j]);
+              var reference = $scopeGlobal.curReference[$scopeGlobal.merged_refs[i].original_ref_index[j]];
+              console.log(reference);
+              overlappedReferences.push(reference);
+
+            }
+            highlightRelatedTuples($scopeGlobal, overlappedReferences);
+            break;
+          }
+        }
+      }
+    }
+
     function removeAllInterventions(referenceID) {
 
       if($scopeGlobal.lastSelectedReference!=-1){//remove previous intervention
@@ -931,8 +976,10 @@ function clone(obj) {
 
             var point = [obj.y-40,obj.x-40];
             //point = [200,300];
-            for(var i=0;i<$scopeGlobal.coordinatesofSentences.length;i++){
+            for(var i=0;i<$scopeGlobal.coordinatesofSentences.length;i++){// coordinatesofSentences contains polygons of all sentences
               var polygonCoordinatesArray = [];
+
+              //this loops over the polygon array and massages the data so that it works for the inside function
               for(var j=0;j<$scopeGlobal.coordinatesofSentences[i].polygonCoords.length;j++){
                 polygonCoordinatesArray.push([$scopeGlobal.coordinatesofSentences[i].polygonCoords[j].x,
                     $scopeGlobal.coordinatesofSentences[i].polygonCoords[j].y]);
@@ -945,7 +992,7 @@ function clone(obj) {
                 //console.log($scopeGlobal.coordinatesofSentences[i].sentence);
 
                 drawOverlay($scopeGlobal.coordinatesofSentences[i].polygonCoords);
-                //highlightbothTextVis(2);
+                highlightVis(2);
               }
               //else console.log('no');
             }

@@ -31,3 +31,6 @@ database.db
 *.db
 database.db
 database.db
+database.db
+*.db
+eye_tracker.pyc
