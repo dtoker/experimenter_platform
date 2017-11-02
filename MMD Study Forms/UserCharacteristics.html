@@ -1,0 +1,108 @@
+
+<script>
+  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+  })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+  ga('create', 'UA-52366290-1', 'auto');
+  ga('send', 'pageview');
+
+</script>
+
+
+<head>
+<h1>Measuring user differences in user-adaptive systems</h1>
+</head>
+
+
+<body>
+
+<h3>&nbsp;&nbsp;&nbsp;<a href="https://www.cs.ubc.ca/cs-research/lci/research-groups/intelligent-user-interfaces">Intelligent User Interfaces Group</a>, department of computer science, UBC.</p></h3>
+
+
+<p>Here we will provide a description of the tests that we often use in our various studies to evaluate the impact of individual differences on HCI tasks. We often use the terminology 'individual differences' and 'user characteristics' interchangeably to refer to the set of measures presented here (and by no means is this an exhaustive list of terminologies or measures that are out there). Currently, the set of tests we utilize consists of three cognitive measures: Perceptual speed, Verbal working memory, Visual working memory, and one personality: Locus of control.</p>
+
+<p><i>If there are plans to utilize these characteristics for new studies in HCI or Psychology, please let us know! We would love to start compiling a record of all the papers and studies that evaluate these measures, especially when using the implementations provided here.</i></p>
+
+<p>Here is the reference to our project/papers that have used these tests: <a href="http://www.cs.ubc.ca/~conati/research.php">ATUAV Advanvced tools for User Adaptive Visualizations.</a></p>
+<p>Email contact: Dereck Toker, PhD student -> <i>dtoker [ at ] cs.ubc.ca</i></p>
+
+<figure>
+<img src="study_pipeline.jpg" alt="study pipeline" width="550" height="110">
+  <figcaption>Illustrated here is the typical study flow, showing when we administer all of the various tests to measure individual differences.<br> The yellow box shows how the step of measuring individual differences is easily added to a typical study setup.
+</figcaption>
+</figure> 
+
+
+<h2>Perceptual Speed (PS)</h2>
+<p>Perceptual speed is a measure of speed when performing simple perceptual tasks (e.g., finding figures or making comparison between letters, numbers, objects, pictures, or patterns) such that everyone could score perfect if there were no limitation on time [Salthouse 2000].
+</p>We use the Identical Figures Test (P-3) [Ekstrom 1976], which is a paper-based test that measures a participant’s speed in matching a figure on the left side of each row to one of five possible figures appearing on the right side. The test consists of two 90 second trials of 48 items each, however we found many participants were completing the test with a perfect score, therefore we modified the test so that it was done in one 90 second trial over all 96 items. The final test score is the number of correctly answered rows, ranging from 0 to 96.
+<p>
+
+<p>References:
+<li>Salthouse, T. A. Aging and measures of processing speed. Biological Psychology, 54, (2000), 35-54.</li>
+<li>Ekstrom, R.B., French, J.W., Harman, H.H. Kit of factor-referenced cognitive tests, Educational Testing Service, Princeton, NJ (1976).</li></p>
+<p>Download test: <a href="Ekstrom_P3.pdf">Perceptual Speed, Identical Figures (P-3)</a></p>  
+
+<br>
+
+<h2>Verbal Working Memory (VerbWM)</h2>
+<p> Verbal working memory is part of the working memory responsible for temporary maintenance and manipulation of verbal information [Baddely 1986].</p>
+<p>We use the Operation-word span test (OSPAN) for verbal working memory to measure this user characteristic. This test accounts for both the storage and the processing components of this trait and has shown the highest correlation with reading comprehension when compared to other tests [Turner 1989]. The test is computer-based, and shows a series of arithmetic equations that the participant must classify as True or False. Once a selection is made for a given equation, one word appears on the screen for 800ms and then the next arithmetic equation appears. At the end of a series, participants are required to recall the words in correct order. This process is repeated several times with each series varying in length from 2 to 6 words. The insertion of secondary tasks between memory items (here, solving math examples) means that subjects are required to recall information that is periodically unattended and vulnerable to proactive interference [Kane 2002]. The final test score is a measure of the average word span in working memory, ranging from 0 to 6.</p>
+
+
+<p>References:
+<li>Baddeley, A. D. Working memory. New York: Clarendon Press/Oxford University Press, (1986).</li>
+<li>Turner, M. L., & Engle, Randall W. Is working memory capacity task dependent? Journal of Memory and Language, 28(2) (1989), 127-154.</li>
+<li>Kane, M. J., & Engle, R. W. The role of prefrontal cortex in working-memory capacity, executive attention, and general fluid intelligence: An individual-differences perspective. Psychonomic Bulletin & Review, 9(4), (2002), 637-671.</li></p>
+<p>Download test: <a href="VerbalWMTest.zip">Verbal Working Memory, (OSPAN)</a></p>
+<P>The OSPAN test is a Java program authored by Taiyu Lin at ALTRC, Massey University, New Zealand </P>
+
+<br>
+
+<h2>Visual Working Memory (VisWM)</h2>
+
+<p> Visual working memory is part of the working memory responsible for temporary storage and manipulation of visual and spatial information [Logie 1995].</p>
+<p>Several tests are available for measuring visual working memory, but they each measure slightly different constructs (e.g., the ability to remember sequences of visual elements or the ability to integrate information from long-term memory). The test most appropriate for the nature of the tasks in this study is the one proposed and tested by Fukuda & Vogel [Fukuda 2009] which measures the ability to recall the location of basic colored squares over short intervals and most closely matched the task structure in our study. We were not specifically interested in looking at sequential or long-term visual memory since each of our tasks was static and did not require any visual information to be remembered from one task to the next. The Fukuda & Vogel test is computer based, and consists of 120 trials. In each trial an array of either 4, 6, or 8 different colored squares flash on the screen for 500ms. After 200ms, one of the colored squares re-appears in its original location, and participants must select whether the square has the same or a different color than when it was first flashed. The final score for the test measures the percentage of correct answers for each array size (K4, K6 & K8). In our studies we use only K6 as our measure of visual working memory.</p>
+
+
+<p>References:
+<li>Logie, R. H. Visuo-spatial working memory. Psychology Press, United Kingdom, (1995).</li>
+<li>Fukuda, K., & Vogel, E.K. Human variation in overriding attentional capture. Journal of Neuroscience. (2009), 8726-8733.</li></p>
+<p>Download test: <a href="VisualWorkingMemoryTest.zip">Visual Working Memory</a></p>
+<P>The Visual Working Memory Test runs in Matlab and requires the <a href="http://psychtoolbox.org/PsychtoolboxDownload">Psychophysics Toolbox</a></P>
+
+<br>
+
+<h2>Locus of Control (Locus)</h2>
+<p>Locus of control is a personality measure of the degree to which individuals perceive outcomes as either a result from their own behavior, or from forces that are external to themselves. Assessment is carried out using a 29-item questionnaire. Final scores range from 0 to 23 (lower = external, higher = internal)</p>
+
+
+<p>Reference:
+<li>Rotter, Julian B. Generalized Expectancies for Internal Versus External Control of Reinforcement. Psych. Monographs: General and Applied 80.1, (1966), 1-28.</li>
+http://www.wilderdom.com/psychology/loc/Measures.html</p>
+
+<p>Link to test: <a href="http://www.wilderdom.com/psychology/loc/RotterLOC29.html">Locus of Control </a></p>
+<p>Also, here is the scoring guide for the test: <a href="http://www.wilderdom.com/psychology/loc/RotterLOC29Scoring.html">http://www.wilderdom.com/psychology/loc/RotterLOC29Scoring.html</a></p>
+
+<br>
+
+<h2>Descriptive Statistics</h2>
+<p> Here are the descriptive statistics from our last two studies we ran: <a href="http://www.cs.ubc.ca/~dtoker/publications/CHI2014-carenini.pdf">Intervention Study</a> and <a href="http://www.cs.ubc.ca/~dtoker/publications/EuroVis14-CameraReady.pdf">Valuechart study.</a></p>
+
+<figure>
+<img src="study_descriptives.jpg" alt="study descriptives">
+</figure> 
+
+<p> And here are histograms for those curious. </p>
+
+<figure>
+<img src="study_histograms.jpg" alt="study histograms" width="800" height="1400">
+</figure> 
+
+<br>
+Last Update:  June 28, 2014
+<br>
+<br>
+<body>
