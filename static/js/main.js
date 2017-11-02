@@ -50,7 +50,44 @@ function loadMMD(mmdName){
      d3.json("static/data/"+mmdName+".json", function(data){
           $("#theText").html(data.text);
           //console.log('<img src='+data.chart+'');
-          $("#visualization").html('<img id="theChart" src="static/'+data.chart+'">' );
+          $("#visualization").html('<img id="theChart" src="static/'+data.chart+'">' );					
+					var coordinatesChars = [];
+
+					var some_text = $("#theTextParagraph").text().trim()
+
+					var refs = data.references[1].reference;
+
+					for (var j = 0, len = refs.length; j < len; j++) {
+						var the_phrases = refs[j].phrases;
+
+						for (var k = 0, len2 = the_phrases.length; k < len2; k++) {
+							var start = the_phrases[k].start;
+							var end = the_phrases[k].end;
+
+
+							newText = "";
+							for (var i = 0, len3 = some_text.length; i < len3; i++) {
+								if (i == start)	newText+= '<span>'+some_text[i];
+								else if (i == end)	newText+= some_text[i]+ '</span>';
+								else newText+=some_text[i];
+							}
+
+								$("#theTextParagraph").html(newText);
+
+								$spans = $("#theTextParagraph").find('span');
+
+								$spans.each(function(){
+				    			var $span = $(this),
+				        	$offset = $span.offset();
+				    				$offset.width = $span.innerWidth();
+				    				$offset.height = $span.innerHeight();
+				    				coordinatesChars.push($offset);
+				  			});
+
+				 		}
+					}
+
+					console.log(coordinatesChars);
 
      });
 }
