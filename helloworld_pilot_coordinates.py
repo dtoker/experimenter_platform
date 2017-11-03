@@ -77,7 +77,7 @@ class MainHandler(tornado.web.RequestHandler):
             self.application.mmd_index = 0
 
             #self.redirect('/mmd')
-            self.redirect('/mmd')
+            self.redirect('/userID')
         else:
             self.redirect('/resume')
 
@@ -215,8 +215,18 @@ class QuestionnaireHandler(tornado.web.RequestHandler):
 class MMDHandler(tornado.web.RequestHandler):
     def get(self):
         #displays contents of index.html
-        self.application.cur_mmd = 74
-        self.render('mmd.html', mmd=str(self.application.cur_mmd))
+        self.application.start_time = str(datetime.datetime.now().time())
+        print 'mmd order',self.application.mmd_order, self.application.mmd_index
+        if self.application.mmd_index<len(self.application.mmd_order):
+            self.application.cur_mmd = self.application.mmd_order[self.application.mmd_index]
+
+            if (self.application.show_question_only):
+                self.redirect('/questionnaire')
+            else:
+                self.render('mmd.html', mmd=str(self.application.cur_mmd))
+            self.application.mmd_index+=1
+        else:
+            self.redirect('/done')
 
 
     def post(self):
@@ -242,7 +252,7 @@ class UserIDHandler(tornado.web.RequestHandler):
         self.application.conn.execute('INSERT INTO User_data VALUES (?,?,?)', user_data)
         self.application.conn.commit()
 
-        self.redirect('/prestudy')
+        self.redirect('/mmd')
 
 class PreStudyHandler(tornado.web.RequestHandler):
     def get(self):
