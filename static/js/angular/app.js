@@ -884,26 +884,24 @@ function clone(obj) {
         var reference = $scopeGlobal.curReference[$scopeGlobal.selectedReference];
         overlappedReferences.push(reference);
         //}
-        console.log(overlappedReferences);
-        highlightRelatedTuples($scopeGlobal, overlappedReferences);
+
+        removeAllInterventions(referenceID);
+
+        setTimeout(function () {
+          console.log(overlappedReferences);
+          highlightRelatedTuples($scopeGlobal, overlappedReferences);
+
+        },TRANSITION_DURATION*1.2);
     }
 
 
     function highlightbothTextVis(referenceID){
       if($scopeGlobal.lastSelectedReference === referenceID) return; // no intervention if the reference is same as previous
-      console.log("highlighting "+referenceID);
       console.log($scopeGlobal.lastSelectedReference, referenceID);
-
-        var temp_isDeemphasis = isDeemphasis;
-      var temp_isBoldingIntervention = isBoldingIntervention;
-      var temp_isArrowIntervention = isArrowsIntervention;
 
       removeAllInterventions(referenceID);
 
       setTimeout(function () {
-        isDeemphasis = temp_isDeemphasis;
-        isBoldingIntervention = temp_isBoldingIntervention;
-        isArrowsIntervention = temp_isArrowIntervention;
 
         var overlappedReferences = [];
         //console.log($scopeGlobal.curReference);
@@ -943,7 +941,10 @@ function clone(obj) {
     function removeAllInterventions(referenceID) {
 
       if($scopeGlobal.lastSelectedReference!=-1){//remove previous intervention
+        console.log("removing interventions");
+        $scopeGlobal.curMarksManager.unhighlight();
 
+        /*
         setAllInterventionsFalse();
 
         var reference = $scopeGlobal.curReference[$scopeGlobal.lastSelectedReference];
@@ -951,11 +952,11 @@ function clone(obj) {
         var overlappedReferences =[reference];
         highlightRelatedTuples($scopeGlobal, overlappedReferences);
         highlightRelatedPhrases($scopeGlobal, overlappedReferences);
+        */
 
       }
 
     }
-
 
     function onReferenceChange(currentReference) {
       $scopeGlobal.lastSelectedReference = $scopeGlobal.selectedReference;
