@@ -943,17 +943,7 @@ function clone(obj) {
       if($scopeGlobal.lastSelectedReference!=-1){//remove previous intervention
         console.log("removing interventions");
         $scopeGlobal.curMarksManager.unhighlight();
-
-        /*
-        setAllInterventionsFalse();
-
-        var reference = $scopeGlobal.curReference[$scopeGlobal.lastSelectedReference];
-        console.log(reference);
-        var overlappedReferences =[reference];
-        highlightRelatedTuples($scopeGlobal, overlappedReferences);
-        highlightRelatedPhrases($scopeGlobal, overlappedReferences);
-        */
-
+        
       }
 
     }
