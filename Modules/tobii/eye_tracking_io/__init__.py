@@ -2,7 +2,7 @@
 import threading
 import datetime
 
-from tobii.eye_tracking_io._native import tetio, BoundHandler
+from _native import tetio, BoundHandler
 
 from tobii.eye_tracking_io.xds import Converter
 from tobii.eye_tracking_io import types
@@ -18,7 +18,7 @@ def init():
 
     for T in (types.Point2D, types.Point3D):
         Converter.register(T.NODE_ID, T._node_converter)
-   
+
     global _initialized
     _initialized = True
 
@@ -35,11 +35,10 @@ def _check_init():
 def _require_callable(obj, optional=False, argument_name="argument"):
     if obj is None and optional:
         return
-    
+
     if not callable(obj):
         raise TypeError("%s must be callable" % (argument_name))
 
 
 class CoreException(Exception):
     pass
-

@@ -318,6 +318,7 @@ class TobiiController:
         #distance of less than a set amount of pixels (disregarding missing data)
 
         #arguments
+		# TODO: Numpy array??? Make sure it actually is numpy
         #x		-	numpy array of x positions
         #y		-	numpy array of y positions
         #time		-	numpy array of timestamps
@@ -333,7 +334,6 @@ class TobiiController:
                     #Sfix	-	list of lists, each containing [starttime]
                     #Efix	-	list of lists, each containing [starttime, endtime, duration, endx, endy]
 
-
         # empty list to contain data
 		Sfix = []
 		Efix = []
@@ -343,22 +343,22 @@ class TobiiController:
 		fixstart = False
 
 
-		for i in range(1,len(x)):
+		for i in range(1, len(x)):
 			# calculate Euclidean distance from the current fixation coordinate
 			# to the next coordinate
-			dist = ((x[si]-x[i])**2 + (y[si]-y[i])**2)**0.5
+			dist = ((x[si] - x[i])**2 + (y[si] - y[i])**2)**0.5
 			# check if the next coordinate is below maximal distance
 			if dist <= maxdist and not fixstart:
 			# start a new fixation
 				si = 0 + i
 				fixstart = True
-				Sfix.append([time[i]])
+				Sfix.append((time[i]))
 			elif dist > maxdist and fixstart:
 				# end the current fixation
 				fixstart = False
 				# only store the fixation if the duration is ok
 				if time[i-1]-Sfix[-1][0] >= mindur:
-					Efix.append([Sfix[-1][0], time[i-1], time[i-1]-Sfix[-1][0], x[si], y[si]])
+					Efix.append((Sfix[-1][0], time[i - 1], time[i - 1] - Sfix[-1][0], x[si], y[si]))
 				# delete the last fixation start if it was too short
 				else:
 					Sfix.pop(-1)
@@ -373,6 +373,8 @@ class TobiiController:
 	#Preetpal's Online/Realtime fixation algorithm
 	def onlinefix(self):
 		#list of lists, each containing [starttime, endtime, duration, endx, endy]
+
+		# TODO: Refactor into lost of tuples
 		self.EndFixations = []
 		#Keep track of index in x,y,time array
 		array_index = 0
@@ -410,7 +412,7 @@ class TobiiController:
 
 			#Sfix	-	list of lists, each containing [starttime]
 			#Efix	-	list of lists, each containing [starttime, endtime, duration, endx, endy]
-			[Sfix, Efix] = self.fixation_detection(curX, curY, curTime)
+			Sfix, Efix = self.fixation_detection(curX, curY, curTime)
 
 			#When there is no end fixation detected yet
 			while(1):
@@ -435,7 +437,7 @@ class TobiiController:
 					newTime = curTime + nextTime
 
 					#Run fixation algorithm again with extended array
-					[Sfix, Efix] = self.fixation_detection(newX, newY, newTime)
+					Sfix, Efix = self.fixation_detection(newX, newY, newTime)
 
 
 					#If no start detected, then we can use this to drop the first |array_iterator| items
@@ -476,7 +478,7 @@ class TobiiController:
 					newY.extend(nextY)
 					newTime.extend(nextTime)
 
-					[Sfix, Efix] = self.fixation_detection(newX, newY, newTime)
+					Sfix, Efix = self.fixation_detection(newX, newY, newTime)
 
 					#this code ensures that we handle the case where an end
 					#fixation has been detected merely becasue it's the last item
