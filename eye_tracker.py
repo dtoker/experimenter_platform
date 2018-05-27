@@ -352,7 +352,7 @@ class TobiiController:
 			# start a new fixation
 				si = 0 + i
 				fixstart = True
-				Sfix.append((time[i]))
+				Sfix.append(time[i])
 			elif dist > maxdist and fixstart:
 				# end the current fixation
 				fixstart = False
@@ -446,7 +446,7 @@ class TobiiController:
 					curTime = nextTime
 				else:
 					#Get that start fixation x and y values to display on front end
-					SfixTime = Sfix[0][0]
+					SfixTime = Sfix[0]
 					fixIndex = newTime.index(SfixTime)
 					xVal = newX[fixIndex]
 					yVal = newY[fixIndex]
