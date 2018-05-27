@@ -357,8 +357,8 @@ class TobiiController:
 				# end the current fixation
 				fixstart = False
 				# only store the fixation if the duration is ok
-				if time[i-1]-Sfix[-1][0] >= mindur:
-					Efix.append((Sfix[-1][0], time[i - 1], time[i - 1] - Sfix[-1][0], x[si], y[si]))
+				if time[i-1]-Sfix[-1] >= mindur:
+					Efix.append((Sfix[-1], time[i - 1], time[i - 1] - Sfix[-1], x[si], y[si]))
 				# delete the last fixation start if it was too short
 				else:
 					Sfix.pop(-1)
