@@ -167,7 +167,6 @@ class TobiiController:
 			pass
 		self.syncmanager = tobii.eye_tracking_io.time.sync.SyncManager(self.clock,eyetracker_info,self.mainloop_thread)
 
-
 	def on_eyetracker_created(self, error, eyetracker, eyetracker_info):
 
 		"""Function is called by TobiiController.activate, to handle all
@@ -197,7 +196,6 @@ class TobiiController:
 			return False
 
 		self.eyetracker = eyetracker
-
 
 	def startTracking(self):
 
@@ -286,7 +284,6 @@ class TobiiController:
 		print 'RightPupil: ', gaze.RightPupil
 		'''
 
-
 		#Below code checks to see if the gaze data is valid. If it is valid then
 		#we average the left and right. Else we use the valid eye. We are multiplying
 		#by 1280 and 1024 because those are the dimensions of the monitor and since
@@ -337,12 +334,9 @@ class TobiiController:
         # empty list to contain data
 		Sfix = []
 		Efix = []
-
 		# loop through all coordinates
 		si = 0
 		fixstart = False
-
-
 		for i in range(1, len(x)):
 			# calculate Euclidean distance from the current fixation coordinate
 			# to the next coordinate
@@ -367,79 +361,64 @@ class TobiiController:
 				si += 1
 		return Sfix, Efix
 
-
-
-
 	#Preetpal's Online/Realtime fixation algorithm
+	@gen.coroutine
 	def onlinefix(self):
 		#list of lists, each containing [starttime, endtime, duration, endx, endy]
-
-		# TODO: Refactor into lost of tuples
 		self.EndFixations = []
 		#Keep track of index in x,y,time array
 		array_index = 0
 		#Used to get segments of size 7
 		array_iterator = 7
-
 		#this start variable is here so we can time out after 10 seconds
 		start = time.time()
-
 		newX = []
 		newY = []
 		newTime = []
-
 		while(self.runOnlineFix):
-
 			#function times out and returns after 45 seconds
 			#if(time.time() > start + 10):
 				#print "timed out after ten seconds"
 				#print self.EndFixations
 				#return self.EndFixations
-
 			#Wait till array has enough data
 			while(1):
 				if(len(self.x) > array_index + array_iterator):
 					break
-
+				else:
+					yield
 			#Get segments of size 7
 			curX = self.x[array_index:(array_index + array_iterator)]
 			curY = self.y[array_index:(array_index + array_iterator)]
 			curTime = self.time[array_index:(array_index + array_iterator)]
-
 			newX = curX
 			newY = curY
 			newTime = curTime
-
 			#Sfix	-	list of lists, each containing [starttime]
 			#Efix	-	list of lists, each containing [starttime, endtime, duration, endx, endy]
 			Sfix, Efix = self.fixation_detection(curX, curY, curTime)
-
 			#When there is no end fixation detected yet
 			while(1):
 				#If start of fixation has not been detected yet
  				if(Sfix == []):
 					array_index += array_iterator
-
 					#Wait till array has filled with enough data
 					while(1):
 						if(len(self.x) > array_index + array_iterator):
 							break
-
+						else:
+							yield
 					#Get next 7 element chunk of data
-					nextX = self.x[array_index:(array_index + array_iterator)]
-					nextY = self.y[array_index:(array_index + array_iterator)]
-					nextTime = self.time[array_index:(array_index + array_iterator)]
-
+					nextX = self.x[array_index : (array_index + array_iterator)]
+					nextY = self.y[array_index : (array_index + array_iterator)]
+					nextTime = self.time[array_index : (array_index + array_iterator)]
 					#Append next segment with current arrays of interest
 					#If no more curX we can just newX.extend(nextX)
 					newX = curX + nextX
 					newY = curY + nextY
 					newTime = curTime + nextTime
-
 					#Run fixation algorithm again with extended array
 					Sfix, Efix = self.fixation_detection(newX, newY, newTime)
-
-
 					#If no start detected, then we can use this to drop the first |array_iterator| items
 					curX = nextX
 					curY = nextY
@@ -450,36 +429,31 @@ class TobiiController:
 					fixIndex = newTime.index(SfixTime)
 					xVal = newX[fixIndex]
 					yVal = newY[fixIndex]
-
 					#Get the open websocket and send x and y values through it to front end
 					# A start fixation has been detected!
 					for ws in self.liveWebSocket:
 						if ((xVal != -1280) & (yVal != -1024)):
 							ws.write_message('{"x":"%d", "y":"%d"}' % (xVal, yVal))
-
 					break
 
 			#We are here because start fixation was detected
 			while(1):
 				if(Efix == []):
 					array_index = array_index + array_iterator
-
 					#Wait till array has enough data
 					while(1):
 						if(len(self.x) > array_index + array_iterator):
 							break
-
+						else:
+							yield
 					#Get next segment of data to append to current array of interest
 					nextX = self.x[array_index:(array_index + array_iterator)]
 					nextY = self.y[array_index:(array_index + array_iterator)]
 					nextTime = self.time[array_index:(array_index + array_iterator)]
-
 					newX.extend(nextX)
 					newY.extend(nextY)
 					newTime.extend(nextTime)
-
 					Sfix, Efix = self.fixation_detection(newX, newY, newTime)
-
 					#this code ensures that we handle the case where an end
 					#fixation has been detected merely becasue it's the last item
 					#in the array, so we want to keep going to be sure.
@@ -487,29 +461,23 @@ class TobiiController:
 						EfixEndTime = Efix[0][1]
 						if (EfixEndTime == self.time[-1]):
 							Efix = []
-
 			    #a genuine end fixation has been found!
 				else:
 					#Add the newly found end fixation to our collection of end fixations
 					self.EndFixations.append(Efix)
-
 					#Get time stamp for newly found end fixation
 					EfixEndTime = Efix[0][1]
 					#Update index to data points after newly found end fixation
 					array_index = self.time.index(EfixEndTime) + 1
-
 					#Fixation ended, get it off the screen!
 					for ws in self.liveWebSocket:
 						ws.write_message('{"x":"%d", "y":"%d"}' % (-3000, -3000))
-
 					#May wanrt to use something like this in the future in there are performace issues
 					#self.x = self.x[array_index:]
 					#self.y = self.y[array_index:]
 					#self.time = self.time[array_index:]
 					#array_index = 0
-
 					break
-
 		return self.EndFixations
 
 
