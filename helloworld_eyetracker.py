@@ -103,7 +103,6 @@ class EchoWebSocketHandler(tornado.websocket.WebSocketHandler):
         eb.destroy()
         '''
 
-
     #not sure if needed
     def on_message(self, message):
         print message
@@ -136,7 +135,6 @@ class EchoWebSocketHandler(tornado.websocket.WebSocketHandler):
         print myOnlineFixations
 
         #ADD STOP BUTTON
-
         #Write out a CSV Log file of the gaze interaction
         fl = open('myOnlineFixations.csv', 'wb')
         writer = csv.writer(fl)
@@ -151,10 +149,8 @@ class EchoWebSocketHandler(tornado.websocket.WebSocketHandler):
         self.eb.stopTracking()
         self.eb.destroy()
 
-
     def on_close(self):
         print("WebSocket closed")
-
 
 #main function is first thing to run when application starts
 def main():
@@ -163,8 +159,6 @@ def main():
     http_server = tornado.httpserver.HTTPServer(Application())
     http_server.listen(options.port)
     tornado.ioloop.IOLoop.current().start()
-
-
 
 if __name__ == "__main__":
     main()
