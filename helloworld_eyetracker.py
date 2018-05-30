@@ -104,6 +104,7 @@ class EchoWebSocketHandler(tornado.websocket.WebSocketHandler):
         '''
 
     #not sure if needed
+    @gen.coroutine
     def on_message(self, message):
         print message
         if (message == "stop"):
@@ -131,7 +132,9 @@ class EchoWebSocketHandler(tornado.websocket.WebSocketHandler):
 
         #Load Preetpal's online fixation code
         #returns: [list of lists, each containing [starttime, endtime, duration, endx, endy]
-        myOnlineFixations =  self.eb.onlinefix()
+        myOnlineFixations = None
+        while (myOnlineFixations == None):
+            myOnlineFixations = yield self.eb.onlinefix()
         print myOnlineFixations
 
         #ADD STOP BUTTON
