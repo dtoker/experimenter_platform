@@ -165,7 +165,7 @@ def main():
     http_server = tornado.httpserver.HTTPServer(Application())
     http_server.listen(options.port)
     controller = DummyController()
-    IOLoop.add_callback(controller.wait_for_fixation)
+    IOLoop.add_callback(callback = controller.wait_for_fixation)
     tornado.ioloop.IOLoop.current().start()
 
 if __name__ == "__main__":
