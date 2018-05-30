@@ -18,7 +18,7 @@ import tobii.eye_tracking_io.time.clock
 import tobii.eye_tracking_io.time.sync
 
 import numpy as np
-
+from tornado import gen
 
 class TobiiController:
 
