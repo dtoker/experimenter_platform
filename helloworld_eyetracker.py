@@ -62,6 +62,7 @@ class EchoWebSocketHandler(tornado.websocket.WebSocketHandler):
     #eb = None
 
     def open(self):
+
         '''
         print "WebSocket opened"
 
@@ -136,7 +137,8 @@ class EchoWebSocketHandler(tornado.websocket.WebSocketHandler):
         while (myOnlineFixations == None):
             myOnlineFixations = yield self.eb.onlinefix()
         print myOnlineFixations
-
+        DummyController.fixationReceived = True
+        DummyController.fixationBuffer = myOnlineFixations
         #ADD STOP BUTTON
         #Write out a CSV Log file of the gaze interaction
         fl = open('myOnlineFixations.csv', 'wb')
@@ -161,6 +163,8 @@ def main():
     #Application() refers to 'class Application'
     http_server = tornado.httpserver.HTTPServer(Application())
     http_server.listen(options.port)
+    controller = DummyController()
+    IOLoop.add_callback(controller.wait_for_fixation)
     tornado.ioloop.IOLoop.current().start()
 
 if __name__ == "__main__":
