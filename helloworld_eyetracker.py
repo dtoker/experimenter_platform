@@ -21,6 +21,7 @@ import thread
 from threading import Thread
 from tornado import gen
 from tornado.ioloop import IOLoop
+from dummy_controller import DummyController
 ##########################################
 
 define("port", default=8888, help="run on the given port", type=int)
