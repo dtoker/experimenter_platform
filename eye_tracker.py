@@ -478,7 +478,7 @@ class TobiiController:
 					#self.time = self.time[array_index:]
 					#array_index = 0
 					break
-		return self.EndFixations
+		yield self.EndFixations
 
 
 
