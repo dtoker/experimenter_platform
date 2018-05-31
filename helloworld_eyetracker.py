@@ -138,8 +138,7 @@ class EchoWebSocketHandler(tornado.websocket.WebSocketHandler):
         while (myOnlineFixations == None):
             myOnlineFixations = yield self.eb.onlinefix()
         print myOnlineFixations
-        DummyController.fixationReceived = True
-        DummyController.fixationBuffer = myOnlineFixations
+        
         #ADD STOP BUTTON
         #Write out a CSV Log file of the gaze interaction
         fl = open('myOnlineFixations.csv', 'wb')
