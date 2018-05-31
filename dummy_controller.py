@@ -14,7 +14,7 @@ class DummyController:
     def wait_for_fixation(self):
         AOI_defitions = [[(300, 300), (500, 300), (300 , 500), (500, 500)]]
         while True:
-            if not fixationReceived:
+            if not DummyController.fixationReceived:
                 yield
             else:
                 for aoi in AOI_defitions:
