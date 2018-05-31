@@ -1,0 +1,6 @@
+.idea/
+*.pyc
+
+/src/sampledata/blinks
+*.ipynb
+*.ipynb_checkpoints

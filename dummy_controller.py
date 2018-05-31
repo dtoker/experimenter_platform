@@ -16,15 +16,13 @@ class DummyController:
             if not DummyController.fixationReceived:
                 yield
             else:
-                for aoi in AOI_defitions:
-                    for fix in DummyController.fixationBuffer:
-                        if fixation_inside_aoi(fix[3], fix[4], aoi):
-                            DummyController.detectedFixations.append(fix)
-                            print("Found fixation with coords %d, %d in AOI" % (fix[3], fix[4]))
-                            DummyController.countFixations += 1
-                            break
+                for fix in DummyController.fixationBuffer:
+                    DummyController.detectedFixations.append(fix)
+                    print("Found fixation with coords %d, %d in AOI" % (fix[3], fix[4]))
+                    DummyController.countFixations += 1
                 DummyController.fixationBuffer = []
                 DummyController.fixationReceived = False
+
 
 def fixation_inside_aoi(x,y,poly):
     """Determines if a point is inside a given polygon or not
