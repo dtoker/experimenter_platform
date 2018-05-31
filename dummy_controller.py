@@ -17,6 +17,7 @@ class DummyController:
             if not DummyController.fixationReceived:
                 yield
             else:
+                print("NOTIFY!")
                 for aoi in AOI_defitions:
                     for fix in fixationBuffer:
                         if _fixation_inside_aoi(fix[3], fix[4], aoi):
