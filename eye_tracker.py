@@ -19,6 +19,7 @@ import tobii.eye_tracking_io.time.sync
 
 import numpy as np
 from tornado import gen
+from dummy_controller import DummyController
 
 class TobiiController:
 
@@ -435,7 +436,6 @@ class TobiiController:
 						if ((xVal != -1280) & (yVal != -1024)):
 							ws.write_message('{"x":"%d", "y":"%d"}' % (xVal, yVal))
 					break
-
 			#We are here because start fixation was detected
 			while(1):
 				if(Efix == []):
@@ -477,6 +477,8 @@ class TobiiController:
 					#self.y = self.y[array_index:]
 					#self.time = self.time[array_index:]
 					#array_index = 0
+					DummyController.fixationReceived = True
+					DummyController.fixationBuffer = Efix
 					break
 		yield Efix
 
