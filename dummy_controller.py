@@ -1,5 +1,5 @@
 from tornado import gen
-
+import csv
 
 class DummyController:
 
@@ -7,13 +7,15 @@ class DummyController:
     fixationBuffer = []
     detectedFixations = []
     countFixations = 0
-
+    receiveFixations = True
 
     @gen.coroutine
     def wait_for_fixation(self):
         AOI_defitions = [[(300, 300), (500, 300), (300 , 500), (500, 500)]]
         while True:
             if not DummyController.fixationReceived:
+                if not DummyController.receiveFixations:
+                    break
                 yield
             else:
                 for fix in DummyController.fixationBuffer:
@@ -22,7 +24,17 @@ class DummyController:
                     DummyController.countFixations += 1
                 DummyController.fixationBuffer = []
                 DummyController.fixationReceived = False
-
+                if not DummyController.receiveFixations:
+                    break
+        fl = open('myOnlineFixations.csv', 'wb')
+        writer = csv.writer(fl)
+        writer.writerow(['fixation_index', 'start_time', 'end_time', 'duration', 'end_x', 'end_Y'])
+        fixation_index = 1
+        print("Found fixations %d" % len(DummyController.detectedFixations))
+        for values in DummyController.detectedFixations:
+            writer.writerow([fixation_index] + list(values))
+            fixation_index = fixation_index + 1
+        fl.close()
 
 def fixation_inside_aoi(x,y,poly):
     """Determines if a point is inside a given polygon or not

@@ -62,12 +62,6 @@ class EchoWebSocketHandler(tornado.websocket.WebSocketHandler):
 
     def open(self):
 
-        self.eb = TobiiController() #TobiiController is the main class of eye_tracker.py
-        self.eb.liveWebSocket.add(self)
-        self.eb.waitForFindEyeTracker() #wait 'till it's found
-        print "eb created"
-        print self.eb.eyetrackers #we found one!
-        self.eb.activate(self.eb.eyetrackers.keys()[0]) #activate
         '''
         print "WebSocket opened"
 
@@ -112,10 +106,22 @@ class EchoWebSocketHandler(tornado.websocket.WebSocketHandler):
     #not sure if needed
     @gen.coroutine
     def on_message(self, message):
-        print message
-        if (message == "stop"):
+        print message == "close"
+        print("Should be destroying")
+        if (message == "close"):
             self.eb.runOnlineFix = False
+            print("destroying")
+            DummyController.receiveFixations = False
+            self.eb.stopTracking()
+            self.eb.destroy()
+            return
         else:
+            self.eb = TobiiController() #TobiiController is the main class of eye_tracker.py
+            self.eb.liveWebSocket.add(self)
+            self.eb.waitForFindEyeTracker() #wait 'till it's found
+            print "eb created"
+            print self.eb.eyetrackers #we found one!
+            self.eb.activate(self.eb.eyetrackers.keys()[0]) #activate
             self.eb.startTracking()
             print "tracking started"
         #self.write_message(u"Time Stamp: " + str(time.time()))
@@ -126,25 +132,14 @@ class EchoWebSocketHandler(tornado.websocket.WebSocketHandler):
 
         #Load Preetpal's online fixation code
         #returns: [list of lists, each containing [starttime, endtime, duration, endx, endy]
-        IOLoop.instance().add_callback(callback = self.eb.onlinefix())
+        IOLoop.instance().add_callback(callback = self.eb.onlinefix)
         #myOnlineFixations = self.eb.onlinefix()
         #print myOnlineFixations
 
         #ADD STOP BUTTON
         #Write out a CSV Log file of the gaze interaction
-        fl = open('myOnlineFixations.csv', 'wb')
-        writer = csv.writer(fl)
-        writer.writerow(['fixation_index', 'start_time', 'end_time', 'duration', 'end_x', 'end_Y'])
-        fixation_index = 1
-    #    for values in myOnlineFixations:
-    #        writer.writerow([fixation_index] + values[0])
-    #        fixation_index = fixation_index + 1
-        fl.close()
 
         #clean up eye tracking tracking and object
-        self.eb.stopTracking()
-        self.eb.destroy()
-
     def on_close(self):
         print("WebSocket closed")
 
@@ -155,7 +150,7 @@ def main():
     tornado.options.parse_command_line()
     #Application() refers to 'class Application'
     http_server = tornado.httpserver.HTTPServer(Application())
-    http_server.listen(options.port)
+    http_server.listen(8000)
     controller = DummyController()
     IOLoop.instance().add_callback(callback = controller.wait_for_fixation)
     tornado.ioloop.IOLoop.current().start()
