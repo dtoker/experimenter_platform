@@ -16,7 +16,7 @@ import tobii.eye_tracking_io.browsing
 import tobii.eye_tracking_io.eyetracker
 import tobii.eye_tracking_io.time.clock
 import tobii.eye_tracking_io.time.sync
-
+import csv
 import numpy as np
 from tornado import gen
 from dummy_controller import DummyController
@@ -365,6 +365,7 @@ class TobiiController:
 	#Preetpal's Online/Realtime fixation algorithm
 	@gen.coroutine
 	def onlinefix(self):
+		print "detecting Fixations"
 		#list of lists, each containing [starttime, endtime, duration, endx, endy]
 		self.EndFixations = []
 		#Keep track of index in x,y,time array
