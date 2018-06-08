@@ -2,18 +2,19 @@
 
 class DetectionComponent():
 
-    def __init__(self, tobii_controller, is_periodic, callback_time):
+    def __init__(self, tobii_controller, is_periodic, callback_time, liveWebSocket):
         self.tobii_controller  = tobii_controller
         self.is_periodic = is_periodic
         self.callback_time = callback_time
+        self.liveWebSocket = liveWebSocket
 
     @abstractmethod
     def notify_app_state_controller(self):
-        print('stub')
+        pass
 
     @abstractmethod
     def run(self):
-        print('stub')
+        pass
 
     def start(self):
         if (self.is_periodic):
@@ -23,3 +24,4 @@ class DetectionComponent():
             IOLoop.instance().add_callback(callback = self.run())
 
     def stop(self):
+        pass
