@@ -1,4 +1,5 @@
 from detection_component import DetectionComponent
+from dummy_controller import DummyController
 
 class FixationDetector(DetectionComponent):
 
@@ -19,8 +20,7 @@ class FixationDetector(DetectionComponent):
         raw_y = self.tobii_controller.y
         raw_time = self.tobii_controller.time
         raw_validity = self.tobii_controller.validity
-
-
+        # To be passed to fixation algorithm
 		newX = []
 		newY = []
 		newTime = []

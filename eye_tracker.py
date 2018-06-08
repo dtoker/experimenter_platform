@@ -579,7 +579,7 @@ class TobiiController:
 					break
 		yield Efix
 
-
+"""
 	#Preetpal's Online/Realtime fixation algorithm
 	@gen.coroutine
 	def onlinefix(self):
@@ -705,7 +705,7 @@ class TobiiController:
 
 		yield Efix
 
-
+"""
 #Original code provided by Roberto showing how to start the the eyetracker
 """
 #this will be called from a tornado handler

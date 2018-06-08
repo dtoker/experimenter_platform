@@ -2,7 +2,7 @@
 
 class DetectionComponent():
 
-    def __init__(self, tobii_controller, is_periodic, callback_time, liveWebSocket):
+    def __init__(self, tobii_controller, is_periodic = False, callback_time = 600000, liveWebSocket = None):
         self.tobii_controller  = tobii_controller
         self.is_periodic = is_periodic
         self.callback_time = callback_time
