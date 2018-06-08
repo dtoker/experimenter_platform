@@ -24,5 +24,4 @@ class ExperimenterPlatform():
 
     def switch_task(self, features, AOIs):
         pass
-
-    
+        

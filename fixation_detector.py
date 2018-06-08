@@ -158,7 +158,7 @@ class FixationDetector(DetectionComponent):
 					DummyController.y_from_tobii = raw_y
 					DummyController.time_from_tobii = raw_time
 					DummyController.fixationBuffer.append((start_fix, array_index - 1, x_fixation, y_fixation))
-
+                    self.tobii_controller.add_fixation(start_fix, array_index - 1, x_fixation, y_fixation)
                     self.notify_app_state_controller(x_fixation, y_fixation)
 					break
 		yield Efix
@@ -285,6 +285,8 @@ class FixationDetector(DetectionComponent):
 				last_valid = i
 				invalid_count = 0
 		return Sfix, Efix
+
+
 
     def notify_app_state_controller(self, x, y):
         for aoi in self.AOIs:

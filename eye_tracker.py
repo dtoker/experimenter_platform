@@ -311,6 +311,9 @@ class TobiiController:
 		self.time.append(gaze.Timestamp)
 		self.validity.append(gaze.LeftValidity == 0 or gaze.RightValidity == 0)
 
+	def add_fixation(self, start_index, end_index, x, y):
+		self.EndFixations.append((start_index, end_index, x, y))
+
 
 	#Pygaze: Offline fixation algorithm (*note mindur has to be defined here in microseconds)
 	def fixation_detection(self, x, y, time, validity, maxdist=35, mindur=60000):

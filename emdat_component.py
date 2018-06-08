@@ -16,7 +16,7 @@ class EMDATComponent(DetectionComponent):
         """
         Code to send features to AppStateController
         """
-
+    
     def run(self):
         # TODO: Calculate the features
         pass
