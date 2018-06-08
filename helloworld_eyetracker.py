@@ -132,7 +132,7 @@ class EchoWebSocketHandler(tornado.websocket.WebSocketHandler):
 
         #Load Preetpal's online fixation code
         #returns: [list of lists, each containing [starttime, endtime, duration, endx, endy]
-        IOLoop.instance().add_callback(callback = self.eb.onlinefix)
+        IOLoop.instance().add_callback(callback = self.eb.onlinefix_2)
         #myOnlineFixations = self.eb.onlinefix()
         #print myOnlineFixations
 
@@ -152,7 +152,7 @@ def main():
     http_server = tornado.httpserver.HTTPServer(Application())
     http_server.listen(8000)
     controller = DummyController()
-    IOLoop.instance().add_callback(callback = controller.wait_for_fixation)
+    IOLoop.instance().add_callback(callback = controller.wait_for_fixation_2)
     tornado.ioloop.IOLoop.current().start()
 
 if __name__ == "__main__":
