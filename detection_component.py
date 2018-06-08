@@ -21,3 +21,6 @@ class DetectionComponent():
             cb.start()
         else:
             IOLoop.instance().add_callback(callback = self.run())
+
+    def stop(self):
+        
