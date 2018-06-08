@@ -6,8 +6,13 @@ class DummyController:
     fixationReceived = False
     fixationBuffer = []
     detectedFixations = []
+
     countFixations = 0
     receiveFixations = True
+    x_from_tobii = []
+    y_from_tobii = []
+    time_from_tobii = []
+
 
     @gen.coroutine
     def wait_for_fixation(self):
@@ -28,13 +33,54 @@ class DummyController:
                     break
         fl = open('myOnlineFixations.csv', 'wb')
         writer = csv.writer(fl)
-        writer.writerow(['fixation_index', 'start_time', 'end_time', 'duration', 'end_x', 'end_Y'])
-        fixation_index = 1
+        writer.writerow(['sample_id', 'isFixation', 'start_time', 'duration', 'end_x', 'end_Y'])
+        sample_id = 1
         print("Found fixations %d" % len(DummyController.detectedFixations))
         for values in DummyController.detectedFixations:
-            writer.writerow([fixation_index] + list(values))
-            fixation_index = fixation_index + 1
+            writer.writerow([sample_id] + list(values))
+            sample_id = sample_id + 1
         fl.close()
+
+
+    @gen.coroutine
+    def wait_for_fixation_2(self):
+        while True:
+            if not DummyController.receiveFixations:
+                break
+            yield
+        fl = open('myOnlineFixations.csv', 'wb')
+        writer = csv.writer(fl)
+        writer.writerow(['sample_id', 'timestamp', 'fix_id', 'duration', 'start_x', 'start_Y'])
+        # First fixation
+        curr_fixation = DummyController.fixationBuffer[0]
+        fix_id = 1
+        isFixation = False
+        print("size of x is %d" % len(DummyController.x_from_tobii))
+        print("size of fix is %d" % len(DummyController.fixationBuffer))
+        for i in range(len(DummyController.x_from_tobii)):
+            start, end, xfixation, y_fixation = curr_fixation
+            # Out of the current fixation
+            if (i > end):
+                if (fix_id < len(DummyController.fixationBuffer) - 1):
+                    fix_id += 1
+                    curr_fixation = DummyController.fixationBuffer[fix_id]
+                    start, end, xfixation, y_fixation = curr_fixation
+                else:
+                    break
+            if (i >= start and i <= end):
+                isFixation = True
+            else:
+                isFixation = False
+            x = DummyController.x_from_tobii[i]
+            y = DummyController.y_from_tobii[i]
+            time = DummyController.time_from_tobii[i]
+            if (isFixation):
+                writer.writerow([i + 1, time, fix_id,  DummyController.time_from_tobii[end] -  DummyController.time_from_tobii[start],  xfixation, y_fixation])
+            else:
+                writer.writerow([i + 1, time, -1, -1, x, y])
+        fl.close()
+
+
 
 def fixation_inside_aoi(x,y,poly):
     """Determines if a point is inside a given polygon or not
