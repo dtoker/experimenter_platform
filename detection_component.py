@@ -2,8 +2,8 @@
 
 class DetectionComponent():
 
-    def __init__(self, controller, is_periodic, callback_time):
-        self.controller  = controller
+    def __init__(self, tobii_controller, is_periodic, callback_time):
+        self.tobii_controller  = tobii_controller
         self.is_periodic = is_periodic
         self.callback_time = callback_time
 
@@ -23,4 +23,3 @@ class DetectionComponent():
             IOLoop.instance().add_callback(callback = self.run())
 
     def stop(self):
-        
