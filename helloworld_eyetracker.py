@@ -23,6 +23,7 @@ from tornado import gen
 from tornado.ioloop import IOLoop
 from dummy_controller import DummyController
 from fixation_detector import FixationDetector
+from application.app_state_controller import ApplicationStateController
 ##########################################
 
 define("port", default=8888, help="run on the given port", type=int)
@@ -103,11 +104,17 @@ class EchoWebSocketHandler(tornado.websocket.WebSocketHandler):
         eb.stopTracking()
         eb.destroy()
         '''
+    def get_application_state_controller(self):
+        if (self.app_state_control == None):
+            self.app_state_control = ApplicationStateController()
+        return self.app_state_control
 
+        
     #not sure if needed
     @gen.coroutine
     def on_message(self, message):
         print message == "close"
+        app_state_control = self.get_application_state_controller()
         print("Should be destroying")
         if (message == "close"):
             self.eb.runOnlineFix = False
@@ -117,7 +124,6 @@ class EchoWebSocketHandler(tornado.websocket.WebSocketHandler):
             self.eb.destroy()
             return
         else:
-
 
             self.eb = TobiiController() #TobiiController is the main class of eye_tracker.py
             self.eb.liveWebSocket.add(self)
