@@ -22,6 +22,7 @@ from threading import Thread
 from tornado import gen
 from tornado.ioloop import IOLoop
 from dummy_controller import DummyController
+from fixation_detector import FixationDetector
 ##########################################
 
 define("port", default=8888, help="run on the given port", type=int)
@@ -116,6 +117,8 @@ class EchoWebSocketHandler(tornado.websocket.WebSocketHandler):
             self.eb.destroy()
             return
         else:
+
+
             self.eb = TobiiController() #TobiiController is the main class of eye_tracker.py
             self.eb.liveWebSocket.add(self)
             self.eb.waitForFindEyeTracker() #wait 'till it's found
@@ -123,6 +126,8 @@ class EchoWebSocketHandler(tornado.websocket.WebSocketHandler):
             print self.eb.eyetrackers #we found one!
             self.eb.activate(self.eb.eyetrackers.keys()[0]) #activate
             self.eb.startTracking()
+            self.fixation_component = FixationDetector(self.eb, AOIS=[((0,0), (1280,1024))], liveWebSocket = self.eb.liveWebSocket)
+            self.fixation_component.start()
             print "tracking started"
         #self.write_message(u"Time Stamp: " + str(time.time()))
         #print("sending message from server")
@@ -131,7 +136,6 @@ class EchoWebSocketHandler(tornado.websocket.WebSocketHandler):
 
         #Load Preetpal's online fixation code
         #returns: [list of lists, each containing [starttime, endtime, duration, endx, endy]
-        IOLoop.instance().add_callback(callback = self.eb.onlinefix_2)
         #myOnlineFixations = self.eb.onlinefix()
         #print myOnlineFixations
 
@@ -149,6 +153,7 @@ def main():
     #Application() refers to 'class Application'
     http_server = tornado.httpserver.HTTPServer(Application())
     http_server.listen(8000)
+
     controller = DummyController()
     IOLoop.instance().add_callback(callback = controller.wait_for_fixation_2)
     tornado.ioloop.IOLoop.current().start()

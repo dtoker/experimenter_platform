@@ -3,8 +3,8 @@ from dummy_controller import DummyController
 
 class FixationDetector(DetectionComponent):
 
-    def __init__(self, tobii_controller, AOIs):
-        super().__init__(tobii_controller)
+    def __init__(self, tobii_controller, AOIs, liveWebSocket):
+        super().__init__(tobii_controller, liveWebSocket = liveWebSocket)
         self.AOIs = AOIs
         self.runOnlineFix = True
 

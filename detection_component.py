@@ -5,7 +5,7 @@ class DetectionComponent():
         self.tobii_controller  = tobii_controller
         self.is_periodic = is_periodic
         self.callback_time = callback_time
-        self.liveWebSocket = liveWebSocket
+        self.liveWebSocket = [liveWebSocket]
 
     @abstractmethod
     def notify_app_state_controller(self):
