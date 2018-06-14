@@ -1,11 +1,13 @@
 
 class DetectionComponent():
 
-    def __init__(self, tobii_controller, is_periodic = False, callback_time = 600000, liveWebSocket = None):
+    def __init__(self, tobii_controller, application_state_controller, is_periodic = False, callback_time = 600000, liveWebSocket = None):
         self.tobii_controller  = tobii_controller
+        self.application_state_controller = application_state_controller
         self.is_periodic = is_periodic
         self.callback_time = callback_time
         self.liveWebSocket = [liveWebSocket]
+        self.AOIS = self.application_state_controller.getAoiMapping()
 
     @abstractmethod
     def notify_app_state_controller(self):

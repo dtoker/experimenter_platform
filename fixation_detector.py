@@ -3,9 +3,8 @@ from dummy_controller import DummyController
 
 class FixationDetector(DetectionComponent):
 
-    def __init__(self, tobii_controller, AOIs, liveWebSocket):
-        super().__init__(tobii_controller, liveWebSocket = liveWebSocket)
-        self.AOIs = AOIs
+    def __init__(self, tobii_controller, application_state_controller, liveWebSocket):
+        super().__init__(tobii_controller, application_state_controller, liveWebSocket = liveWebSocket)
         self.runOnlineFix = True
 
     #Preetpal's Online/Realtime fixation algorithm

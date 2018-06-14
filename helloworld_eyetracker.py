@@ -63,58 +63,15 @@ class FixationHandler(tornado.web.RequestHandler):
 class EchoWebSocketHandler(tornado.websocket.WebSocketHandler):
 
     def open(self):
+        self.app_state_control = ApplicationStateController()
+        self.tobii_controller = TobiiController()
+        self.tobii_controller.liveWebSocket.add(self)
+        self.tobii_controller.waitForFindEyeTracker()
+        print self.tobii_controller.eyetrackers
 
-        '''
-        print "WebSocket opened"
-
-        #create the controller to the eye tracker
-        eb = TobiiController() #TobiiController is the main class of eye_tracker.py
-
-        #Add self(which is a websocket) to the eyetracker object
-        eb.liveWebSocket.add(self)
-        print "eb created"
-
-        eb.waitForFindEyeTracker() #wait 'till it's found
-        print eb.eyetrackers #we found one!
-        eb.activate(eb.eyetrackers.keys()[0]) #activate
-
-        #Start tracking gaze data
-        eb.startTracking()
-        print "tracking started"
-
-        eb.liveWebSocket.add(self)
-
-        #Load Preetpal's online fixation code
-        #returns: [list of lists, each containing [starttime, endtime, duration, endx, endy]
-        myOnlineFixations =  eb.onlinefix()
-
-        #ADD STOP BUTTON
-
-        #Write out a CSV Log file of the gaze interaction
-        fl = open('myOnlineFixations.csv', 'wb')
-        writer = csv.writer(fl)
-        writer.writerow(['fixation_index', 'start_time', 'end_time', 'duration', 'end_x', 'end_Y'])
-        fixation_index = 1
-        for values in myOnlineFixations:
-            writer.writerow([fixation_index] + values[0])
-            fixation_index = fixation_index + 1
-        fl.close()
-
-        #clean up eye tracking tracking and object
-        eb.stopTracking()
-        eb.destroy()
-        '''
-    def get_application_state_controller(self):
-        if (self.app_state_control == None):
-            self.app_state_control = ApplicationStateController()
-        return self.app_state_control
-
-        
-    #not sure if needed
     @gen.coroutine
     def on_message(self, message):
         print message == "close"
-        app_state_control = self.get_application_state_controller()
         print("Should be destroying")
         if (message == "close"):
             self.eb.runOnlineFix = False
@@ -124,42 +81,20 @@ class EchoWebSocketHandler(tornado.websocket.WebSocketHandler):
             self.eb.destroy()
             return
         else:
-
-            self.eb = TobiiController() #TobiiController is the main class of eye_tracker.py
-            self.eb.liveWebSocket.add(self)
-            self.eb.waitForFindEyeTracker() #wait 'till it's found
-            print "eb created"
-            print self.eb.eyetrackers #we found one!
-            self.eb.activate(self.eb.eyetrackers.keys()[0]) #activate
+            self.eb.activate(self.eb.eyetrackers.keys()[0])
             self.eb.startTracking()
-            self.fixation_component = FixationDetector(self.eb, AOIS=[((0,0), (1280,1024))], liveWebSocket = self.eb.liveWebSocket)
+            self.fixation_component = FixationDetector(self.eb, self.app_state_control, liveWebSocket = self.eb.liveWebSocket)
             self.fixation_component.start()
             print "tracking started"
-        #self.write_message(u"Time Stamp: " + str(time.time()))
-        #print("sending message from server")
 
-        #Add self(which is a websocket) to the eyetracker object
-
-        #Load Preetpal's online fixation code
-        #returns: [list of lists, each containing [starttime, endtime, duration, endx, endy]
-        #myOnlineFixations = self.eb.onlinefix()
-        #print myOnlineFixations
-
-        #ADD STOP BUTTON
-        #Write out a CSV Log file of the gaze interaction
-
-        #clean up eye tracking tracking and object
     def on_close(self):
         print("WebSocket closed")
 
 
-#main function is first thing to run when application starts
 def main():
     tornado.options.parse_command_line()
-    #Application() refers to 'class Application'
     http_server = tornado.httpserver.HTTPServer(Application())
     http_server.listen(8000)
-
     controller = DummyController()
     IOLoop.instance().add_callback(callback = controller.wait_for_fixation_2)
     tornado.ioloop.IOLoop.current().start()
