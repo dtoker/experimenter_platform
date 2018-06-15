@@ -1,22 +1,26 @@
 
 from eye_tracker import TobiiController
+from fixation_detector import FixationDetector
+from emdat_component import EMDATComponent
+
 
 class ExperimenterPlatform():
 
-
     def __init__(self):
-        self.eb = TobiiController() #TobiiController is the main class of eye_tracker.py
-        self.eb.liveWebSocket.add(self)
-        self.eb.waitForFindEyeTracker() #wait 'till it's found
-        print "eb created"
-        print self.eb.eyetrackers #we found one!
-        self.eb.activate(self.eb.eyetrackers.keys()[0]) #activate
-        self.eb.startTracking()
-        print "tracking started"
+        ## Initialize eye tracker
+        self.tobii_controller = TobiiController()
+        self.websocket = set()
+        self.tobii_controller.waitForFindEyeTracker()
+        self.tobii_controller.activate(self.tobii_controller.eyetrackers.keys()[0])
+        # Initialize detection components
+        self.fixation_detector = FixationDetector(self.tobii_controller)
+        self.emdat_component = EMDATComponent(self.tobii_controller, True)
 
-        print('hi')
+    def initialize_platform(self, features, AOIs):
+        # Start all components
+        self.tobii_controller.startTracking()
+        self.fixation_detector.start()
+        self.emdat_component.start()
 
-    def initialize_platform(self):
-        controller = DummyController()
-        IOLoop.instance().add_callback(callback = controller.wait_for_fixation)
-        IOLoop.instance().add_callback(callback = self.eb.onlinefix)
+    def switch_task(self, features, AOIs):
+        pass

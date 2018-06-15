@@ -50,7 +50,7 @@ class DummyController:
             yield
         fl = open('myOnlineFixations.csv', 'wb')
         writer = csv.writer(fl)
-        writer.writerow(['sample_id', 'timestamp', 'fix_id', 'duration', 'fix_x', 'fix_Y', 'pt_x', 'pt_y'])
+        writer.writerow(['sample_id', 'timestamp', 'fix_id', 'duration', 'start_x', 'start_Y'])
         # First fixation
         curr_fixation = DummyController.fixationBuffer[0]
         fix_id = 1
