@@ -127,6 +127,7 @@ class EchoWebSocketHandler(tornado.websocket.WebSocketHandler):
         #self.write_message(u"Time Stamp: " + str(time.time()))
         #print("sending message from server")
 
+
         #Add self(which is a websocket) to the eyetracker object
 
         #Load Preetpal's online fixation code
@@ -141,6 +142,7 @@ class EchoWebSocketHandler(tornado.websocket.WebSocketHandler):
         #clean up eye tracking tracking and object
     def on_close(self):
         print("WebSocket closed")
+
 
 
 #main function is first thing to run when application starts

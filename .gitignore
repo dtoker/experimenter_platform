@@ -1,6 +1,6 @@
 .idea/
 *.pyc
 
-/src/sampledata/blinks
+mOnlineFixations.csv
 *.ipynb
 *.ipynb_checkpoints

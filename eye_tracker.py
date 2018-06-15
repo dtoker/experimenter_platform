@@ -313,7 +313,7 @@ class TobiiController:
 
 
 	#Pygaze: Offline fixation algorithm (*note mindur has to be defined here in microseconds)
-	def fixation_detection(self, x, y, time, validity, maxdist=35, mindur=60000):
+	def fixation_detection(self, x, y, time, validity, maxdist=35, mindur=100000):
 
         #Detects fixations, defined as consecutive samples with an inter-sample
         #distance of less than a set amount of pixels (disregarding missing data)
@@ -356,7 +356,7 @@ class TobiiController:
 			if dist <= maxdist and not fixstart:
 				print("fix found")
 				#print("fixstart happened")
-				si = i
+				si = i - 1
 				# if point is not valid, don't treat it as start of a fixation
 				if not validity[i]:
 					print("fix found invalid")
@@ -374,12 +374,15 @@ class TobiiController:
 				# end the current fixation
 				# If point is not valid
 				print('endfix')
+				fixstart = False
 				if not validity[i]:
 					print('endfix invalid')
 					# if we don't have more than 9 consequtive invalid points
 					# then we're ok
 					if (invalid_count <= 9):
+						print("skipping")
 						invalid_count += 1
+						fixstart = True
 						continue
 					# if more than 9, we take treat the last valid point as the end of
 					# fixation
@@ -391,33 +394,35 @@ class TobiiController:
 							break
 						else:
 							Sfix.pop(-1)
-							fixstart = False
 							si = 0 + i
 							invalid_count = 0
 							continue
 				elif not validity[i-1]:
+					print('prev pt invalid')
 					duration = time[last_valid] - Sfix[-1]
 					#print("duration invalid is %d" % duration)
 					if duration >= mindur:
+						print('return fix')
 						Efix.append((Sfix[-1], time[last_valid], time[last_valid] - Sfix[-1], x[last_valid], y[last_valid]))
 						break
 					else:
+						print('too short')
 						Sfix.pop(-1)
-						fixstart = False
 						si = 0 + i
 						invalid_count = 0
 						continue
-				fixstart = False
 				# only store the fixation if the duration is ok
 				#print("duration invalid is %d" % (time[i-1] - Sfix[-1]))
 				if time[i-1] - Sfix[-1] >= mindur:
 					Efix.append((Sfix[-1], time[i - 1], time[i - 1] - Sfix[-1], x[si], y[si]))
 					break
 				# delete the last fixation start if it was too short
-				else:
-					print("dur too small")
-					Sfix.pop(-1)
-				si = 0 + i
+				print("dur too small")
+				Sfix.pop(-1)
+				si = self.find_new_start(x, y, maxdist, i, si)
+				if (si != i):
+					fixstart = True
+					Sfix.append(time[si])
 				last_valid = si
 				invalid_count = 0
 			elif not fixstart:
@@ -428,10 +433,19 @@ class TobiiController:
 			# If within a fixation and within distance,
 			# current point should be valid.
 			elif fixstart:
-				print('valid stuff')
+				print('valid inside fix')
 				last_valid = i
 				invalid_count = 0
 		return Sfix, Efix
+
+	def find_new_start(self, x, y, maxdist, i, si):
+		j = si + 1
+		while(j < i):
+			dist_i_j = ((x[i] - x[j])**2 + (y[i] - y[j])**2)**0.5
+			if (dist_i_j <= maxdist):
+				break
+			j += 1
+		return j
 
 	#Preetpal's Online/Realtime fixation algorithm
 	@gen.coroutine
@@ -539,10 +553,10 @@ class TobiiController:
 					#fixation has been detected merely becasue it's the last item
 					#in the array, so we want to keep going to be sure.
 					# TODO: Make sure this actually ever happens
-					if(Efix != []):
-						EfixEndTime = Efix[0][1]
-						if (EfixEndTime == self.time[-1]):
-							Efix = []
+					#if(Efix != []):
+					#	EfixEndTime = Efix[0][1]
+					#	if (EfixEndTime == self.time[-1]):
+					#		Efix = []
 				#a genuine end fixation has been found!
 				else:
 					#Add the newly found end fixation to our collection of end fixations
@@ -589,7 +603,7 @@ class TobiiController:
 		#Keep track of index in x,y,time array
 		array_index = 0
 		#Used to get segments of size 7
-		array_iterator = 7
+		array_iterator = 12
 		#this start variable is here so we can time out after 10 seconds
 		start = time.time()
 		newX = []

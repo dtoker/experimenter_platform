@@ -50,7 +50,7 @@ class DummyController:
             yield
         fl = open('myOnlineFixations.csv', 'wb')
         writer = csv.writer(fl)
-        writer.writerow(['sample_id', 'timestamp', 'fix_id', 'duration', 'start_x', 'start_Y'])
+        writer.writerow(['sample_id', 'timestamp', 'fix_id', 'duration', 'fix_x', 'fix_Y', 'pt_x', 'pt_y'])
         # First fixation
         curr_fixation = DummyController.fixationBuffer[0]
         fix_id = 1
@@ -75,9 +75,9 @@ class DummyController:
             y = DummyController.y_from_tobii[i]
             time = DummyController.time_from_tobii[i]
             if (isFixation):
-                writer.writerow([i + 1, time, fix_id,  DummyController.time_from_tobii[end] -  DummyController.time_from_tobii[start],  xfixation, y_fixation])
+                writer.writerow([i + 1, time, fix_id,  DummyController.time_from_tobii[end] -  DummyController.time_from_tobii[start],  xfixation, y_fixation, x, y])
             else:
-                writer.writerow([i + 1, time, -1, -1, x, y])
+                writer.writerow([i + 1, time, -1, -1, 0, 0, x, y])
         fl.close()
 
 
