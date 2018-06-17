@@ -13,17 +13,18 @@ import random
 # Imports required for EYE TRACKING Code:
 import tornado.websocket
 import time
-import eye_tracker
-from eye_tracker import TobiiController
+import backend.eye_tracker
+from backend.eye_tracker import TobiiController
+from backend.dummy_controller import DummyController
+from backend.fixation_detector import FixationDetector
 import csv
 
 import thread
 from threading import Thread
 from tornado import gen
 from tornado.ioloop import IOLoop
-from dummy_controller import DummyController
-from fixation_detector import FixationDetector
-from application.app_state_controller import ApplicationStateController
+
+from application.application_state_controller import ApplicationStateController
 ##########################################
 
 define("port", default=8888, help="run on the given port", type=int)
@@ -63,40 +64,37 @@ class FixationHandler(tornado.web.RequestHandler):
 class EchoWebSocketHandler(tornado.websocket.WebSocketHandler):
 
     def open(self):
-        self.app_state_control = ApplicationStateController()
+        self.app_state_control = ApplicationStateController(1)
         self.tobii_controller = TobiiController()
         self.tobii_controller.liveWebSocket.add(self)
         self.tobii_controller.waitForFindEyeTracker()
         print self.tobii_controller.eyetrackers
+        self.fixation_component = FixationDetector(self.tobii_controller, self.app_state_control, liveWebSocket = self.tobii_controller.liveWebSocket)
 
-    @gen.coroutine
     def on_message(self, message):
         print message == "close"
-        print("Should be destroying")
         if (message == "close"):
-            self.eb.runOnlineFix = False
             print("destroying")
-            DummyController.receiveFixations = False
-            self.eb.stopTracking()
-            self.eb.destroy()
+            #DummyController.receiveFixations = False
+            self.fixation_component.stop()
+            self.tobii_controller.stopTracking()
+            self.tobii_controller.destroy()
             return
         else:
-            self.eb.activate(self.eb.eyetrackers.keys()[0])
-            self.eb.startTracking()
-            self.fixation_component = FixationDetector(self.eb, self.app_state_control, liveWebSocket = self.eb.liveWebSocket)
+            self.tobii_controller.activate(self.tobii_controller.eyetrackers.keys()[0])
+            self.tobii_controller.startTracking()
             self.fixation_component.start()
             print "tracking started"
 
     def on_close(self):
         print("WebSocket closed")
 
-
 def main():
     tornado.options.parse_command_line()
     http_server = tornado.httpserver.HTTPServer(Application())
     http_server.listen(8000)
-    controller = DummyController()
-    IOLoop.instance().add_callback(callback = controller.wait_for_fixation_2)
+    #controller = DummyController()
+    #IOLoop.instance().add_callback(callback = controller.wait_for_fixation_2)
     tornado.ioloop.IOLoop.current().start()
 
 if __name__ == "__main__":
