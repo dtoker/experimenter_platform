@@ -27,7 +27,6 @@ class ApplicationStateController():
         self.eventNames = []
         self.__initializeApplication__()
 
-    @gen.coroutine
     def __getDBCommands__(self):
 
         """Retrieves the database sql commands as a String
@@ -45,10 +44,10 @@ class ApplicationStateController():
         tempfile = StringIO()
         for line in self.conn.iterdump():
             tempfile.write('%s\n' % line)
+            print line
         tempfile.seek(0)
         return tempfile
 
-    @gen.coroutine
     def __readDBFromDisk__(self):
 
         """Initializes the db in memory by reading it from '../user_model_state.db'
@@ -63,16 +62,17 @@ class ApplicationStateController():
         None
         """
 
-        self.conn = sqlite3.connect('../user_model_state.db')
-        commands = yield self.__getDBCommands__()
+        self.conn = sqlite3.connect('./user_model_state.db')
+        commands = self.__getDBCommands__()
         self.conn.close()
 
         self.conn = sqlite3.connect(":memory:")
         self.conn.cursor().executescript(commands.read())
         self.conn.commit()
         self.conn.row_factory = sqlite3.Row
+        print('read db')
+        print(self.conn)
 
-    @gen.coroutine
     def __writeDBToDisk__(self):
 
         """ Writes the current state of the db in memory back to '../user_model_state.db'
@@ -86,16 +86,15 @@ class ApplicationStateController():
         returns
         None
         """
-        command = yield self.__getDBCommands__()
+        command = self.__getDBCommands__()
         self.conn.close()
 
-        yield os.remove("../user_model_state.db")
-        self.conn = sqlite3.connect("../user_model_state.db")
+        os.remove("./user_model_state.db")
+        self.conn = sqlite3.connect("./user_model_state.db")
         self.conn.cursor().executescript(command.read())
         self.conn.commit()
         self.conn.close()
 
-    @gen.coroutine
     def __initializeApplication__(self):
 
         """ Initializes the class by:
@@ -115,12 +114,11 @@ class ApplicationStateController():
         """
 
         print "initializing application"
-        yield self.__readDBFromDisk__()
-        yield self.__deleteAllDynamicTables__()
-        yield self.__updateTaskAndUserState__(self.currTask)
-        yield self.__createDynamicTables__()
+        self.__readDBFromDisk__()
+        self.__deleteAllDynamicTables__()
+        self.__updateTaskAndUserState__(self.currTask)
+        self.__createDynamicTables__()
 
-    @gen.coroutine
     def __updateTaskAndUserState__(self, task):
 
         """ Updates the current task and retrieves the relevant user states
@@ -142,7 +140,6 @@ class ApplicationStateController():
         for user in self.userStates:
             self.eventNames.append(user['event_name'])
 
-    @gen.coroutine
     def __createDynamicTables__(self):
 
         """ Creates the dynamic tables required for the current task
@@ -171,7 +168,6 @@ class ApplicationStateController():
                 raise NotImplementedError("Invalid Type: The supported types are `fix` `ml` and `emdat`")
             self.conn.commit() #commit after every creation?
 
-    @gen.coroutine
     def __deleteTaskDynamicTables__(self):
 
         """ Deletes all the dynamic tables associated with the current task
@@ -188,9 +184,8 @@ class ApplicationStateController():
         for user in self.userStates:
             table_name = user['event_name']
             self.conn.execute("DROP TABLE IF EXISTS {}".format(table_name))
-        yield self.conn.commit()
+        self.conn.commit()
 
-    @gen.coroutine
     def __deleteAllDynamicTables__(self):
 
         """ Deletes all dynamic tables from every task,
@@ -216,7 +211,6 @@ class ApplicationStateController():
             self.conn.execute("DROP TABLE IF EXISTS {}".format(table_name))
         self.conn.commit()
 
-    @gen.coroutine
     def logTask(self):
 
         """ Creates a log file called log_for_task_x, where x is the current task
@@ -231,14 +225,13 @@ class ApplicationStateController():
         returns
         None
         """
-        file = yield self.__getDBCommands__()
+        file = self.__getDBCommands__()
         #TODO: robust check of log dir
-        file_name = '../log/log_for_task_' + str(self.currTask) + ".sql"
+        file_name = './log/log_for_task_' + str(self.currTask) + ".sql"
         with open (file_name, 'w') as fd:
           file.seek (0)
           shutil.copyfileobj (file, fd)
 
-    @gen.coroutine
     def changeTask(self, task):
 
         """ Changes database to reflect a new task:
@@ -257,12 +250,12 @@ class ApplicationStateController():
         None
         """
         print "Switching to task: " + str(task)
-        yield self.logTask()
-        yield self.__deleteTaskDynamicTables__()
-        yield self.__updateTaskAndUserState__(task)
-        yield self.__createDynamicTables__()
+        self.logTask()
+        self.__deleteTaskDynamicTables__()
+        self.__updateTaskAndUserState__(task)
+        self.__createDynamicTables__()
 
-    @gen.coroutine
+
     def resetApplication(self):
 
         """ Prepares the application for termination, should be called at the end of execution
@@ -280,11 +273,11 @@ class ApplicationStateController():
         None
         """
 
-        yield self.logTask()
-        yield self.__deleteAllDynamicTables__()
-        yield self.__writeDBToDisk__()
+        self.logTask()
+        self.__deleteAllDynamicTables__()
+        self.__writeDBToDisk__()
 
-    @gen.coroutine
+
     def getAoiMapping(self):
 
         """ Returns a mapping of the user states to aoi's
@@ -300,14 +293,21 @@ class ApplicationStateController():
                 to the polygon coordinates of their respective aoi's
         """
         mapping = {}
-        query_results = self.conn.execute("SELECT event_name, polygon FROM aoi, user_state WHERE user_state.aoi = aoi.name AND aoi.task = ?", str(self.currTask))
+        query_results = self.conn.execute("SELECT user_state.event_name, polygon FROM aoi, user_state, user_state_task WHERE user_state.aoi = aoi.name AND aoi.task = ? AND user_state.event_name = user_state_task.event_name AND user_state_task.task = ?", (str(self.currTask), str(self.currTask)))
         aoi_results = query_results.fetchall()
         for aoi in aoi_results:
             event_name = aoi['event_name']
+
             polygon = aoi['polygon']
             mapping[event_name] = polygon
+
+        print mapping
         return mapping
 
+<<<<<<< HEAD
+=======
+
+>>>>>>> 28b3738c958e48ce22a4950ceb33f8d07094306d
     def evaluateConditional(self, query):
 
         """ Evalutaes an SQL conditional
@@ -355,7 +355,6 @@ class ApplicationStateController():
         self.conn.execute("INSERT INTO {} VALUES (?,?,?,?)".format(table), (id, time_start, time_end, duration))
         self.conn.commit()
 
-    @gen.coroutine
     def updateEmdatTable(self, table, id, value):
 
         """ Insert a new row into an emdat table
@@ -378,7 +377,6 @@ class ApplicationStateController():
         self.conn.execute("INSERT INTO {} VALUES (?,?,?,?)".format(table), (id, value))
         self.conn.commit()
 
-    @gen.coroutine
     def updateMlTable(self, table, id, time_stamp, raw_prediction, value):
 
         """ Inserts new row into a ml table
@@ -406,10 +404,10 @@ def main():
     app_contr = ApplicationStateController(1)
     #for testing purposes:
     table = "text_fix"
-    IOLoop.current().run_sync(lambda: app_contr.updateFixTable(table, 1, 700, 1200, 200))
-    IOLoop.current().run_sync(lambda: app_contr.updateFixTable(table, 2, 2000, 2200, 400))
-    IOLoop.current().run_sync(lambda: app_contr.changeTask(2))
-    IOLoop.current().run_sync(app_contr.resetApplication)
+    #IOLoop.current().run_sync(lambda: app_contr.updateFixTable(table, 1, 700, 1200, 200))
+    #IOLoop.current().run_sync(lambda: app_contr.updateFixTable(table, 2, 2000, 2200, 400))
+    #IOLoop.current().run_sync(lambda: app_contr.changeTask(2))
+    #IOLoop.current().run_sync(app_contr.resetApplication)
 
 
 if __name__ == "__main__":
