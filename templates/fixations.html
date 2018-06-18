@@ -22,7 +22,7 @@ body{
 <script>
 //elem.style.top = 0;
 //elem.style.left = 0;
-var ws = new WebSocket("ws://localhost:8888/websocket");
+var ws = new WebSocket("ws://localhost:8000/websocket");
 ws.onopen = function() {
    //ws.send("Hello, world");
    //this button below is supposed to be in the body
@@ -46,7 +46,7 @@ function myFunction() {
 }
 
 function myCloseFunction() {
-    ws.send("stop");
+    ws.send("close");
 }
 
 
