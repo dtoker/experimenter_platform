@@ -24,6 +24,7 @@ class ApplicationStateController():
 
         self.currTask = task
         self.userStates =[]
+        self.eventNames = []
         self.__initializeApplication__()
 
     @gen.coroutine
@@ -137,6 +138,9 @@ class ApplicationStateController():
         self.currTask = task
         query_results = self.conn.execute('SELECT user_state.event_name, type FROM user_state, user_state_task WHERE user_state.event_name = user_state_task.event_name and task = ?', str(self.currTask))
         self.userStates = query_results.fetchall()
+        self.eventNames = []
+        for user in self.userStates:
+            self.eventNames.append(user['event_name'])
 
     @gen.coroutine
     def __createDynamicTables__(self):
@@ -304,7 +308,6 @@ class ApplicationStateController():
             mapping[event_name] = polygon
         return mapping
 
-    @gen.coroutine
     def evaluateConditional(self, query):
 
         """ Evalutaes an SQL conditional
@@ -320,13 +323,15 @@ class ApplicationStateController():
         Bool        -- 1 if the condtional evaluated true, 0 if false
         """
 
-        query_results = self.conn.execute(query)
-        value = int(query_results.fetchone())
-        #TODO:error checking?
+        query = query.replace("\n"," ") #replace new line symbols in case the sql conditional is multi-lined
+        try:
+            query_results = self.conn.execute(query)
+            value = int(query_results.fetchone()['result'])
+        except:
+            raise ValueError("Malformed SQL conditional check in gaze_event_rules.db")
         print value
         return value
 
-    @gen.coroutine
     def updateFixTable(self, table, id, time_start, time_end, duration):
 
         """ Insert a new row into a fixation table

@@ -1,8 +1,15 @@
 import sqlite3
+import json
 from StringIO import StringIO
 
 from application_state_controller import ApplicationStateController
 from tornado.web import RequestHandler
+
+def dict_factory(cursor, row):
+    d = {}
+    for idx, col in enumerate(cursor.description):
+        d[col[0]] = row[idx]
+    return d
 
 class AdaptationLoop():
 
@@ -27,30 +34,34 @@ class AdaptationLoop():
         self.conn = sqlite3.connect(":memory:")
         self.conn.cursor().executescript(db.read())
         self.conn.commit()
-        self.conn.row_factory = sqlite3.Row
+        self.conn.row_factory = dict_factory
 
     def evaluateRules(self, event_name):
         #if the triggering event is not of the active user states for this task, an error has occured
-        if event_name not in this.controller.userStates:
+        print self.controller.eventNames
+        print event_name
+        if event_name not in self.controller.eventNames:
             raise ValueError("Event name received is not one of the user staes active for this task")
-        task = this.controller.currTask
+        task = self.controller.currTask
 
         #query for all the rules which get triggered by this event
-        query_results = this.conn.execute('SELECT name, delivery_sql_conditional, intervention FROM rule, rule_task WHERE rule.name = rule_task.rule_name and rule_task.task = ?', task)
+        query_results = self.conn.execute('SELECT name, delivery_sql_condition, intervention FROM rule, rule_task WHERE rule.name = rule_task.rule_name and rule_task.task = ?', str(task))
         triggered_rules = query_results.fetchall()
-        print "triggered rules:" + triggered_rules
+        #print "triggered rules:" + json.dumps(triggered_rules)
 
         #filter the triggered rules to rules to deliver based on their delivery sql conditional
         to_deliver_rules = []
         for rule in triggered_rules:
-            if this.controller.evaluateConditional(rule['delivery_sql_conditional']):
+            if self.controller.evaluateConditional(rule['delivery_sql_condition']):
                 intervention_name = rule['intervention']
-                results = this.conn.execute('SELECT function, delivery_delay, transition_in, transition_out, arguments FROM intervention WHERE name = ?', intervention_name)
-                intervention = json.loads(results.fetchone())
+                print "reached here"
+                print intervention_name
+                results = self.conn.execute("SELECT * FROM intervention WHERE intervention.name = ?", (intervention_name,))
+                intervention = results.fetchone()
                 print intervention
                 to_deliver_rules.append(intervention)
 
-        to_deliver_rules = json.loads(to_deliver_rules)
+        to_deliver_rules = json.dumps({'message': to_deliver_rules})
         print to_deliver_rules
 
     def executeQueries(self):
@@ -59,8 +70,11 @@ class AdaptationLoop():
 
 def main():
     app_contr = ApplicationStateController()
+    table = "text_fix"
+    app_contr.updateFixTable(table, 1, 700, 1200, 200)
+    app_contr.updateFixTable(table, 2, 700, 1200, 200)
     loop = AdaptationLoop(app_contr)
-    loop.executeQueries()
+    loop.evaluateRules('text_fix')
 
 if __name__ == "__main__":
     main()
