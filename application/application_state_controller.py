@@ -304,10 +304,7 @@ class ApplicationStateController():
         print mapping
         return mapping
 
-<<<<<<< HEAD
-=======
 
->>>>>>> 28b3738c958e48ce22a4950ceb33f8d07094306d
     def evaluateConditional(self, query):
 
         """ Evalutaes an SQL conditional
