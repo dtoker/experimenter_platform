@@ -44,6 +44,9 @@ class TobiiController:
 		self.y = []
 		self.time = []
 		self.validity = []
+		self.pupilsize = []
+		self.pupilvelocity = []
+		self.headdistance = []
 		self.EndFixations = []
 		#This contains the websocket to send data to be displayed on front end
 		self.liveWebSocket = set()
@@ -218,6 +221,9 @@ class TobiiController:
 		self.y = []
 		self.time = []
 		self.validity = []
+		self.pupilsize = []
+		self.pupilvelocity = []
+		self.headdistance = []
 
 	def stopTracking(self):
 
@@ -249,6 +255,9 @@ class TobiiController:
 		self.y = []
 		self.time = []
 		self.validity = []
+		self.pupilsize = []
+		self.pupilvelocity = []
+		self.headdistance = []
 
 	def on_gazedata(self,error,gaze):
 
@@ -295,13 +304,47 @@ class TobiiController:
 		else:
 			self.x.append(-1 * 1280)
 			self.y.append(-1 * 1024)
+
+		# Pupil size feature
+		self.pupilsize.append(self.get_pupil_size(gaze.LeftPupil, gaze.RightPupil))
+
 		#Future work: Validity Checking
 		#if ((gaze.LeftValidity != 0) & (gaze.RightValidity != 0)):
 		self.time.append(gaze.Timestamp)
 		self.validity.append(gaze.LeftValidity == 0 or gaze.RightValidity == 0)
 
+
 	def add_fixation(self, start_index, end_index, x, y):
 		self.EndFixations.append((start_index, end_index, x, y))
+
+	def get_pupil_size(self, pupilleft, pupilright):
+	    '''
+	    If recordings for both eyes are available, return their average,
+	    else return value for a recorded eye (if any)
+	    Args:
+	        pupilleft - recording of pupil size on left eye
+	        pupilright - recording of pupil size on right eye
+	    Returns:
+	        pupil size to generate pupil features with.
+	    '''
+	    if pupilleft is None and pupilright is None:
+	        return -1
+	    if pupilleft is None:
+	        return pupilright
+	    if pupilright is None:
+	        return pupilleft
+	    return (pupilleft + pupilright) / 2.0
+
+
+	def get_pupil_velocity(self, last_pupilleft, last_pupilright, pupilleft, pupilright, time):
+	    if (last_pupilleft is None or pupilleft is None) and (last_pupilright is None or pupilright is None):
+	        return -1
+	    if (last_pupilleft is None or pupilleft is None):
+	        return abs(pupilright - last_pupilright) / time
+	    if (last_pupilright is None or pupilright is None):
+	        return abs(pupilleft - last_pupilleft) / time
+	    return abs( (pupilleft + pupilright) / 2 - (last_pupilleft + last_pupilright) / 2 ) / time
+
 
 	def flush(self):
 		self.x = []
