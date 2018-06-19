@@ -10,6 +10,7 @@ class FixationDetector(DetectionComponent):
         DetectionComponent.__init__(self, tobii_controller, application_state_controller, liveWebSocket = liveWebSocket)
         FixationDetector.controller_num += 1
         self.runOnlineFix = True
+        self.cur_fix_id = 0
 
     def notify_app_state_controller(self, x, y):
         for aoi in self.AOIs:
@@ -131,11 +132,14 @@ class FixationDetector(DetectionComponent):
                     x_fixation /= points_in_fixation
                     y_fixation /= points_in_fixation
                     #Fixation ended, get it off the screen!
+                    self.cur_fix_id += 1
                     for ws in self.liveWebSocket:
                         print(len(self.AOIS))
                         for aoi in self.AOIS:
                             if (fixation_inside_aoi(x_fixation, y_fixation, aoi)):
                                 ws.write_message('{"x":"%d", "y":"%d"}' % (x_fixation, y_fixation))
+                                # TODO: Add fixation table name
+                                #self.app_state_control.updateFixTable("" ,self.cur_fix_id, Sfix[0], EfixEndTime, EfixEndTime - Sfix[0])
                                 break
                     #May wanrt to use something like this in the future in there are performace issues
                     #self.x = self.x[array_index:]

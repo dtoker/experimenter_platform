@@ -81,8 +81,11 @@ class EchoWebSocketHandler(tornado.websocket.WebSocketHandler):
             return
         elif (message == "next_task"):
             del self.fixation_component
+            self.tobii_controller.stop()
             self.tobii_controller.flush()
+            self.app_state_control.changeTask(2)
             self.fixation_component = FixationDetector(self.tobii_controller, self.app_state_control, liveWebSocket = self.tobii_controller.liveWebSocket)
+            self.tobii_controller.start()
             self.fixation_component.start()
         else:
             self.tobii_controller.activate(self.tobii_controller.eyetrackers.keys()[0])

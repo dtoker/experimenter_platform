@@ -355,7 +355,7 @@ class ApplicationStateController():
         table       -- String, name of an existing dynamic fixation table
                     (ie. one of the user states)
         id          -- int, id associated with the fixation
-        time_state  -- int, time_stamp of the start of the fixation in ms
+        time_start  -- int, time_stamp of the start of the fixation in ms
         time_end    -- int, time_stamp of the end of the fixation in ms
         duration    -- int, duration of the fixation in ms
 
