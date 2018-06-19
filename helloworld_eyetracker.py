@@ -72,7 +72,6 @@ class EchoWebSocketHandler(tornado.websocket.WebSocketHandler):
         self.fixation_component = FixationDetector(self.tobii_controller, self.app_state_control, liveWebSocket = self.tobii_controller.liveWebSocket)
 
     def on_message(self, message):
-        print message == "close"
         if (message == "close"):
             print("destroying")
             #DummyController.receiveFixations = False
@@ -80,6 +79,10 @@ class EchoWebSocketHandler(tornado.websocket.WebSocketHandler):
             self.tobii_controller.stopTracking()
             self.tobii_controller.destroy()
             return
+        elif (message == "switch tesk %d"):
+            self.fixation_component.stop()
+            self.emdat_component.stop()
+            self.tobii_controller.flush()
         else:
             self.tobii_controller.activate(self.tobii_controller.eyetrackers.keys()[0])
             self.tobii_controller.startTracking()

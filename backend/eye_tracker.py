@@ -303,6 +303,11 @@ class TobiiController:
 	def add_fixation(self, start_index, end_index, x, y):
 		self.EndFixations.append((start_index, end_index, x, y))
 
+	def flush(self):
+		self.x = []
+		self.y = []
+		self.time = []
+		self.validity = []
 #Original code provided by Roberto showing how to start the the eyetracker
 """
 #this will be called from a tornado handler
