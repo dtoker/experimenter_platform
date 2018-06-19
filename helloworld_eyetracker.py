@@ -79,10 +79,11 @@ class EchoWebSocketHandler(tornado.websocket.WebSocketHandler):
             self.tobii_controller.stopTracking()
             self.tobii_controller.destroy()
             return
-        elif (message == "switch tesk %d"):
-            self.fixation_component.stop()
-            self.emdat_component.stop()
+        elif (message == "next_task"):
+            del self.fixation_component
             self.tobii_controller.flush()
+            self.fixation_component = FixationDetector(self.tobii_controller, self.app_state_control, liveWebSocket = self.tobii_controller.liveWebSocket)
+            self.fixation_component.start()
         else:
             self.tobii_controller.activate(self.tobii_controller.eyetrackers.keys()[0])
             self.tobii_controller.startTracking()
