@@ -2,10 +2,10 @@
 	var MarksManager = function(marks, img) {
 		this.data = marks;
 		this.img = img;
-		
+
 		this.type = MarksManager.HIGHLIGHT;
 		this.current_params = MarksManager.defaultHighlightParams;
-		
+
 		this.marks = [];
 
     this.scale = {
@@ -33,7 +33,7 @@
 	}
 	MarksManager.HIGHLIGHT = "highlight";
 	MarksManager.DESATURATE = "desaturate";
-	
+
   var DESATURATION = 0.7;
 	MarksManager.internal = {
 		highlights: {
@@ -42,15 +42,15 @@
 					var self = this;
 					var marks = d3.select(self.overlay).selectAll('rect')
 					  .data(self.data, function(d) { return d ? d.id : null; });
-					
+
 					marks.enter()
 					  .append('rect').attr('x', function(d) { return d.left*self.scale.x; })
 					  .attr('y', function(d) { return d.top*self.scale.y; })
 					  .attr('width', function(d) { return d.width*self.scale.x; })
 					  .attr('height', function(d) { return d.height*self.scale.y; });
-				
+
 					marks.exit().remove();
-					
+
 					return d3.select(self.overlay).selectAll('rect');
 				},
 				"highlight": function(tuple_ids) {
@@ -70,7 +70,7 @@
 			"desaturate": {
 				"create": function() {
 					var self = this;
-					
+
 					var margin = 1;
 					var marks = d3.select(self.overlay).selectAll('rect')
 					  .data(self.data, function(d) { return d.id; }).enter()
@@ -132,10 +132,10 @@
 							}
 							else{
             		console.log('remove');
-                 d3.select(this.overlay).selectAll( '.arrow_selectArrow')
-                     .transition()
-                     .duration(TRANSITION_DURATION)
-										 .remove();
+								d3.select(this.overlay).selectAll( '.arrow_selectArrow')
+										.transition()
+										.duration(TRANSITION_DURATION)
+										.remove();
 
               }
 
@@ -192,8 +192,7 @@
             .each('end', function() {
               d3.select(this).classed('selected', 'false');
             });
-
-
+					d3.select(this.overlay).selectAll( '.arrow_selectArrow').remove();
 				}
 			}
 		}
@@ -227,18 +226,18 @@
   };
 	MarksManager.prototype.changeType = function(type) {
 		var marks;
-		
+
 		if(!type) type = MarksManager.DESATURATE;
 		this.type = type;
-		
+
 		this.clearMarks();
-		
+
 		if(type === MarksManager.HIGHLIGHT) {
 			this.current_params = MarksManager.defaultHighlightParams;
 		}
 		if(type === MarksManager.DESATURATE) {
 			this.current_params = MarksManager.defaultDesaturateParams;
-		}	
+		}
 		this.marks = MarksManager.internal.highlights[type].create.call(this);
 		this.assignParams(this.current_params);
 	};
@@ -247,26 +246,26 @@
 		if(type) {
 			this.type = type;
 		}
-		
+
 		/*
 		 * Create the overlay
 		 */
 		var svgns = "http://www.w3.org/2000/svg";
-		
+
 		// Create an svg overlay on the image
 		var imgParent = this.img.parentNode,
 			nextSibling = this.img.nextSibling,
 			nodeRect = this.img.getBoundingClientRect(),
 			containingDiv,
 			marksOverlay;
-			
+
 		// Create the containing div
 		containingDiv = document.createElement('div');
 		containingDiv.setAttribute('class','overlayContainer');
 		containingDiv.style.position = 'relative';
 		containingDiv.style.width = Math.ceil(nodeRect.width)+'px';
 		containingDiv.style.height = Math.ceil(nodeRect.height)+'px';
-		
+
 		// Create the overlay
 		this.overlay = document.createElementNS(svgns, 'svg:svg');
 		d3.select(this.overlay).attr({
@@ -276,10 +275,10 @@
 		}).style({
 			'position': 'absolute'
 		});
-		
+
 		containingDiv.appendChild(this.overlay);
 		containingDiv.appendChild(this.img);
-		
+
 		imgParent.insertBefore(containingDiv, nextSibling);
 
     // Set the scale
@@ -295,7 +294,7 @@
   };
 	MarksManager.prototype.assignParams = function(params) {
 		if(!this.overlay) throw "No overlay associated with this image."
-		
+
 		var marks = d3.select(this.overlay).selectAll('rect'),
 			key;
 		for(key in params.attributes) {
@@ -331,7 +330,7 @@
 				if(!selected) unselected_marks.push(curMark);
 			})(self.marks[j]);
 	    }
-	
+
 		return {
 			'selected_marks': selected_marks,
 			'unselected_marks': unselected_marks
@@ -351,6 +350,6 @@
 	MarksManager.prototype.clearMarks = function() {
 		d3.select(this.overlay).selectAll('.visual_reference').remove();
 	};
-	
+
 	window.MarksManager = MarksManager;
 })();

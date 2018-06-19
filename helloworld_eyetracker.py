@@ -13,14 +13,18 @@ import random
 # Imports required for EYE TRACKING Code:
 import tornado.websocket
 import time
-import eye_tracker
-from eye_tracker import TobiiController
+import backend.eye_tracker
+from backend.eye_tracker import TobiiController
+from backend.dummy_controller import DummyController
+from backend.fixation_detector import FixationDetector
 import csv
 
 import thread
 from threading import Thread
 from tornado import gen
 from tornado.ioloop import IOLoop
+
+from application.application_state_controller import ApplicationStateController
 ##########################################
 
 define("port", default=8888, help="run on the given port", type=int)
@@ -59,112 +63,42 @@ class FixationHandler(tornado.web.RequestHandler):
 # tornado.websocket.WebSocketHandler is specific to Tornado, is the super class to control websockets
 class EchoWebSocketHandler(tornado.websocket.WebSocketHandler):
 
-    #eb = None
-
     def open(self):
-        '''
-        print "WebSocket opened"
+        self.app_state_control = ApplicationStateController(1)
+        self.tobii_controller = TobiiController()
+        self.tobii_controller.liveWebSocket.add(self)
+        self.tobii_controller.waitForFindEyeTracker()
+        print self.tobii_controller.eyetrackers
+        self.fixation_component = FixationDetector(self.tobii_controller, self.app_state_control, liveWebSocket = self.tobii_controller.liveWebSocket)
 
-        #create the controller to the eye tracker
-        eb = TobiiController() #TobiiController is the main class of eye_tracker.py
-
-        #Add self(which is a websocket) to the eyetracker object
-        eb.liveWebSocket.add(self)
-        print "eb created"
-
-        eb.waitForFindEyeTracker() #wait 'till it's found
-        print eb.eyetrackers #we found one!
-        eb.activate(eb.eyetrackers.keys()[0]) #activate
-
-        #Start tracking gaze data
-        eb.startTracking()
-        print "tracking started"
-
-        eb.liveWebSocket.add(self)
-
-        #Load Preetpal's online fixation code
-        #returns: [list of lists, each containing [starttime, endtime, duration, endx, endy]
-        myOnlineFixations =  eb.onlinefix()
-
-        #ADD STOP BUTTON
-
-        #Write out a CSV Log file of the gaze interaction
-        fl = open('myOnlineFixations.csv', 'wb')
-        writer = csv.writer(fl)
-        writer.writerow(['fixation_index', 'start_time', 'end_time', 'duration', 'end_x', 'end_Y'])
-        fixation_index = 1
-        for values in myOnlineFixations:
-            writer.writerow([fixation_index] + values[0])
-            fixation_index = fixation_index + 1
-        fl.close()
-
-        #clean up eye tracking tracking and object
-        eb.stopTracking()
-        eb.destroy()
-        '''
-
-
-    #not sure if needed
     def on_message(self, message):
-        print message
-        if (message == "stop"):
-            self.eb.runOnlineFix = False
-        #self.write_message(u"Time Stamp: " + str(time.time()))
-        #print("sending message from server")
-        print "WebSocket opened"
-
-        #create the controller to the eye tracker
-        self.eb = TobiiController() #TobiiController is the main class of eye_tracker.py
-
-        #Add self(which is a websocket) to the eyetracker object
-        self.eb.liveWebSocket.add(self)
-        print "eb created"
-
-        self.eb.waitForFindEyeTracker() #wait 'till it's found
-        print self.eb.eyetrackers #we found one!
-        self.eb.activate(self.eb.eyetrackers.keys()[0]) #activate
-
-        #Start tracking gaze data
-        self.eb.startTracking()
-        print "tracking started"
-
-        self.eb.liveWebSocket.add(self)
-
-        #Load Preetpal's online fixation code
-        #returns: [list of lists, each containing [starttime, endtime, duration, endx, endy]
-        myOnlineFixations =  self.eb.onlinefix()
-        print myOnlineFixations
-
-        #ADD STOP BUTTON
-
-        #Write out a CSV Log file of the gaze interaction
-        fl = open('myOnlineFixations.csv', 'wb')
-        writer = csv.writer(fl)
-        writer.writerow(['fixation_index', 'start_time', 'end_time', 'duration', 'end_x', 'end_Y'])
-        fixation_index = 1
-        for values in myOnlineFixations:
-            writer.writerow([fixation_index] + values[0])
-            fixation_index = fixation_index + 1
-        fl.close()
-
-        #clean up eye tracking tracking and object
-        self.eb.stopTracking()
-        self.eb.destroy()
-
+        if (message == "close"):
+            print("destroying")
+            #DummyController.receiveFixations = False
+            self.fixation_component.stop()
+            self.tobii_controller.stopTracking()
+            self.tobii_controller.destroy()
+            return
+        elif (message == "switch tesk %d"):
+            self.fixation_component.stop()
+            self.emdat_component.stop()
+            self.tobii_controller.flush()
+        else:
+            self.tobii_controller.activate(self.tobii_controller.eyetrackers.keys()[0])
+            self.tobii_controller.startTracking()
+            self.fixation_component.start()
+            print "tracking started"
 
     def on_close(self):
         print("WebSocket closed")
 
-
-#main function is first thing to run when application starts
 def main():
     tornado.options.parse_command_line()
-    #Application() refers to 'class Application'
     http_server = tornado.httpserver.HTTPServer(Application())
-    http_server.listen(options.port)
+    http_server.listen(8000)
+    #controller = DummyController()
+    #IOLoop.instance().add_callback(callback = controller.wait_for_fixation_2)
     tornado.ioloop.IOLoop.current().start()
-
-
 
 if __name__ == "__main__":
     main()
