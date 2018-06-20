@@ -1,6 +1,5 @@
-
 from detection_component import DetectionComponent
-
+import math
 
 class EMDATComponent(DetectionComponent):
 
@@ -33,6 +32,9 @@ class EMDATComponent(DetectionComponent):
         if aois:
             self.set_aois(aois, all_data, fixation_data, event_data, rest_pupil_size, export_pupilinfo)
             self.features['aoisequence'] = self.generate_aoi_sequence(fixation_data, aois)
+
+    def merge_features():
+        pass
 
     def calc_pupil_features(self):
         """ Calculates pupil features such as
@@ -138,7 +140,7 @@ class EMDATComponent(DetectionComponent):
             self.features['startdistance']      = -1
             self.features['enddistance']        = -1
 
-    def calc_fix_ang_path_features(self, fixation_data):
+    def calc_fix_ang_path_features(self):
         """ Calculates fixation, angle and path features such as
                 meanfixationduration:     mean duration of fixations in the segment
                 stddevfixationduration    standard deviation of duration of fixations in the segment
@@ -153,15 +155,14 @@ class EMDATComponent(DetectionComponent):
                 sumrelpathangles:         sum of relative path angles for this segment
                 relpathanglesrate:        ratio of relative path angles relative to all datapoints in this segment
                 stddevrelpathangles:      standard deviation of relative path angles for this segment
-            Args:
-                saccade_data: The list of saccade datapoints for this Segment
         """
+        fixation_data = self.tobii_controller.EndFixations
+        self.numfixations = len(fixation_data)
         if self.numfixations > 0:
-            self.fixation_start = fixation_data[0].timestamp
-            self.fixation_end = fixation_data[-1].timestamp
-            self.features['meanfixationduration'] = mean(map(lambda x: float(x.fixationduration), fixation_data))
-            self.features['stddevfixationduration'] = stddev(map(lambda x: float(x.fixationduration), fixation_data))
-            self.features['sumfixationduration'] = sum(map(lambda x: x.fixationduration, fixation_data))
+            self.features['meanfixationduration'] = mean(map(lambda x: float(x[2]), fixation_data))
+            self.features['stddevfixationduration'] = stddev(map(lambda x: float(x[2]), fixation_data))
+            self.features['sumfixationduration'] = sum(map(lambda x: x[2], fixation_data))
+
             self.features['fixationrate'] = float(self.numfixations) / (self.length - self.length_invalid)
             distances = self.calc_distances(fixation_data)
             abs_angles = self.calc_abs_angles(fixation_data)
@@ -204,8 +205,94 @@ class EMDATComponent(DetectionComponent):
             self.features['meanrelpathangles'] = -1
             self.features['stddevrelpathangles'] = -1
 
-    def merge_features():
-        pass
+    def calc_distances(self, fixdata):
+        """returns the Euclidean distances between a sequence of "Fixation"s
+
+        Args:
+            fixdata: a list of "Fixation"s
+        """
+        distances = []
+        lastx = fixdata[0][0]
+        lasty = fixdata[0][1]
+
+        for i in xrange(1, len(fixdata)):
+            x = fixdata[i][0]
+            y = fixdata[i][1]
+            dist = math.sqrt((x - lastx)**2 + (y - lasty)**2)
+            distances.append(dist)
+            lastx = x
+            lasty = y
+
+        return distances
+
+    def calc_abs_angles(self, fixdata):
+        """returns the absolute angles between a sequence of "Fixation"s that build a scan path.
+
+        Abosolute angle for each saccade is the angle between that saccade and the horizental axis
+
+        Args:
+            fixdata: a list of "Fixation"s
+
+        Returns:
+            a list of absolute angles for the saccades formed by the given sequence of "Fixation"s in Radiant
+        """
+        abs_angles = []
+        lastx = fixdata[0][0]
+        lasty = fixdata[0][1]
+
+        for i in xrange(1,len(fixdata)):
+            x = fixdata[i][0]
+            y = fixdata[i][1]
+            (dist, theta) = geometry.vector_difference((lastx,lasty), (x, y))
+            abs_angles.append(abs(theta))
+            lastx=x
+            lasty=y
+
+        return abs_angles
+
+    def calc_rel_angles(self, fixdata):
+        """returns the relative angles between a sequence of "Fixation"s that build a scan path in Radiant
+
+        Relative angle for each saccade is the angle between that saccade and the previous saccade.
+
+        Defined as: angle = acos(v1 dot v2)  such that v1 and v2 are normalized vector2coord
+
+        Args:
+            fixdata: a list of "Fixation"s
+
+        Returns:
+            a list of relative angles for the saccades formed by the given sequence of "Fixation"s in Radiant
+        """
+        rel_angles = []
+        lastx = fixdata[0][0]
+        lasty = fixdata[0][1]
+
+        for i in xrange(1, len(fixdata) - 1):
+            x = fixdata[i][0]
+            y = fixdata[i][1]
+            nextx = fixdata[i + 1][0]
+            nexty = fixdata[i + 1][1]
+            v1 = (lastx - x, lasty - y)
+            v2 = (nextx - x, nexty - y)
+
+            if v1 != (0.0, 0.0) and v2 != (0.0, 0.0):
+                v1_dot = math.sqrt(geometry.simpledotproduct(v1, v1))
+                v2_dot = math.sqrt(geometry.simpledotproduct(v2, v2))
+                normv1 = ((lastx - x) / v1_dot, (lasty - y) / v1_dot)
+                normv2 = ((nextx - x) / v2_dot, (nexty - y) / v2_dot)
+                dotproduct = geometry.simpledotproduct(normv1, normv2)
+                if dotproduct < -1:
+                    dotproduct = -1.0
+                if dotproduct > 1:
+                    dotproduct = 1.0
+                theta = math.acos(dotproduct)
+                rel_angles.append(theta)
+            else:
+                rel_angles.append(0.0)
+            lastx = x
+            lasty = y
+
+        return rel_angles
 
 """
     def calc_saccade_features(self, saccade_data):
@@ -226,7 +313,7 @@ class EMDATComponent(DetectionComponent):
                 fixationsaccadetimeratio: fixation to saccade time ratio for this segment
             Args:
                 saccade_data: The list of saccade datapoints for this Segment
-        
+
         if saccade_data != None and len(saccade_data) > 0:
             self.numsaccades = len(saccade_data)
             self.features['numsaccades'] = self.numsaccades

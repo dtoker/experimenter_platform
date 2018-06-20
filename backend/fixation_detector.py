@@ -131,8 +131,9 @@ class FixationDetector(DetectionComponent):
                     print(Efix[0][3], Efix[0][4])
                     x_fixation /= points_in_fixation
                     y_fixation /= points_in_fixation
-                    #Fixation ended, get it off the screen!
-                    self.cur_fix_id += 1
+
+                    self.tobii_controller.append(Efix[0][3], Efix[0][4], Efix[0][2])
+
                     for ws in self.liveWebSocket:
                         print(len(self.AOIS))
                         for aoi in self.AOIS:
@@ -145,7 +146,6 @@ class FixationDetector(DetectionComponent):
                     #self.x = self.x[array_index:]
                     #self.y = self.y[array_index:]
                     #self.time = self.time[array_index:]
-                    print("detector number is %d", FixationDetector.controller_num)
                     break
         yield Efix
 
