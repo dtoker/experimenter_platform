@@ -323,8 +323,8 @@ class TobiiController:
 		self.last_pupil_right = gaze.LeftPupil
 		self.LastTimestamp = gaze.Timestamp
 
-	def add_fixation(self, start_index, end_index, x, y):
-		self.EndFixations.append((start_index, end_index, x, y))
+	def add_fixation(self, x, y, duration):
+		self.EndFixations.append((x, y, duration))
 
 	def get_pupil_size(self, pupilleft, pupilright):
 	    '''
