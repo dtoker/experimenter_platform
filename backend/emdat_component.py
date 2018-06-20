@@ -15,6 +15,14 @@ class EMDATComponent(DetectionComponent):
         """
 
     def run(self):
+
+        self.start = self.tobii_controller.time[0]
+        self.end = self.tobii_controller.time[-1]
+        self.length = self.end - self.start
+        self.calc_validity_gaps()
+
+        self.length_invalid = self.get_length_invalid()
+
         """ calculate pupil dilation features """
         self.calc_pupil_features()
 
@@ -294,6 +302,46 @@ class EMDATComponent(DetectionComponent):
 
         return rel_angles
 
+    def calc_validity_gaps(self):
+        """Calculates the largest gap of invalid samples in the "Datapoint"s for this Segment.
+
+        Args:
+            all_data: The list of "Datapoint"s which make up this Segement
+
+        Returns:
+            An integer indicating the length of largest invalid gap for this Segment in milliseconds
+        """
+        time = self.tobii_controller.time
+        fixations = self.tobii_controller.EndFixations
+        validity = self.tobii_controller.validity
+        if len(fixations) == 0:
+            return time[-1] - time[0]
+        self.time_gaps = []
+        dindex = 0
+        datalen = len(validity)
+        while dindex < datalen:
+            d = validity[dindex]
+            while d is True and (dindex < datalen - 1):
+                dindex += 1
+                d = validity[dindex]
+            if d is not True:
+                gap_start = time[dindex]
+                while d is not True and (dindex < datalen - 1):
+                    dindex += 1
+                    d = validity[dindex]
+                    self.time_gaps.append((gap_start, time[dindex]))
+            dindex += 1
+
+    def get_length_invalid(self):
+        """Returns the sum of the length of the invalid gaps > params.MAX_SEG_TIMEGAP
+
+        Args:
+            an integer, the length in milliseconds
+        """
+        length = 0
+        for gap in self.time_gaps:
+            length += gap[1] - gap[0]
+        return length
 """
     def calc_saccade_features(self, saccade_data):
         Calculates saccade features such as
