@@ -58,6 +58,11 @@ class TobiiController:
 		self.browser = tobii.eye_tracking_io.browsing.EyetrackerBrowser(self.mainloop_thread, lambda t, n, i: self.on_eyetracker_browser_event(t, n, i))
 		self.mainloop_thread.start()
 
+		# for computing pupil velocity
+		self.last_pupil_left = -1
+		self.last_pupil_right = -1
+		self.LastTimestamp = -1
+
 	def waitForFindEyeTracker(self):
 
 		"""Keeps running until an eyetracker is found
@@ -304,15 +309,18 @@ class TobiiController:
 		else:
 			self.x.append(-1 * 1280)
 			self.y.append(-1 * 1024)
-
 		# Pupil size feature
 		self.pupilsize.append(self.get_pupil_size(gaze.LeftPupil, gaze.RightPupil))
-
+		if (self.last_pupil_right != -1):
+			self.pupilvelocity.append(self.get_pupil_velocity(self.last_pupil_left, self.last_pupil_right, gaze.LeftPupil, gaze.RightPupil, gaze.Timestamp - self.LastTimestamp))
 		#Future work: Validity Checking
 		#if ((gaze.LeftValidity != 0) & (gaze.RightValidity != 0)):
 		self.time.append(gaze.Timestamp)
 		self.validity.append(gaze.LeftValidity == 0 or gaze.RightValidity == 0)
-
+		# for pupil velocity
+		self.last_pupil_left = gaze.LeftPupil
+		self.last_pupil_right = gaze.LeftPupil
+		self.LastTimestamp = gaze.Timestamp
 
 	def add_fixation(self, start_index, end_index, x, y):
 		self.EndFixations.append((start_index, end_index, x, y))
