@@ -46,7 +46,7 @@ class TobiiController:
 		self.validity = []
 		self.pupilsize = []
 		self.pupilvelocity = []
-		self.headdistance = []
+		self.head_distance = []
 		self.EndFixations = []
 		#This contains the websocket to send data to be displayed on front end
 		self.liveWebSocket = set()
@@ -228,7 +228,7 @@ class TobiiController:
 		self.validity = []
 		self.pupilsize = []
 		self.pupilvelocity = []
-		self.headdistance = []
+		self.head_distance = []
 
 	def stopTracking(self):
 
@@ -262,7 +262,7 @@ class TobiiController:
 		self.validity = []
 		self.pupilsize = []
 		self.pupilvelocity = []
-		self.headdistance = []
+		self.head_distance = []
 
 	def on_gazedata(self,error,gaze):
 
@@ -316,6 +316,7 @@ class TobiiController:
 		#Future work: Validity Checking
 		#if ((gaze.LeftValidity != 0) & (gaze.RightValidity != 0)):
 		self.time.append(gaze.Timestamp)
+		self.head_distance.append(self.get_distance(gaze.LeftEyePosition3D.z, gaze.RightEyePosition3D.z))
 		self.validity.append(gaze.LeftValidity == 0 or gaze.RightValidity == 0)
 		# for pupil velocity
 		self.last_pupil_left = gaze.LeftPupil
@@ -353,6 +354,14 @@ class TobiiController:
 	        return abs(pupilleft - last_pupilleft) / time
 	    return abs( (pupilleft + pupilright) / 2 - (last_pupilleft + last_pupilright) / 2 ) / time
 
+	def get_distance(self, distanceleft, distanceright):
+	    if distanceleft is None and distanceright is None:
+	        return -1
+	    if distanceleft is None:
+	        return distanceright
+	    if distanceright is None:
+	        return distanceleft
+	    return (distanceleft + distanceright) / 2.0
 
 	def flush(self):
 		self.x = []
