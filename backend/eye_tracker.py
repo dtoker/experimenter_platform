@@ -62,7 +62,7 @@ class TobiiController:
 		self.last_pupil_left = -1
 		self.last_pupil_right = -1
 		self.LastTimestamp = -1
-		self.init_emdat_features()
+		self.init_emdat_global_features()
 
 	def waitForFindEyeTracker(self):
 
@@ -388,6 +388,7 @@ class TobiiController:
 		self.emdat_features['startdistance'] 			= -1
 		self.emdat_features['enddistance'] 				= -1
 		# Saccade features
+		"""
 		self.emdat_features['numsaccades'] 				= 0
 		self.emdat_features['sumsaccadedistance'] 		= -1
 		self.emdat_features['meansaccadedistance'] 		= -1
@@ -402,6 +403,7 @@ class TobiiController:
 		self.emdat_features['maxsaccadespeed'] 			= -1
 		self.emdat_features['minsaccadespeed'] 			= -1
 		self.emdat_features['fixationsaccadetimeratio'] = -1
+		"""
 		# Path features
 		self.numfixdistances 							= 0
         self.numabsangles 								= 0
@@ -426,13 +428,12 @@ class TobiiController:
 		self.emdat_features['sumfixationduration'] 		= -1
 		self.emdat_features['fixationrate'] 			= -1
 
-
-
 	def flush(self):
 		self.x = []
 		self.y = []
 		self.time = []
 		self.validity = []
+
 #Original code provided by Roberto showing how to start the the eyetracker
 """
 #this will be called from a tornado handler
