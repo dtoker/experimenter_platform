@@ -4,9 +4,9 @@ import math
 class EMDATComponent(DetectionComponent):
 
     #TODO: Remove websocket
-    def  __init__(self, tobii_controller, is_periodic, callback_time, liveWebSocket):
+    def  __init__(self, tobii_controller, callback_time):
         #TODO: Specify which features should be calculated
-        super().__init__(tobii_controller, is_periodic, callback_time, liveWebSocket)
+        super().__init__(tobii_controller, is_periodic = True, callback_time, liveWebSocket =  None)
 
     def notify_app_state_controller(self):
         self.merge_features()
@@ -27,13 +27,13 @@ class EMDATComponent(DetectionComponent):
         self.calc_pupil_features()
 
         """ calculate distance from screen features"""
-        self.calc_distance_features(all_data)
+        self.calc_distance_features()
 
         """ calculate fixations, angles and path features"""
-        self.calc_fix_ang_path_features(fixation_data)
+        self.calc_fix_ang_path_features()
 
         """ calculate saccades features if available """
-        self.calc_saccade_features(saccade_data)
+        self.calc_saccade_features()
 
         """ calculate AOIs features """
         self.has_aois = False
@@ -41,7 +41,10 @@ class EMDATComponent(DetectionComponent):
             self.set_aois(aois, all_data, fixation_data, event_data, rest_pupil_size, export_pupilinfo)
             self.features['aoisequence'] = self.generate_aoi_sequence(fixation_data, aois)
 
-    def merge_features():
+        self.merge_features()
+
+
+    def merge_features(self):
         pass
 
     def calc_pupil_features(self):
@@ -212,6 +215,205 @@ class EMDATComponent(DetectionComponent):
             self.features['relpathanglesrate'] = -1
             self.features['meanrelpathangles'] = -1
             self.features['stddevrelpathangles'] = -1
+
+
+    def merge_fixation_features(self, segments):
+        """ Merge fixation features such as
+                meanfixationduration:     mean duration of fixations
+                stddevfixationduration    standard deviation of duration of fixations
+                sumfixationduration:      sum of durations of fixations
+                fixationrate:             rate of fixation datapoints relative to all datapoints
+            Args:
+                segments: The list of Segments for this Scene with pre-calculated features
+        """
+        self.numfixations = sumfeat(segments, 'numfixations')
+        self.features['numfixations'] = self.numfixations
+        self.features['fixationrate'] = float(self.numfixations) / (self.length - self.length_invalid)
+
+        if self.numfixations > 0:
+            self.features['meanfixationduration'] = weightedmeanfeat(segments,'numfixations',"features['meanfixationduration']")
+            self.features['stddevfixationduration'] = aggregatestddevfeat(segments, 'numfixations', "features['stddevfixationduration']", "features['meanfixationduration']", self.features['meanfixationduration'])
+            self.features['sumfixationduration'] = sumfeat(segments, "features['sumfixationduration']")
+            self.features['fixationrate'] = float(self.numfixations)/(self.length - self.length_invalid)
+        else:
+            self.features['meanfixationduration'] = -1
+            self.features['stddevfixationduration'] = -1
+            self.features['sumfixationduration'] = -1
+            self.features['fixationrate'] = -1
+
+
+    def merge_path_angle_features(self, segments):
+        """ Merge path and angle features such as
+                meanpathdistance:         mean of path distances
+                sumpathdistance:          sum of path distances
+                eyemovementvelocity:      average eye movement velocity
+                sumabspathangles:         sum of absolute path angles
+                abspathanglesrate:        ratio of absolute path angles relative to all datapoints
+                stddevabspathangles:      standard deviation of absolute path angles
+                sumrelpathangles:         sum of relative path angles
+                relpathanglesrate:        ratio of relative path angles relative to all datapoints
+                stddevrelpathangles:      standard deviation of relative path angles
+            Args:
+                segments: The list of Segments for this Scene with pre-calculated features
+        """
+        self.numfixdistances = sumfeat(segments, "numfixdistances")
+        self.numabsangles = sumfeat(segments, "numabsangles")
+        self.numrelangles = sumfeat(segments, "numrelangles")
+
+        if self.numfixations > 1:
+            self.features['meanpathdistance'] = weightedmeanfeat(segments,'numfixdistances',"features['meanpathdistance']")
+            self.features['sumpathdistance'] = sumfeat(segments, "features['sumpathdistance']")
+            self.features['stddevpathdistance'] = aggregatestddevfeat(segments, 'numfixdistances', "features['stddevpathdistance']", "features['meanpathdistance']", self.features['meanpathdistance'])
+            self.features['eyemovementvelocity'] = self.features['sumpathdistance']/(self.length - self.length_invalid)
+            self.features['sumabspathangles'] = sumfeat(segments, "features['sumabspathangles']")
+            self.features['meanabspathangles'] = weightedmeanfeat(segments,'numabsangles',"features['meanabspathangles']")
+            self.features['abspathanglesrate'] = self.features['sumabspathangles']/(self.length - self.length_invalid)
+            self.features['stddevabspathangles'] = aggregatestddevfeat(segments, 'numabsangles', "features['stddevabspathangles']", "features['meanabspathangles']", self.features['meanabspathangles'])
+            self.features['sumrelpathangles'] = sumfeat(segments, "features['sumrelpathangles']")
+            self.features['meanrelpathangles'] = weightedmeanfeat(segments,'numrelangles',"features['meanrelpathangles']")
+            self.features['relpathanglesrate'] = self.features['sumrelpathangles']/(self.length - self.length_invalid)
+            self.features['stddevrelpathangles'] = aggregatestddevfeat(segments, 'numrelangles', "features['stddevrelpathangles']", "features['meanrelpathangles']", self.features['meanrelpathangles'])
+        else:
+            self.features['meanpathdistance'] = -1
+            self.features['sumpathdistance'] = -1
+            self.features['stddevpathdistance'] = -1
+            self.features['eyemovementvelocity'] = -1
+            self.features['sumabspathangles'] = -1
+            self.features['abspathanglesrate'] = -1
+            self.features['meanabspathangles']= -1
+            self.features['stddevabspathangles']= -1
+            self.features['sumrelpathangles'] = -1
+            self.features['relpathanglesrate'] = -1
+            self.features['meanrelpathangles']= -1
+            self.features['stddevrelpathangles'] = -1
+
+
+    def merge_pupil_features(self, export_pupilinfo, segments):
+        """ Merge pupil features asuch as
+                mean_pupil_size:            mean of pupil sizes
+                stddev_pupil_size:          standard deviation of pupil sizes
+                min_pupil_size:             smallest pupil size
+                max_pupil_size:             largest pupil size
+                mean_pupil_velocity:        mean of pupil velocities
+                stddev_pupil_velocity:      standard deviation of pupil velocities
+                min_pupil_velocity:         smallest pupil velocity
+                max_pupil_velocity:         largest pupil velocity
+            Args:
+                segments: The list of Segments for this Scene with pre-calculated features
+                export_pupilinfo: True to export raw pupil data in EMDAT output (False by default).
+        """
+        self.numpupilsizes    = sumfeat(segments,'numpupilsizes')
+        self.numpupilvelocity = sumfeat(segments,'numpupilvelocity')
+
+        if self.numpupilsizes > 0: # check if scene has any pupil data
+            if export_pupilinfo:
+                self.pupilinfo_for_export = mergevalues(segments, 'pupilinfo_for_export')
+            self.features['meanpupilsize'] = weightedmeanfeat(segments, 'numpupilsizes', "features['meanpupilsize']")
+            self.features['stddevpupilsize'] = aggregatestddevfeat(segments, 'numpupilsizes', "features['stddevpupilsize']", "features['meanpupilsize']", self.features['meanpupilsize']) #stddev(self.adjvalidpupilsizes)
+            self.features['maxpupilsize'] = maxfeat(segments, "features['maxpupilsize']")
+            self.features['minpupilsize'] = minfeat(segments, "features['minpupilsize']", -1)
+            self.features['startpupilsize'] = self.firstseg.features['startpupilsize']
+            self.features['endpupilsize'] = self.endseg.features['endpupilsize']
+        else:
+            self.pupilinfo_for_export = []
+            self.features['meanpupilsize'] = -1
+            self.features['stddevpupilsize'] = -1
+            self.features['maxpupilsize'] = -1
+            self.features['minpupilsize'] = -1
+            self.features['startpupilsize'] = -1
+            self.features['endpupilsize'] = -1
+
+        if self.numpupilvelocity > 0: # check if scene has any pupil velocity data
+            self.features['meanpupilvelocity'] = weightedmeanfeat(segments, 'numpupilvelocity', "features['meanpupilvelocity']")
+            self.features['stddevpupilvelocity'] = aggregatestddevfeat(segments, 'numpupilvelocity', "features['stddevpupilvelocity']", "features['meanpupilvelocity']", self.features['meanpupilvelocity']) #stddev(self.valid_pupil_velocity)
+            self.features['maxpupilvelocity'] = maxfeat(segments, "features['maxpupilvelocity']")
+            self.features['minpupilvelocity'] = minfeat(segments, "features['minpupilvelocity']", -1)
+        else:
+            self.features['meanpupilvelocity'] = -1
+            self.features['stddevpupilvelocity'] = -1
+            self.features['maxpupilvelocity'] = -1
+            self.features['minpupilvelocity'] = -1
+
+
+    def merge_distance_data(self, segments):
+        """ Merge distance features such as
+                mean_distance:            mean of distances from the screen
+                stddev_distance:          standard deviation of distances from the screen
+                min_distance:             smallest distance from the screen
+                max_distance:             largest distance from the screen
+                start_distance:           distance from the screen in the beginning of this scene
+                end_distance:             distance from the screen in the end of this scene
+
+            Args:
+                segments: The list of Segments for this Scene with pre-calculated features
+        """
+        self.numdistancedata = sumfeat(segments,'numdistancedata') #Distance
+        if self.numdistancedata > 0: # check if scene has any pupil data
+            self.features['meandistance'] = weightedmeanfeat(segments, 'numdistancedata', "features['meandistance']")
+            self.features['stddevdistance'] = aggregatestddevfeat(segments, 'numdistancedata', "features['stddevdistance']", "features['meandistance']", self.features['meandistance'])
+            self.features['maxdistance'] = maxfeat(segments, "features['maxdistance']")
+            self.features['mindistance'] = minfeat(segments, "features['mindistance']", -1)
+            self.features['startdistance'] = self.firstseg.features['startdistance']
+            self.features['enddistance'] = self.endseg.features['enddistance']
+        else:
+            self.features['meandistance'] = -1
+            self.features['stddevdistance'] = -1
+            self.features['maxdistance'] = -1
+            self.features['mindistance'] = -1
+            self.features['startdistance'] = -1
+            self.features['enddistance'] = -1
+
+
+    def merge_saccade_data(self, saccade_data, segments):
+        """ Merge saccade features such as
+                numsaccades:              number of saccades in the segment
+                sumsaccadedistance:       sum of distances during each saccade
+                meansaccadedistance:      mean of distances during each saccade
+                stddevsaccadedistance:    standard deviation of distances during each saccade
+                longestsaccadedistance:   distance of longest saccade
+                sumsaccadeduration:       total time spent on saccades in this segment
+                meansaccadeduration:      average saccade duration
+                stddevsaccadeduration:    standard deviation of saccade durations
+                longestsaccadeduration:   longest duration of saccades in this segment
+                meansaccadespeed:         average speed of saccades in this segment
+                stddevsaccadespeed:       standard deviation of speed of saccades in this segment
+                maxsaccadespeed:          highest saccade speed in this segment
+                minsaccadespeed:          lowest saccade speed in this  segment
+                fixationsaccadetimeratio: fixation to saccade time ratio for this segment
+            Args:
+                saccade_data: The list of saccade datapoints for this Scene
+                segments: The list of Segments for this Scene with pre-calculated features
+        """
+        if saccade_data != None:
+            self.features['numsaccades'] = sumfeat(segments,'numsaccades')
+            self.features['sumsaccadedistance'] = sumfeat(segments, "features['sumsaccadedistance']")
+            self.features['meansaccadedistance'] = weightedmeanfeat(self.segments,'numsaccades',"features['meansaccadedistance']")
+            self.features['stddevsaccadedistance'] = aggregatestddevfeat(segments, 'numsaccades', "features['stddevsaccadedistance']", "features['meansaccadedistance']", self.features['meansaccadedistance'])
+            self.features['longestsaccadedistance'] = maxfeat(segments, "features['longestsaccadedistance']")
+            self.features['sumsaccadeduration'] = sumfeat(segments,"features['sumsaccadeduration']")
+            self.features['meansaccadeduration'] = weightedmeanfeat(self.segments,'numsaccades',"features['meansaccadeduration']")
+            self.features['stddevsaccadeduration'] = aggregatestddevfeat(segments, 'numsaccades', "features['stddevsaccadeduration']", "features['meansaccadeduration']", self.features['meansaccadeduration'])
+            self.features['longestsaccadeduration'] = maxfeat(segments, "features['longestsaccadeduration']")
+            self.features['meansaccadespeed'] = weightedmeanfeat(self.segments,'numsaccades',"features['meansaccadespeed']")
+            self.features['stddevsaccadespeed'] = aggregatestddevfeat(segments, 'numsaccades', "features['stddevsaccadespeed']", "features['meansaccadespeed']", self.features['meansaccadespeed'])
+            self.features['maxsaccadespeed'] = maxfeat(segments, "features['maxsaccadespeed']")
+            self.features['minsaccadespeed'] = minfeat(segments, "features['minsaccadespeed']", -1)
+            self.features['fixationsaccadetimeratio'] = sumfeat(segments, "features['fixationsaccadetimeratio']") / float(len(segments))
+        else:
+            self.features['numsaccades'] = 0
+            self.features['sumsaccadedistance'] = -1
+            self.features['meansaccadedistance'] = -1
+            self.features['stddevsaccadedistance'] = -1
+            self.features['longestsaccadedistance'] = -1
+            self.features['sumsaccadeduration'] = -1
+            self.features['meansaccadeduration'] = -1
+            self.features['stddevsaccadeduration'] = -1
+            self.features['longestsaccadeduration'] = -1
+            self.features['meansaccadespeed'] = -1
+            self.features['stddevsaccadespeed'] = -1
+            self.features['maxsaccadespeed'] = -1
+            self.features['minsaccadespeed'] = -1
+            self.features['fixationsaccadetimeratio'] = -1
 
     def calc_distances(self, fixdata):
         """returns the Euclidean distances between a sequence of "Fixation"s
