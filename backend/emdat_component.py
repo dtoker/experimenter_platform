@@ -229,22 +229,21 @@ class EMDATComponent(DetectionComponent):
             Args:
                 segments: The list of Segments for this Scene with pre-calculated features
         """
-        self.numfixations = sumfeat(segments, 'numfixations')
-        self.features['numfixations'] = self.numfixations
-        self.features['fixationrate'] = float(self.numfixations) / (self.length - self.length_invalid)
-
-        if self.numfixations > 0:
-            self.features['meanfixationduration'] = weightedmeanfeat(segments,'numfixations',"features['meanfixationduration']")
-            self.features['stddevfixationduration'] = aggregatestddevfeat(segments, 'numfixations', "features['stddevfixationduration']", "features['meanfixationduration']", self.features['meanfixationduration'])
-            self.features['sumfixationduration'] = sumfeat(segments, "features['sumfixationduration']")
-            self.features['fixationrate'] = float(self.numfixations)/(self.length - self.length_invalid)
+        accumulator_features['numfixations'] = sumfeat(segments, 'numfixations')
+        accumulator_features['fixationrate'] = float(self.numfixations) / (self.length - self.length_invalid)
+        if accumulator_features['numfixations'] > 0:
+            accumulator_features['meanfixationduration'] = weightedmeanfeat(segments,'numfixations',"features['meanfixationduration']")
+            accumulator_features['stddevfixationduration'] = aggregatestddevfeat(segments,
+                                                      'numfixations', "features['stddevfixationduration']", "features['meanfixationduration']", self.features['meanfixationduration'])
+            accumulator_features['sumfixationduration'] = sumfeat(segments, "features['sumfixationduration']")
+            accumulator_features['fixationrate'] = float(self.numfixations)/(self.length - self.length_invalid)
         else:
-            self.features['meanfixationduration'] = -1
-            self.features['stddevfixationduration'] = -1
-            self.features['sumfixationduration'] = -1
-            self.features['fixationrate'] = -1
+            accumulator_features['meanfixationduration'] = -1
+            accumulator_features['stddevfixationduration'] = -1
+            accumulator_features['sumfixationduration'] = -1
+            accumulator_features['fixationrate'] = -1
 
-    def merge_path_angle_features(self, segments):
+    def merge_path_angle_features(self, part_features, accumulator_features):
         """ Merge path and angle features such as
                 meanpathdistance:         mean of path distances
                 sumpathdistance:          sum of path distances
@@ -258,23 +257,26 @@ class EMDATComponent(DetectionComponent):
             Args:
                 segments: The list of Segments for this Scene with pre-calculated features
         """
-        self.numfixdistances = sumfeat(segments, "numfixdistances")
-        self.numabsangles = sumfeat(segments, "numabsangles")
-        self.numrelangles = sumfeat(segments, "numrelangles")
+        self.numfixdistances                        = sumfeat(segments, "numfixdistances")
+        self.numabsangles                           = sumfeat(segments, "numabsangles")
+        self.numrelangles                           = sumfeat(segments, "numrelangles")
 
         if self.numfixations > 1:
-            self.features['meanpathdistance'] = weightedmeanfeat(segments,'numfixdistances',"features['meanpathdistance']")
-            self.features['sumpathdistance'] = sumfeat(segments, "features['sumpathdistance']")
-            self.features['stddevpathdistance'] = aggregatestddevfeat(segments, 'numfixdistances', "features['stddevpathdistance']", "features['meanpathdistance']", self.features['meanpathdistance'])
+            self.features['meanpathdistance']       = weightedmeanfeat(segments,'numfixdistances',"features['meanpathdistance']")
+            self.features['sumpathdistance']        = sumfeat(segments, "features['sumpathdistance']")
+            self.features['stddevpathdistance']     = aggregatestddevfeat(segments, 'numfixdistances',
+                                                 "features['stddevpathdistance']", "features['meanpathdistance']", self.features['meanpathdistance'])
             self.features['eyemovementvelocity'] = self.features['sumpathdistance']/(self.length - self.length_invalid)
             self.features['sumabspathangles'] = sumfeat(segments, "features['sumabspathangles']")
             self.features['meanabspathangles'] = weightedmeanfeat(segments,'numabsangles',"features['meanabspathangles']")
             self.features['abspathanglesrate'] = self.features['sumabspathangles']/(self.length - self.length_invalid)
-            self.features['stddevabspathangles'] = aggregatestddevfeat(segments, 'numabsangles', "features['stddevabspathangles']", "features['meanabspathangles']", self.features['meanabspathangles'])
+            self.features['stddevabspathangles'] = aggregatestddevfeat(segments, 'numabsangles',
+                                                  "features['stddevabspathangles']", "features['meanabspathangles']", self.features['meanabspathangles'])
             self.features['sumrelpathangles'] = sumfeat(segments, "features['sumrelpathangles']")
             self.features['meanrelpathangles'] = weightedmeanfeat(segments,'numrelangles',"features['meanrelpathangles']")
             self.features['relpathanglesrate'] = self.features['sumrelpathangles']/(self.length - self.length_invalid)
-            self.features['stddevrelpathangles'] = aggregatestddevfeat(segments, 'numrelangles', "features['stddevrelpathangles']", "features['meanrelpathangles']", self.features['meanrelpathangles'])
+            self.features['stddevrelpathangles'] = aggregatestddevfeat(segments, 'numrelangles', "features['stddevrelpathangles']",
+                                                    "features['meanrelpathangles']", self.features['meanrelpathangles'])
         else:
             self.features['meanpathdistance'] = -1
             self.features['sumpathdistance'] = -1
@@ -289,7 +291,7 @@ class EMDATComponent(DetectionComponent):
             self.features['meanrelpathangles']= -1
             self.features['stddevrelpathangles'] = -1
 
-    def merge_pupil_features(self, export_pupilinfo, segments):
+    def merge_pupil_features(self, part_features, accumulator_features):
         """ Merge pupil features asuch as
                 mean_pupil_size:            mean of pupil sizes
                 stddev_pupil_size:          standard deviation of pupil sizes
@@ -310,7 +312,7 @@ class EMDATComponent(DetectionComponent):
             if export_pupilinfo:
                 self.pupilinfo_for_export = mergevalues(segments, 'pupilinfo_for_export')
             self.features['meanpupilsize'] = weightedmeanfeat(segments, 'numpupilsizes', "features['meanpupilsize']")
-            self.features['stddevpupilsize'] = aggregatestddevfeat(segments, 'numpupilsizes', "features['stddevpupilsize']", "features['meanpupilsize']", self.features['meanpupilsize']) #stddev(self.adjvalidpupilsizes)
+            self.features['stddevpupilsize'] = aggregatestddevfeat(segments, 'numpupilsizes', "features['stddevpupilsize']", "features['meanpupilsize']", self.features['meanpupilsize'])
             self.features['maxpupilsize'] = maxfeat(segments, "features['maxpupilsize']")
             self.features['minpupilsize'] = minfeat(segments, "features['minpupilsize']", -1)
             self.features['startpupilsize'] = self.firstseg.features['startpupilsize']
@@ -326,7 +328,7 @@ class EMDATComponent(DetectionComponent):
 
         if self.numpupilvelocity > 0: # check if scene has any pupil velocity data
             self.features['meanpupilvelocity'] = weightedmeanfeat(segments, 'numpupilvelocity', "features['meanpupilvelocity']")
-            self.features['stddevpupilvelocity'] = aggregatestddevfeat(segments, 'numpupilvelocity', "features['stddevpupilvelocity']", "features['meanpupilvelocity']", self.features['meanpupilvelocity']) #stddev(self.valid_pupil_velocity)
+            self.features['stddevpupilvelocity'] = aggregatestddevfeat(segments, 'numpupilvelocity', "features['stddevpupilvelocity']", "features['meanpupilvelocity']", self.features['meanpupilvelocity'])
             self.features['maxpupilvelocity'] = maxfeat(segments, "features['maxpupilvelocity']")
             self.features['minpupilvelocity'] = minfeat(segments, "features['minpupilvelocity']", -1)
         else:
@@ -335,7 +337,7 @@ class EMDATComponent(DetectionComponent):
             self.features['maxpupilvelocity'] = -1
             self.features['minpupilvelocity'] = -1
 
-    def merge_distance_features(self, segments):
+    def merge_distance_features(self, part_features, accumulator_features):
         """ Merge distance features such as
                 mean_distance:            mean of distances from the screen
                 stddev_distance:          standard deviation of distances from the screen
@@ -655,15 +657,13 @@ def aggregatestddevfeat(obj_list, totalfeat, sdfeat, meanfeat, meanscene):
             sd = eval('obj.'+sdfeat)
             if math.isnan(sd): sd = 0
             meanobj = eval('obj.'+meanfeat)
-
             num += (t-1) * sd**2 + t * (meanobj-meanscene)**2
             den += t
-
     if den > 1:
         return math.sqrt(float(num)/(den-1))
     return 0
 
-def sumfeat(obj_list, feat):
+def sumfeat(part_features, accumulator_features, feat):
     """a helper method that calculates the sum of a target feature over a list of objects
 
     Args:
@@ -676,8 +676,8 @@ def sumfeat(obj_list, feat):
         the sum of the target feature over the given list of objects
     """
     sum = 0
-    for obj in obj_list:
-        sum += eval('obj.'+feat)
+    sum += eval('part_features.'+feat)
+    sum += eval('accumulator_features.'+feat)
     return sum
 
 def minfeat(obj_list, feat, nonevalue = None):
