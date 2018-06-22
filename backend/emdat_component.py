@@ -309,8 +309,8 @@ class EMDATComponent(DetectionComponent):
         self.numpupilvelocity = sumfeat(part_features, accumulator_features,'numpupilvelocity')
 
         if self.numpupilsizes > 0: # check if scene has any pupil data
-            if export_pupilinfo:
-                self.pupilinfo_for_export = mergevalues(part_features, accumulator_features, 'pupilinfo_for_export')
+            #if export_pupilinfo:
+            #    self.pupilinfo_for_export = mergevalues(part_features, accumulator_features, 'pupilinfo_for_export')
             self.features['meanpupilsize'] = weightedmeanfeat(part_features, accumulator_features, 'numpupilsizes', "features['meanpupilsize']")
             self.features['stddevpupilsize'] = aggregatestddevfeat(part_features, accumulator_features, 'numpupilsizes', "features['stddevpupilsize']", "features['meanpupilsize']", self.features['meanpupilsize'])
             self.features['maxpupilsize'] = maxfeat(part_features, accumulator_features, "features['maxpupilsize']")
@@ -624,24 +624,21 @@ def weightedmeanfeat(part_features, accumulator_features, totalfeat, ratefeat):
     Returns:
         the weighted average of the ratefeat over the Segments
     """
-    '''self.features['meansaccadedistance'] = weightedmeanfeat(self.segments,'numsaccades',"features['meansaccadedistance']")'''
 
     num_valid = float(0)
     num = 0
-
-
+    
     t = eval('part_features.' + totalfeat)
     num_valid += t * eval('part_features.' + ratefeat)
     num += t
     t = eval('accumulator_features.'+totalfeat)
     num_valid += t * eval('accumulator_features.' + ratefeat)
     num += t
-
     if num != 0:
         return num_valid / num
     return 0
 
-def aggregatestddevfeat(obj_list, totalfeat, sdfeat, meanfeat, meanscene):
+def aggregatestddevfeat(part_features, accumulator_features, totalfeat, sdfeat, meanfeat, meanscene):
     """a helper method that calculates the aggregated standard deviation of a target feature over a list of Segments
 
     Args:
@@ -657,14 +654,20 @@ def aggregatestddevfeat(obj_list, totalfeat, sdfeat, meanfeat, meanscene):
     num = float(0)
     den = float(0)
 
-    for obj in obj_list:
-        t = eval('obj.'+totalfeat)
-        if t > 0:
-            sd = eval('obj.'+sdfeat)
-            if math.isnan(sd): sd = 0
-            meanobj = eval('obj.'+meanfeat)
-            num += (t-1) * sd**2 + t * (meanobj-meanscene)**2
-            den += t
+    t = eval('part_features.'+totalfeat)
+    if t > 0:
+        sd = eval('part_features.'+sdfeat)
+        if math.isnan(sd): sd = 0
+        meanobj = eval('part_features.'+meanfeat)
+        num += (t-1) * sd**2 + t * (meanobj-meanscene)**2
+        den += t
+    t = eval('accumulator_features.'+totalfeat)
+    if t > 0:
+        sd = eval('accumulator_features.'+sdfeat)
+        if math.isnan(sd): sd = 0
+        meanobj = eval('accumulator_features.'+meanfeat)
+        num += (t-1) * sd**2 + t * (meanobj-meanscene)**2
+        den += t
     if den > 1:
         return math.sqrt(float(num)/(den-1))
     return 0
@@ -686,7 +689,7 @@ def sumfeat(part_features, accumulator_features, feat):
     sum += eval('accumulator_features.'+feat)
     return sum
 
-def minfeat(obj_list, feat, nonevalue = None):
+def minfeat(part_features, accumulator_features, feat, nonevalue = None):
     """a helper method that calculates the min of a target feature over a list of objects
 
     Args:
@@ -716,6 +719,7 @@ def maxfeat(part_features, accumulator_features, feat):
     """
     return max(eval('part_features.'+feat), eval('accumulator_features.'+feat))
 
+# TODO: Do we need this?
 def mergevalues(obj_list, field):
     """a helper method that merges lists of values stored in field
 
