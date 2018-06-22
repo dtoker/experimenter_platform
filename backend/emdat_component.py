@@ -358,20 +358,22 @@ class EMDATComponent(DetectionComponent):
             Args:
                 segments: The list of Segments for this Scene with pre-calculated features
         """
-        self.numdistancedata = sumfeat(part_features, accumulator_features,'numdistancedata') #Distance
-        if self.numdistancedata > 0: # check if scene has any pupil data
+        numdistancedata = sumfeat(part_features, accumulator_features,'numdistancedata') #Distance
+        if numdistancedata > 0: # check if scene has any pupil data
             curr_mean_distance = accumulator_features['meandistance']
-            self.features['meandistance'] = weightedmeanfeat(part_features, accumulator_features, 'numdistancedata', "features['meandistance']")
-            self.features['stddevdistance'] = aggregatestddevfeat(part_features, accumulator_features, 'numdistancedata', "features['stddevdistance']", "features['meandistance']", curr_mean_distance, self.features['meandistance'])
-            self.features['maxdistance'] = maxfeat(part_features, accumulator_features, "features['maxdistance']")
-            self.features['mindistance'] = minfeat(part_features, accumulator_features, "features['mindistance']", -1)
+            mean_distance = weightedmeanfeat(part_features, accumulator_features, 'numdistancedata', "meandistance")
+            self.accumulator_features['stddevdistance'] = aggregatestddevfeat(part_features, accumulator_features, 'numdistancedata', "stddevdistance", "meandistance", curr_mean_distance)
+            self.accumulator_features['maxdistance'] = maxfeat(part_features, accumulator_features, "features['maxdistance']")
+            self.accumulator_features['mindistance'] = minfeat(part_features, accumulator_features, "features['mindistance']", -1)
+            self.accumulator_features['mean_distance'] = mean_distance
+            self.accumulator_features['numdistancedata'] = numdistancedata
             #self.features['startdistance'] = self.firstseg.features['startdistance']
             #self.features['enddistance'] = self.endseg.features['enddistance']
         else:
-            self.features['meandistance'] = -1
-            self.features['stddevdistance'] = -1
-            self.features['maxdistance'] = -1
-            self.features['mindistance'] = -1
+            self.accumulator_features['meandistance'] = -1
+            self.accumulator_features['stddevdistance'] = -1
+            self.accumulator_features['maxdistance'] = -1
+            self.accumulator_features['mindistance'] = -1
             #self.features['startdistance'] = -1
             #self.features['enddistance'] = -1
     """
