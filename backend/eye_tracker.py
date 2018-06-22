@@ -373,8 +373,8 @@ class TobiiController:
 		self.emdat_features['stddevpupilsize'] 			= -1
 		self.emdat_features['maxpupilsize'] 			= -1
 		self.emdat_features['minpupilsize'] 			= -1
-		self.emdat_features['startpupilsize'] 			= -1
-		self.emdat_features['endpupilsize'] 			= -1
+		#self.emdat_features['startpupilsize'] 			= -1
+		#self.emdat_features['endpupilsize'] 			= -1
 		self.emdat_features['meanpupilvelocity'] 		= -1
 		self.emdat_features['stddevpupilvelocity'] 		= -1
 		self.emdat_features['maxpupilvelocity'] 		= -1
@@ -385,8 +385,8 @@ class TobiiController:
 		self.emdat_features['stddevdistance'] 			= -1
 		self.emdat_features['maxdistance'] 				= -1
 		self.emdat_features['mindistance'] 				= -1
-		self.emdat_features['startdistance'] 			= -1
-		self.emdat_features['enddistance'] 				= -1
+		#self.emdat_features['startdistance'] 			= -1
+		#self.emdat_features['enddistance'] 			= -1
 		# Saccade features
 		"""
 		self.emdat_features['numsaccades'] 				= 0
