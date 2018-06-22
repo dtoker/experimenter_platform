@@ -230,19 +230,23 @@ class EMDATComponent(DetectionComponent):
             Args:
                 segments: The list of Segments for this Scene with pre-calculated features
         """
-        accumulator_features['numfixations'] = sumfeat(part_features, accumulator_features, 'numfixations')
-        accumulator_features['fixationrate'] = float(self.numfixations) / (self.length - self.length_invalid)
-        if accumulator_features['numfixations'] > 0:
-            accumulator_features['meanfixationduration'] = weightedmeanfeat(part_features, accumulator_features,'numfixations',"meanfixationduration")
-            accumulator_features['stddevfixationduration'] = aggregatestddevfeat(part_features, accumulator_features,
-                                                      'numfixations', "'stddevfixationduration", "meanfixationduration", self.features['meanfixationduration'])
-            accumulator_features['sumfixationduration'] = sumfeat(part_features, accumulator_features, "features['sumfixationduration']")
-            accumulator_features['fixationrate'] = float(self.numfixations)/(self.length - self.length_invalid)
+        numfixations = sumfeat(part_features, accumulator_features, 'numfixations')
+
+        accumulator_features['fixationrate'] = float(numfixations) / (self.length - self.length_invalid)
+        if numfixations > 0:
+            meanfixationduration = weightedmeanfeat(part_features, accumulator_features,'numfixations',"meanfixationduration")
+
+            accumulator_features['stddevfixationduration']  = aggregatestddevfeat(part_features, accumulator_features,
+                                                      'numfixations', "'stddevfixationduration", "meanfixationduration", meanfixationduration)
+            accumulator_features['sumfixationduration']     = sumfeat(part_features, accumulator_features, "sumfixationduration")
+            accumulator_features['fixationrate']            = float(numfixations)/(self.length - self.length_invalid)
+            accumulator_features['meanfixationduration']    = meanfixationduration
         else:
-            accumulator_features['meanfixationduration'] = -1
-            accumulator_features['stddevfixationduration'] = -1
-            accumulator_features['sumfixationduration'] = -1
-            accumulator_features['fixationrate'] = -1
+            accumulator_features['meanfixationduration']    = -1
+            accumulator_features['stddevfixationduration']  = -1
+            accumulator_features['sumfixationduration']     = -1
+            accumulator_features['fixationrate']            = -1
+        accumulator_features['numfixations']                = numfixations
 
     def merge_path_angle_features(self, part_features, accumulator_features):
         """ Merge path and angle features such as
@@ -276,7 +280,7 @@ class EMDATComponent(DetectionComponent):
             accumulator_features['sumrelpathangles']        = sumfeat(part_features, accumulator_features, "sumrelpathangles")
             meanrelpathangles                               = weightedmeanfeat(part_features, accumulator_features,'numrelangles',"meanrelpathangles")
 
-            accumulator_features['relpathanglesrate']       = self.features['sumrelpathangles']/(self.length - self.length_invalid)
+            accumulator_features['relpathanglesrate']       = accumulator_features['sumrelpathangles']/(self.length - self.length_invalid)
             accumulator_features['stddevrelpathangles']     = aggregatestddevfeat(part_features, accumulator_features, 'numrelangles', "stddevrelpathangles",
                                                                 "meanrelpathangles", meanrelpathangles)
 
@@ -287,18 +291,18 @@ class EMDATComponent(DetectionComponent):
             accumulator_features['numabsangles']            = numabsangles
             accumulator_features['numrelangles']            = numrelangles
         else:
-            accumulator_features['meanpathdistance'] = -1
-            accumulator_features['sumpathdistance'] = -1
-            accumulator_features['stddevpathdistance'] = -1
-            accumulator_features['eyemovementvelocity'] = -1
-            accumulator_features['sumabspathangles'] = -1
-            accumulator_features['abspathanglesrate'] = -1
-            accumulator_features['meanabspathangles']= -1
-            accumulator_features['stddevabspathangles']= -1
-            accumulator_features['sumrelpathangles'] = -1
-            accumulator_features['relpathanglesrate'] = -1
-            accumulator_features['meanrelpathangles']= -1
-            accumulator_features['stddevrelpathangles'] = -1
+            accumulator_features['meanpathdistance']        = -1
+            accumulator_features['sumpathdistance']         = -1
+            accumulator_features['stddevpathdistance']      = -1
+            accumulator_features['eyemovementvelocity']     = -1
+            accumulator_features['sumabspathangles']        = -1
+            accumulator_features['abspathanglesrate']       = -1
+            accumulator_features['meanabspathangles']       = -1
+            accumulator_features['stddevabspathangles']     = -1
+            accumulator_features['sumrelpathangles']        = -1
+            accumulator_features['relpathanglesrate']       = -1
+            accumulator_features['meanrelpathangles']       = -1
+            accumulator_features['stddevrelpathangles']     = -1
 
     def merge_pupil_features(self, part_features, accumulator_features):
         """ Merge pupil features asuch as
