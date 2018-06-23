@@ -8,8 +8,6 @@ Authors: Samad Kardan (creator), Sebastien Lalle.
 Institution: The University of British Columbia.
 """
 
-from EMDAT_core.data_structures import Fixation
-import params
 import math
 
 

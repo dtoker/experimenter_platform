@@ -1,27 +1,34 @@
 from detection_component import DetectionComponent
+from tornado import gen
 import math
+from utils import *
+import geometry
 
 class EMDATComponent(DetectionComponent):
 
     #TODO: Remove websocket
-    def  __init__(self, tobii_controller, callback_time):
+    def  __init__(self, tobii_controller, app_state_control, callback_time, liveWebSocket):
         #TODO: Specify which features should be calculated
-        super().__init__(tobii_controller, is_periodic = True, callback_time, liveWebSocket =  None)
+        DetectionComponent.__init__(self, tobii_controller, app_state_control, is_periodic = True, callback_time = callback_time, liveWebSocket =  liveWebSocket)
 
     def notify_app_state_controller(self):
         self.merge_features()
         """
         Code to send features to AppStateController
         """
-
+    @gen.coroutine
     def run(self):
-
+        print("EMDAT!!!!!!!")
+        print("EMDAT!!!!!!!")
+        print("EMDAT!!!!!!!")
+        print("EMDAT!!!!!!!")
+        print("EMDAT!!!!!!!")
         self.start = self.tobii_controller.time[0]
         self.end = self.tobii_controller.time[-1]
         self.length = self.end - self.start
         self.calc_validity_gaps()
         self.emdat_interval_features = {}
-        self.init_emdat_task_features(self)
+        self.init_emdat_task_features()
         self.length_invalid = self.get_length_invalid()
 
         """ calculate pupil dilation features """
@@ -34,17 +41,86 @@ class EMDATComponent(DetectionComponent):
         self.calc_fix_ang_path_features()
 
         """ calculate saccades features if available """
-        self.calc_saccade_features()
+        #self.calc_saccade_features()
 
         """ calculate AOIs features """
-        self.has_aois = False
-        if aois:
-            self.set_aois(aois, all_data, fixation_data, event_data, rest_pupil_size, export_pupilinfo)
-            self.features['aoisequence'] = self.generate_aoi_sequence(fixation_data, aois)
+        #self.has_aois = False
+        #if aois:
+        #    self.set_aois(aois, all_data, fixation_data, event_data, rest_pupil_size, export_pupilinfo)
+        #    self.features['aoisequence'] = self.generate_aoi_sequence(fixation_data, aois)
 
         self.merge_features(self.emdat_interval_features, self.emdat_task_features)
         self.merge_features(self.emdat_task_features, self.tobii_controller.emdat_global_features)
+        print("EMDAT DONE")
+        print("EMDAT DONE")
+        print("EMDAT DONE")
+        print("EMDAT DONE")
+        print("EMDAT DONE")
+        print("EMDAT DONE")
 
+    def init_emdat_task_features(self):
+        self.emdat_task_features = {}
+		# Pupil features
+        self.emdat_task_features['numpupilsizes']    							= 0
+        self.emdat_task_features['numpupilvelocity']							= 0
+        self.emdat_task_features['meanpupilsize'] 			= -1
+        self.emdat_task_features['stddevpupilsize'] 			= -1
+        self.emdat_task_features['maxpupilsize'] 			= -1
+        self.emdat_task_features['minpupilsize'] 			= -1
+		#self.emdat_task_features['startpupilsize'] 			= -1
+		#self.emdat_task_features['endpupilsize'] 			= -1
+        self.emdat_task_features['meanpupilvelocity'] 		= -1
+        self.emdat_task_features['stddevpupilvelocity'] 		= -1
+        self.emdat_task_features['maxpupilvelocity'] 		= -1
+        self.emdat_task_features['minpupilvelocity'] 		= -1
+		# Distance features
+        self.emdat_task_features['numdistancedata']							= 0
+        self.emdat_task_features['meandistance'] 			= -1
+        self.emdat_task_features['stddevdistance'] 			= -1
+        self.emdat_task_features['maxdistance'] 				= -1
+        self.emdat_task_features['mindistance'] 				= -1
+		#self.emdat_task_features['startdistance'] 			= -1
+		#self.emdat_task_features['enddistance'] 				= -1
+		# Saccade features
+        """
+		self.emdat_task_features['numsaccades'] 				= 0
+		self.emdat_task_features['sumsaccadedistance'] 		= -1
+		self.emdat_task_features['meansaccadedistance'] 		= -1
+		self.emdat_task_features['stddevsaccadedistance'] 	= -1
+		self.emdat_task_features['longestsaccadedistance'] 	= -1
+		self.emdat_task_features['sumsaccadeduration'] 		= -1
+		self.emdat_task_features['meansaccadeduration'] 		= -1
+		self.emdat_task_features['stddevsaccadeduration'] 	= -1
+		self.emdat_task_features['longestsaccadeduration'] 	= -1
+		self.emdat_task_features['meansaccadespeed'] 		= -1
+		self.emdat_task_features['stddevsaccadespeed'] 		= -1
+		self.emdat_task_features['maxsaccadespeed'] 			= -1
+		self.emdat_task_features['minsaccadespeed'] 			= -1
+		self.emdat_task_features['fixationsaccadetimeratio'] = -1
+        """
+		# Path features
+        self.numfixdistances 							= 0
+        self.numabsangles 								= 0
+        self.numrelangles 								= 0
+        self.emdat_task_features['meanpathdistance'] 		= -1
+        self.emdat_task_features['sumpathdistance'] 			= -1
+        self.emdat_task_features['stddevpathdistance'] 		= -1
+        self.emdat_task_features['eyemovementvelocity'] 		= -1
+        self.emdat_task_features['sumabspathangles'] 		= -1
+        self.emdat_task_features['abspathanglesrate'] 		= -1
+        self.emdat_task_features['meanabspathangles']		= -1
+        self.emdat_task_features['stddevabspathangles']		= -1
+        self.emdat_task_features['sumrelpathangles'] 		= -1
+        self.emdat_task_features['relpathanglesrate'] 		= -1
+        self.emdat_task_features['meanrelpathangles']		= -1
+        self.emdat_task_features['stddevrelpathangles'] 		= -1
+		# Fixation features
+        self.emdat_task_features['numfixations'] 			= 0
+        self.emdat_task_features['fixationrate'] 			= -1
+        self.emdat_task_features['meanfixationduration'] 	= -1
+        self.emdat_task_features['stddevfixationduration'] 	= -1
+        self.emdat_task_features['sumfixationduration'] 		= -1
+        self.emdat_task_features['fixationrate'] 			= -1
 
     def merge_features(self, part_features, accumulator_features):
         self.merge_pupil_features(part_features, accumulator_features)
@@ -78,8 +154,8 @@ class EMDATComponent(DetectionComponent):
 		#get all pupil sizes (valid + invalid)
         #pupilsizes = map(lambda x: x.pupilsize, all_data)
         #get all datapoints where pupil size is available
-        valid_pupil_data = filter(lambda x: x.pupilsize > 0, self.tobii_controller.pupilsize)
-        valid_pupil_velocity = filter(lambda x: x.pupilvelocity != -1, self.tobii_controller.pupilvelocity)
+        valid_pupil_data = filter(lambda pupilsize: pupilsize > 0, self.tobii_controller.pupilsize)
+        valid_pupil_velocity = filter(lambda pupilvelocity: pupilvelocity != -1, self.tobii_controller.pupilvelocity)
 
         #number of valid pupil sizes
         self.emdat_interval_features['meanpupilsize']       = -1
@@ -92,10 +168,10 @@ class EMDATComponent(DetectionComponent):
         self.emdat_interval_features['stddevpupilvelocity'] = -1
         self.emdat_interval_features['maxpupilvelocity']    = -1
         self.emdat_interval_features['minpupilvelocity']    = -1
-        self.numpupilsizes                                  = len(valid_pupil_data)
-        self.numpupilvelocity                               = len(valid_pupil_velocity)
+        self.emdat_interval_features['numpupilsizes']           = len(valid_pupil_data)
+        self.emdat_interval_features['numpupilvelocity']        = len(valid_pupil_velocity)
 
-        if self.numpupilsizes > 0: #check if the current segment has pupil data available
+        if self.emdat_interval_features['numpupilsizes'] > 0: #check if the current segment has pupil data available
             #if params.PUPIL_ADJUSTMENT == "rpscenter":
             #    adjvalidpupilsizes = map(lambda x: x.pupilsize - rest_pupil_size, valid_pupil_data)
             #elif params.PUPIL_ADJUSTMENT == "PCPS":
@@ -138,10 +214,10 @@ class EMDATComponent(DetectionComponent):
         #                Number of missing points: " + str(len(invalid_distance_data)))
 
         #get all datapoints where distance is available
-        distances_from_screen = filter(lambda x: x.distance > 0, self.tobii_controller.head_distance)
+        distances_from_screen = filter(lambda distance: distance > 0, self.tobii_controller.head_distance)
         #number of valid distance datapoints
-        self.numdistancedata = len(distances_from_screen)
-        if self.numdistancedata > 0: #check if the current segment has pupil data available
+        numdistancedata = len(distances_from_screen)
+        if numdistancedata > 0: #check if the current segment has pupil data available
             self.emdat_interval_features['meandistance']       = mean(distances_from_screen)
             self.emdat_interval_features['stddevdistance']     = stddev(distances_from_screen)
             self.emdat_interval_features['maxdistance']        = max(distances_from_screen)
@@ -173,27 +249,28 @@ class EMDATComponent(DetectionComponent):
                 stddevrelpathangles:      standard deviation of relative path angles for this segment
         """
         fixation_data = self.tobii_controller.EndFixations
-        self.numfixations = len(fixation_data)
-        if self.numfixations > 0:
+        print(fixation_data)
+        numfixations = len(fixation_data)
+        if numfixations > 0:
             self.emdat_interval_features['meanfixationduration'] = mean(map(lambda x: float(x[2]), fixation_data))
             self.emdat_interval_features['stddevfixationduration'] = stddev(map(lambda x: float(x[2]), fixation_data))
             self.emdat_interval_features['sumfixationduration'] = sum(map(lambda x: x[2], fixation_data))
 
-            self.emdat_interval_features['fixationrate'] = float(self.numfixations) / (self.length - self.length_invalid)
+            self.emdat_interval_features['fixationrate'] = float(numfixations) / (self.length - self.length_invalid)
             distances = self.calc_distances(fixation_data)
             abs_angles = self.calc_abs_angles(fixation_data)
             rel_angles = self.calc_rel_angles(fixation_data)
         else:
-            self.fixation_start = -1
-            self.fixation_end = -1
+            #self.fixation_start = -1
+            #self.fixation_end = -1
             self.emdat_interval_features['meanfixationduration'] = -1
             self.emdat_interval_features['stddevfixationduration'] = -1
             self.emdat_interval_features['sumfixationduration'] = -1
             self.emdat_interval_features['fixationrate'] = -1
 
-        self.numfixdistances = len(distances)
-        self.numabsangles = len(abs_angles)
-        self.numrelangles = len(rel_angles)
+        numfixdistances = len(distances)
+        numabsangles = len(abs_angles)
+        numrelangles = len(rel_angles)
         if len(distances) > 0:
             self.emdat_interval_features['meanpathdistance'] = mean(distances)
             self.emdat_interval_features['sumpathdistance'] = sum(distances)
@@ -207,6 +284,9 @@ class EMDATComponent(DetectionComponent):
             self.emdat_interval_features['relpathanglesrate'] = sum(rel_angles)/(self.length - self.length_invalid)
             self.emdat_interval_features['meanrelpathangles'] = mean(rel_angles)
             self.emdat_interval_features['stddevrelpathangles'] = stddev(rel_angles)
+            self.emdat_interval_features['numfixdistances'] = numfixdistances
+            self.emdat_interval_features['numabsangles'] = numabsangles
+            self.emdat_interval_features['numrelangles'] = numrelangles
         else:
             self.emdat_interval_features['meanpathdistance'] = -1
             self.emdat_interval_features['sumpathdistance'] = -1
@@ -231,11 +311,9 @@ class EMDATComponent(DetectionComponent):
                 segments: The list of Segments for this Scene with pre-calculated features
         """
         numfixations = sumfeat(part_features, accumulator_features, 'numfixations')
-
         accumulator_features['fixationrate'] = float(numfixations) / (self.length - self.length_invalid)
         if numfixations > 0:
             meanfixationduration = weightedmeanfeat(part_features, accumulator_features,'numfixations',"meanfixationduration")
-
             accumulator_features['stddevfixationduration']  = aggregatestddevfeat(part_features, accumulator_features,
                                                       'numfixations', "'stddevfixationduration", "meanfixationduration", meanfixationduration)
             accumulator_features['sumfixationduration']     = sumfeat(part_features, accumulator_features, "sumfixationduration")
@@ -318,19 +396,19 @@ class EMDATComponent(DetectionComponent):
                 segments: The list of Segments for this Scene with pre-calculated features
                 export_pupilinfo: True to export raw pupil data in EMDAT output (False by default).
         """
-        numpupilsizes    = sumfeat(part_features, accumulator_features, 'numpupilsizes')
-        numpupilvelocity = sumfeat(part_features, accumulator_features, 'numpupilvelocity')
+        numpupilsizes    = sumfeat(part_features, accumulator_features, "['numpupilsizes']")
+        numpupilvelocity = sumfeat(part_features, accumulator_features, "['numpupilvelocity']")
 
         if numpupilsizes > 0: # check if scene has any pupil data
             #if export_pupilinfo:
             #    self.pupilinfo_for_export = mergevalues(part_features, accumulator_features, 'pupilinfo_for_export')
-            mean_pupilsize = weightedmeanfeat(part_features['numpupilsizes'], accumulator_features, 'numpupilsizes', "features['meanpupilsize']")
+            mean_pupilsize = weightedmeanfeat(part_features, accumulator_features, "['numpupilsizes']", "['meanpupilsize']")
 
             accumulator_features['stddevpupilsize']    = aggregatestddevfeat(part_features, accumulator_features,
-                                                                                'numpupilsizes', 'stddevpupilsize',
-                                                                                "meanpupilsize", mean_pupilsize)
-            accumulator_features['maxpupilsize']       = maxfeat(part_features, accumulator_features, "features['maxpupilsize']")
-            accumulator_features['minpupilsize']       = minfeat(part_features, accumulator_features, "features['minpupilsize']", -1)
+                                                                                "['numpupilsizes']", "['stddevpupilsize']",
+                                                                                "['meanpupilsize']", mean_pupilsize)
+            accumulator_features['maxpupilsize']       = maxfeat(part_features, accumulator_features, "['maxpupilsize']")
+            accumulator_features['minpupilsize']       = minfeat(part_features, accumulator_features, "['minpupilsize']", -1)
             accumulator_features['meanpupilsize']      = mean_pupilsize
             accumulator_features['numpupilsizes']      = numpupilsizes
             #self.features['startpupilsize'] = self.firstseg.features['startpupilsize']
@@ -346,17 +424,17 @@ class EMDATComponent(DetectionComponent):
 
         if numpupilvelocity > 0: # check if scene has any pupil velocity data
 
-            mean_velocity = weightedmeanfeat(part_features, accumulator_features, 'numpupilvelocity', "meanpupilvelocity")
-            accumulator_features['stddevpupilvelocity'] = aggregatestddevfeat(part_features, accumulator_features, 'numpupilvelocity', "stddevpupilvelocity", "'meanpupilvelocity", mean_velocity)
-            accumulator_features['maxpupilvelocity'] = maxfeat(part_features, accumulator_features, 'maxpupilvelocity')
-            accumulator_features['minpupilvelocity'] = minfeat(part_features, accumulator_features, "minpupilvelocity", -1)
-            accumulator_features['meanpupilvelocity'] = mean_velocity
-            accumulator_features['numpupilvelocity'] = numpupilvelocity
+            mean_velocity                                           = weightedmeanfeat(part_features, accumulator_features, "['numpupilvelocity']", "['meanpupilvelocity']")
+            accumulator_features['stddevpupilvelocity']             = aggregatestddevfeat(part_features, accumulator_features, "['numpupilvelocity']", "['stddevpupilvelocity']", "['meanpupilvelocity']", mean_velocity)
+            accumulator_features['maxpupilvelocity']                = maxfeat(part_features, accumulator_features, "['maxpupilvelocity']")
+            accumulator_features['minpupilvelocity']                = minfeat(part_features, accumulator_features, "['minpupilvelocity']", -1)
+            accumulator_features['meanpupilvelocity']               = mean_velocity
+            accumulator_features['numpupilvelocity']                = numpupilvelocity
         else:
-            accumulator_features['meanpupilvelocity'] = -1
-            accumulator_features['stddevpupilvelocity'] = -1
-            accumulator_features['maxpupilvelocity'] = -1
-            accumulator_features['minpupilvelocity'] = -1
+            accumulator_features['meanpupilvelocity']               = -1
+            accumulator_features['stddevpupilvelocity']             = -1
+            accumulator_features['maxpupilvelocity']                = -1
+            accumulator_features['minpupilvelocity']                = -1
 
     def merge_distance_features(self, part_features, accumulator_features):
         """ Merge distance features such as
@@ -372,20 +450,20 @@ class EMDATComponent(DetectionComponent):
         """
         numdistancedata = sumfeat(part_features, accumulator_features,'numdistancedata') #Distance
         if numdistancedata > 0: # check if scene has any pupil data
-            curr_mean_distance = accumulator_features['meandistance']
-            mean_distance = weightedmeanfeat(part_features, accumulator_features, 'numdistancedata', "meandistance")
-            accumulator_features['stddevdistance'] = aggregatestddevfeat(part_features, accumulator_features, 'numdistancedata', "stddevdistance", "meandistance", curr_mean_distance)
-            accumulator_features['maxdistance'] = maxfeat(part_features, accumulator_features, "features['maxdistance']")
-            accumulator_features['mindistance'] = minfeat(part_features, accumulator_features, "features['mindistance']", -1)
-            accumulator_features['mean_distance'] = mean_distance
-            accumulator_features['numdistancedata'] = numdistancedata
+            curr_mean_distance                                      = accumulator_features['meandistance']
+            mean_distance                                           = weightedmeanfeat(part_features, accumulator_features, 'numdistancedata', "meandistance")
+            accumulator_features['stddevdistance']                  = aggregatestddevfeat(part_features, accumulator_features, 'numdistancedata', "stddevdistance", "meandistance", curr_mean_distance)
+            accumulator_features['maxdistance']                     = maxfeat(part_features, accumulator_features, "features['maxdistance']")
+            accumulator_features['mindistance']                     = minfeat(part_features, accumulator_features, "features['mindistance']", -1)
+            accumulator_features['mean_distance']                   = mean_distance
+            accumulator_features['numdistancedata']                 = numdistancedata
             #self.features['startdistance'] = self.firstseg.features['startdistance']
             #self.features['enddistance'] = self.endseg.features['enddistance']
         else:
-            accumulator_features['meandistance'] = -1
-            accumulator_features['stddevdistance'] = -1
-            accumulator_features['maxdistance'] = -1
-            accumulator_features['mindistance'] = -1
+            accumulator_features['meandistance']                    = -1
+            accumulator_features['stddevdistance']                  = -1
+            accumulator_features['maxdistance']                     = -1
+            accumulator_features['mindistance']                     = -1
             #self.features['startdistance'] = -1
             #self.features['enddistance'] = -1
     """
@@ -570,70 +648,6 @@ class EMDATComponent(DetectionComponent):
             length += gap[1] - gap[0]
         return length
 
-	def init_emdat_task_features(self):
-		self.emdat_task_features = {}
-		# Pupil features
-		self.numpupilsizes    							= 0
-		self.numpupilvelocity 							= 0
-		self.emdat_task_features['meanpupilsize'] 			= -1
-		self.emdat_task_features['stddevpupilsize'] 			= -1
-		self.emdat_task_features['maxpupilsize'] 			= -1
-		self.emdat_task_features['minpupilsize'] 			= -1
-		#self.emdat_task_features['startpupilsize'] 			= -1
-		#self.emdat_task_features['endpupilsize'] 			= -1
-		self.emdat_task_features['meanpupilvelocity'] 		= -1
-		self.emdat_task_features['stddevpupilvelocity'] 		= -1
-		self.emdat_task_features['maxpupilvelocity'] 		= -1
-		self.emdat_task_features['minpupilvelocity'] 		= -1
-		# Distance features
-		self.numdistancedata							= 0
-		self.emdat_task_features['meandistance'] 			= -1
-		self.emdat_task_features['stddevdistance'] 			= -1
-		self.emdat_task_features['maxdistance'] 				= -1
-		self.emdat_task_features['mindistance'] 				= -1
-		#self.emdat_task_features['startdistance'] 			= -1
-		#self.emdat_task_features['enddistance'] 				= -1
-		# Saccade features
-        """
-		self.emdat_task_features['numsaccades'] 				= 0
-		self.emdat_task_features['sumsaccadedistance'] 		= -1
-		self.emdat_task_features['meansaccadedistance'] 		= -1
-		self.emdat_task_features['stddevsaccadedistance'] 	= -1
-		self.emdat_task_features['longestsaccadedistance'] 	= -1
-		self.emdat_task_features['sumsaccadeduration'] 		= -1
-		self.emdat_task_features['meansaccadeduration'] 		= -1
-		self.emdat_task_features['stddevsaccadeduration'] 	= -1
-		self.emdat_task_features['longestsaccadeduration'] 	= -1
-		self.emdat_task_features['meansaccadespeed'] 		= -1
-		self.emdat_task_features['stddevsaccadespeed'] 		= -1
-		self.emdat_task_features['maxsaccadespeed'] 			= -1
-		self.emdat_task_features['minsaccadespeed'] 			= -1
-		self.emdat_task_features['fixationsaccadetimeratio'] = -1
-        """
-		# Path features
-		self.numfixdistances 							= 0
-        self.numabsangles 								= 0
-        self.numrelangles 								= 0
-		self.emdat_task_features['meanpathdistance'] 		= -1
-		self.emdat_task_features['sumpathdistance'] 			= -1
-		self.emdat_task_features['stddevpathdistance'] 		= -1
-		self.emdat_task_features['eyemovementvelocity'] 		= -1
-		self.emdat_task_features['sumabspathangles'] 		= -1
-		self.emdat_task_features['abspathanglesrate'] 		= -1
-		self.emdat_task_features['meanabspathangles']		= -1
-		self.emdat_task_features['stddevabspathangles']		= -1
-		self.emdat_task_features['sumrelpathangles'] 		= -1
-		self.emdat_task_features['relpathanglesrate'] 		= -1
-		self.emdat_task_features['meanrelpathangles']		= -1
-		self.emdat_task_features['stddevrelpathangles'] 		= -1
-		# Fixation features
-		self.emdat_task_features['numfixations'] 			= 0
-        self.emdat_task_features['fixationrate'] 			= -1
-		self.emdat_task_features['meanfixationduration'] 	= -1
-		self.emdat_task_features['stddevfixationduration'] 	= -1
-		self.emdat_task_features['sumfixationduration'] 		= -1
-		self.emdat_task_features['fixationrate'] 			= -1
-
 
 def weightedmeanfeat(part_features, accumulator_features, totalfeat, ratefeat):
     """a helper method that calculates the weighted average of a target feature over a list of Segments
@@ -652,11 +666,11 @@ def weightedmeanfeat(part_features, accumulator_features, totalfeat, ratefeat):
     num_valid = float(0)
     num = 0
 
-    t = eval('part_features.' + totalfeat)
-    num_valid += t * eval('part_features.' + ratefeat)
+    t = eval('part_features' + totalfeat)
+    num_valid += t * eval('part_features' + ratefeat)
     num += t
-    t = eval('accumulator_features.'+totalfeat)
-    num_valid += t * eval('accumulator_features.' + ratefeat)
+    t = eval('accumulator_features'+totalfeat)
+    num_valid += t * eval('accumulator_features' + ratefeat)
     num += t
     if num != 0:
         return num_valid / num
@@ -678,16 +692,24 @@ def aggregatestddevfeat(part_features, accumulator_features, totalfeat, sdfeat, 
     num = float(0)
     den = float(0)
 
-    for obj in obj_list:
-        t = eval('obj.'+totalfeat)
-        if t > 0:
-            sd = eval('obj.'+sdfeat)
-            if math.isnan(sd): sd = 0
-            meanobj = eval('obj.'+meanfeat)
 
-            num += (t-1) * sd**2 + t * (meanobj-meanscene)**2
-            den += t
+    t = eval('part_features'+totalfeat)
+    if t > 0:
+        sd = eval('part_features'+sdfeat)
+        if math.isnan(sd): sd = 0
+        meanobj = eval('part_features'+meanfeat)
 
+        num += (t-1) * sd**2 + t * (meanobj-meanscene)**2
+        den += t
+
+    t = eval('accumulator_features'+totalfeat)
+    if t > 0:
+        sd = eval('accumulator_features'+sdfeat)
+        if math.isnan(sd): sd = 0
+        meanobj = eval('accumulator_features'+meanfeat)
+
+        num += (t-1) * sd**2 + t * (meanobj-meanscene)**2
+        den += t
     if den > 1:
         return math.sqrt(float(num)/(den-1))
     return 0
@@ -706,8 +728,8 @@ def sumfeat(part_features, accumulator_features, feat):
         the sum of the target feature over the given list of objects
     """
     sum = 0
-    sum += eval('part_features.'+feat)
-    sum += eval('accumulator_features.'+feat)
+    sum += eval('part_features'+feat)
+    sum += eval('accumulator_features'+feat)
     return sum
 
 def minfeat(part_features, accumulator_features, feat, nonevalue = None):
@@ -724,7 +746,7 @@ def minfeat(part_features, accumulator_features, feat, nonevalue = None):
     Returns:
         the min of the target feature over the given list of objects
     """
-    return min(eval('part_features.'+feat), eval('accumulator_features.'+feat))
+    return min(eval('part_features'+feat), eval('accumulator_features'+feat))
 
 def maxfeat(part_features, accumulator_features, feat):
     """a helper method that calculates the max of a target feature over a list of objects
@@ -738,7 +760,7 @@ def maxfeat(part_features, accumulator_features, feat):
     Returns:
         the max of the target feature over the given list of objects
     """
-    return max(eval('part_features.'+feat), eval('accumulator_features.'+feat))
+    return max(eval('part_features'+feat), eval('accumulator_features'+feat))
 
 # TODO: Do we need this?
 def mergevalues(obj_list, field):

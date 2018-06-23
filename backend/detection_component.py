@@ -1,6 +1,6 @@
 from abc import abstractmethod
 from tornado import gen
-from tornado.ioloop import IOLoop
+from tornado.ioloop import IOLoop, PeriodicCallback
 
 class DetectionComponent():
 
@@ -11,7 +11,7 @@ class DetectionComponent():
         self.callback_time = callback_time
         self.liveWebSocket = liveWebSocket
         print("querying db")
-        self.AOIS = self.application_state_controller.getAoiMapping().values()
+        self.AOIS = self.application_state_controller.getAoiMapping()
         print("queried db")
 
     @abstractmethod
@@ -27,8 +27,8 @@ class DetectionComponent():
         pass
 
     def start(self):
-        #if (self.is_periodic):
-        #    cb = IOLoop.PeriodicCallback(callback = self.run(), self.callback_time)
-        #    cb.start()
-        #else:
-        IOLoop.instance().add_callback(callback = self.run)
+        if (self.is_periodic):
+            cb = PeriodicCallback(callback = self.run, callback_time = self.callback_time)
+            cb.start()
+        else:
+            IOLoop.instance().add_callback(callback = self.run)

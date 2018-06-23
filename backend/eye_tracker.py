@@ -364,7 +364,7 @@ class TobiiController:
 	        return distanceleft
 	    return (distanceleft + distanceright) / 2.0
 
-	def init_emdat_features(self):
+	def init_emdat_global_features(self):
 		self.emdat_features = {}
 		# Pupil features
 		self.numpupilsizes    							= 0
@@ -406,8 +406,8 @@ class TobiiController:
 		"""
 		# Path features
 		self.numfixdistances 							= 0
-        self.numabsangles 								= 0
-        self.numrelangles 								= 0
+		self.numabsangles 								= 0
+		self.numrelangles 								= 0
 		self.emdat_features['meanpathdistance'] 		= -1
 		self.emdat_features['sumpathdistance'] 			= -1
 		self.emdat_features['stddevpathdistance'] 		= -1
@@ -422,7 +422,7 @@ class TobiiController:
 		self.emdat_features['stddevrelpathangles'] 		= -1
 		# Fixation features
 		self.emdat_features['numfixations'] 			= 0
-        self.emdat_features['fixationrate'] 			= -1
+		self.emdat_features['fixationrate'] 			= -1
 		self.emdat_features['meanfixationduration'] 	= -1
 		self.emdat_features['stddevfixationduration'] 	= -1
 		self.emdat_features['sumfixationduration'] 		= -1
