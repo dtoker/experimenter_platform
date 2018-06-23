@@ -12,10 +12,10 @@ class FixationDetector(DetectionComponent):
         self.runOnlineFix = True
         self.cur_fix_id = 0
 
-    def notify_app_state_controller(self, x, y):
-        for aoi in self.AOIs:
-            if (fixation_inside_aoi(x, y, aoi)):
-                yield #update_controller_and_usermodel()
+    #def notify_app_state_controller(self, x, y):
+    #    for aoi in self.AOIs:
+    #        if (fixation_inside_aoi(x, y, aoi)):
+    #            yield #update_controller_and_usermodel()
 
     def stop(self):
         #TODO: Maybe something else?
@@ -86,7 +86,7 @@ class FixationDetector(DetectionComponent):
                     # A start fixation has been detected!
                     for ws in self.liveWebSocket:
                         if ((xVal != -1280) & (yVal != -1024)):
-                            for aoi in self.AOIS:
+                            for aoi in self.AOIS.values():
                                 if (fixation_inside_aoi(xVal, yVal, aoi)):
                                     ws.write_message('{"x":"%d", "y":"%d"}' % (xVal, yVal))
                                     break
@@ -107,7 +107,6 @@ class FixationDetector(DetectionComponent):
                 #a genuine end fixation has been found!
                 else:
                     #Add the newly found end fixation to our collection of end fixations
-                    self.tobii_controller.EndFixations.append(Efix)
                     #Get time stamp for newly found end fixation
                     EfixEndTime = Efix[0][1]
                     #Update index to data points after newly found end fixation
@@ -132,15 +131,40 @@ class FixationDetector(DetectionComponent):
                     x_fixation /= points_in_fixation
                     y_fixation /= points_in_fixation
 
-                    self.tobii_controller.append(Efix[0][3], Efix[0][4], Efix[0][2])
+                    self.tobii_controller.add_fixation(Efix[0][3], Efix[0][4], Efix[0][2])
 
                     for ws in self.liveWebSocket:
-                        print(len(self.AOIS))
+                        print(len(self.AOIS.values()))
                         for aoi in self.AOIS:
-                            if (fixation_inside_aoi(x_fixation, y_fixation, aoi)):
+                            if (fixation_inside_aoi(x_fixation, y_fixation, self.AOIS[aoi])):
                                 ws.write_message('{"x":"%d", "y":"%d"}' % (x_fixation, y_fixation))
                                 # TODO: Add fixation table name
-                                #self.app_state_control.updateFixTable("" ,self.cur_fix_id, Sfix[0], EfixEndTime, EfixEndTime - Sfix[0])
+                                print('JUST TYPE')
+                                print(type(self.cur_fix_id))
+                                print(type(Sfix[0]))
+                                print(type(EfixEndTime))
+                                print(type(EfixEndTime - Sfix[0]))
+                                print('TYPE INT')
+                                print(type(int(self.cur_fix_id)))
+                                print(type(int(Sfix[0])))
+                                print(type(int(EfixEndTime)))
+                                print(type(int(EfixEndTime - Sfix[0])))
+
+                                print("INT")
+                                print(int(self.cur_fix_id))
+                                print(int(Sfix[0]))
+                                print(int(EfixEndTime))
+                                print(int(EfixEndTime - Sfix[0]))
+                                print("NAKED")
+                                print(self.cur_fix_id)
+                                print(Sfix[0])
+                                print(EfixEndTime)
+                                print(EfixEndTime - Sfix[0])
+                                self.cur_fix_id += 1
+                                self.application_state_controller.updateFixTable(aoi, int(self.cur_fix_id), int(Sfix[0]), int(EfixEndTime), int(EfixEndTime - Sfix[0]))
+
+                                #self.application_state_controller.updateFixTable(aoi, 1, 1, 5, -10)
+
                                 break
                     #May wanrt to use something like this in the future in there are performace issues
                     #self.x = self.x[array_index:]

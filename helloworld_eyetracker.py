@@ -17,6 +17,7 @@ import backend.eye_tracker
 from backend.eye_tracker import TobiiController
 from backend.dummy_controller import DummyController
 from backend.fixation_detector import FixationDetector
+from backend.emdat_component import EMDATComponent
 import csv
 
 import thread
@@ -70,27 +71,36 @@ class EchoWebSocketHandler(tornado.websocket.WebSocketHandler):
         self.tobii_controller.waitForFindEyeTracker()
         print self.tobii_controller.eyetrackers
         self.fixation_component = FixationDetector(self.tobii_controller, self.app_state_control, liveWebSocket = self.tobii_controller.liveWebSocket)
+        self.emdat_component = EMDATComponent(self.tobii_controller, self.app_state_control, liveWebSocket = self.tobii_controller.liveWebSocket, callback_time = 6000)
 
     def on_message(self, message):
         if (message == "close"):
             print("destroying")
             #DummyController.receiveFixations = False
             self.fixation_component.stop()
+            #self.emdat_component.stop()
+
             self.tobii_controller.stopTracking()
             self.tobii_controller.destroy()
+            self.app_state_control.resetApplication()
             return
         elif (message == "next_task"):
             del self.fixation_component
+            # TODO: Decide what to do with emdat when task finishes!
             self.tobii_controller.stop()
             self.tobii_controller.flush()
             self.app_state_control.changeTask(2)
             self.fixation_component = FixationDetector(self.tobii_controller, self.app_state_control, liveWebSocket = self.tobii_controller.liveWebSocket)
+            #self.emdat_component = EMDATComponent(self.tobii_controller, self.app_state_control, liveWebSocket = self.tobii_controller.liveWebSocket, callback_time = 6000)
             self.tobii_controller.start()
             self.fixation_component.start()
+            #self.emdat_component.start()
         else:
+
             self.tobii_controller.activate(self.tobii_controller.eyetrackers.keys()[0])
             self.tobii_controller.startTracking()
             self.fixation_component.start()
+            self.emdat_component.start()
             print "tracking started"
 
     def on_close(self):

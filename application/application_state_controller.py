@@ -340,7 +340,7 @@ class ApplicationStateController():
         returns
         None
         """
-        if not (isinstance(id, int) and isinstance(time_start, int) and isinstance(time_end, int) and isinstance(duration, int)):
+        if not (isinstance(id, int) and isinstance(time_start, long) and isinstance(time_end, long) and isinstance(duration, int)):
             raise TypeError('Value for columns of a fixation table must be an int')
         self.conn.execute("INSERT INTO {} VALUES (?,?,?,?)".format(table), (id, time_start, time_end, duration))
         self.conn.commit()
