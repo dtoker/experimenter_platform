@@ -4,7 +4,7 @@ import math
 from utils import *
 import geometry
 import time
-
+from ... import params
 
 class EMDATComponent(DetectionComponent):
 
@@ -56,8 +56,13 @@ class EMDATComponent(DetectionComponent):
         #    self.set_aois(aois, all_data, fixation_data, event_data, rest_pupil_size, export_pupilinfo)
         #    self.features['aoisequence'] = self.generate_aoi_sequence(fixation_data, aois)
 
-        self.merge_features(self.emdat_interval_features, self.emdat_task_features)
-        self.merge_features(self.emdat_task_features, self.tobii_controller.emdat_global_features)
+        if (params.KEEP_TASK_FEATURES and params.KEEP_GLOBAL_FEATURES):
+            self.merge_features(self.emdat_interval_features, self.emdat_task_features)
+            self.merge_features(self.emdat_task_features, self.tobii_controller.emdat_global_features)
+        elif (params.KEEP_TASK_FEATURES):
+            self.merge_features(self.emdat_interval_features, self.emdat_task_features)
+        elif (params.KEEP_GLOBAL_FEATURES):
+            self.merge_features(self.emdat_interval_features, self.tobii_controller.emdat_global_features)
         print("EMDAT DONE")
         print("EMDAT DONE")
         print("EMDAT DONE")
