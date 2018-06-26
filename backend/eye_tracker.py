@@ -365,68 +365,68 @@ class TobiiController:
 	    return (distanceleft + distanceright) / 2.0
 
 	def init_emdat_global_features(self):
-		self.emdat_features = {}
+		self.emdat_global_features = {}
 		# Pupil features
-		self.numpupilsizes    							= 0
-		self.numpupilvelocity 							= 0
-		self.emdat_features['meanpupilsize'] 			= -1
-		self.emdat_features['stddevpupilsize'] 			= -1
-		self.emdat_features['maxpupilsize'] 			= -1
-		self.emdat_features['minpupilsize'] 			= -1
-		#self.emdat_features['startpupilsize'] 			= -1
-		#self.emdat_features['endpupilsize'] 			= -1
-		self.emdat_features['meanpupilvelocity'] 		= -1
-		self.emdat_features['stddevpupilvelocity'] 		= -1
-		self.emdat_features['maxpupilvelocity'] 		= -1
-		self.emdat_features['minpupilvelocity'] 		= -1
+		self.emdat_global_features['numpupilsizes']		= 0
+		self.emdat_global_features['numpupilvelocity']  = 0
+		self.emdat_global_features['meanpupilsize'] 			= -1
+		self.emdat_global_features['stddevpupilsize'] 			= -1
+		self.emdat_global_features['maxpupilsize'] 			= -1
+		self.emdat_global_features['minpupilsize'] 			= -1
+		#self.emdat_global_features['startpupilsize'] 			= -1
+		#self.emdat_global_features['endpupilsize'] 			= -1
+		self.emdat_global_features['meanpupilvelocity'] 		= -1
+		self.emdat_global_features['stddevpupilvelocity'] 		= -1
+		self.emdat_global_features['maxpupilvelocity'] 		= -1
+		self.emdat_global_features['minpupilvelocity'] 		= -1
 		# Distance features
-		self.numdistancedata							= 0
-		self.emdat_features['meandistance'] 			= -1
-		self.emdat_features['stddevdistance'] 			= -1
-		self.emdat_features['maxdistance'] 				= -1
-		self.emdat_features['mindistance'] 				= -1
-		#self.emdat_features['startdistance'] 			= -1
-		#self.emdat_features['enddistance'] 			= -1
+		self.emdat_global_features['numdistancedata']							= 0
+		self.emdat_global_features['meandistance'] 			= -1
+		self.emdat_global_features['stddevdistance'] 			= -1
+		self.emdat_global_features['maxdistance'] 				= -1
+		self.emdat_global_features['mindistance'] 				= -1
+		#self.emdat_global_features['startdistance'] 			= -1
+		#self.emdat_global_features['enddistance'] 			= -1
 		# Saccade features
 		"""
-		self.emdat_features['numsaccades'] 				= 0
-		self.emdat_features['sumsaccadedistance'] 		= -1
-		self.emdat_features['meansaccadedistance'] 		= -1
-		self.emdat_features['stddevsaccadedistance'] 	= -1
-		self.emdat_features['longestsaccadedistance'] 	= -1
-		self.emdat_features['sumsaccadeduration'] 		= -1
-		self.emdat_features['meansaccadeduration'] 		= -1
-		self.emdat_features['stddevsaccadeduration'] 	= -1
-		self.emdat_features['longestsaccadeduration'] 	= -1
-		self.emdat_features['meansaccadespeed'] 		= -1
-		self.emdat_features['stddevsaccadespeed'] 		= -1
-		self.emdat_features['maxsaccadespeed'] 			= -1
-		self.emdat_features['minsaccadespeed'] 			= -1
-		self.emdat_features['fixationsaccadetimeratio'] = -1
+		self.emdat_global_features['numsaccades'] 				= 0
+		self.emdat_global_features['sumsaccadedistance'] 		= -1
+		self.emdat_global_features['meansaccadedistance'] 		= -1
+		self.emdat_global_features['stddevsaccadedistance'] 	= -1
+		self.emdat_global_features['longestsaccadedistance'] 	= -1
+		self.emdat_global_features['sumsaccadeduration'] 		= -1
+		self.emdat_global_features['meansaccadeduration'] 		= -1
+		self.emdat_global_features['stddevsaccadeduration'] 	= -1
+		self.emdat_global_features['longestsaccadeduration'] 	= -1
+		self.emdat_global_features['meansaccadespeed'] 		= -1
+		self.emdat_global_features['stddevsaccadespeed'] 		= -1
+		self.emdat_global_features['maxsaccadespeed'] 			= -1
+		self.emdat_global_features['minsaccadespeed'] 			= -1
+		self.emdat_global_features['fixationsaccadetimeratio'] = -1
 		"""
 		# Path features
-		self.numfixdistances 							= 0
-		self.numabsangles 								= 0
-		self.numrelangles 								= 0
-		self.emdat_features['meanpathdistance'] 		= -1
-		self.emdat_features['sumpathdistance'] 			= -1
-		self.emdat_features['stddevpathdistance'] 		= -1
-		self.emdat_features['eyemovementvelocity'] 		= -1
-		self.emdat_features['sumabspathangles'] 		= -1
-		self.emdat_features['abspathanglesrate'] 		= -1
-		self.emdat_features['meanabspathangles']		= -1
-		self.emdat_features['stddevabspathangles']		= -1
-		self.emdat_features['sumrelpathangles'] 		= -1
-		self.emdat_features['relpathanglesrate'] 		= -1
-		self.emdat_features['meanrelpathangles']		= -1
-		self.emdat_features['stddevrelpathangles'] 		= -1
+		self.emdat_global_features['numfixdistances'] = 0
+		self.emdat_global_features['numabsangles'] = 0
+		self.emdat_global_features['numrelangles'] = 0
+		self.emdat_global_features['meanpathdistance'] 		= -1
+		self.emdat_global_features['sumpathdistance'] 			= -1
+		self.emdat_global_features['stddevpathdistance'] 		= -1
+		self.emdat_global_features['eyemovementvelocity'] 		= -1
+		self.emdat_global_features['sumabspathangles'] 		= -1
+		self.emdat_global_features['abspathanglesrate'] 		= -1
+		self.emdat_global_features['meanabspathangles']		= -1
+		self.emdat_global_features['stddevabspathangles']		= -1
+		self.emdat_global_features['sumrelpathangles'] 		= -1
+		self.emdat_global_features['relpathanglesrate'] 		= -1
+		self.emdat_global_features['meanrelpathangles']		= -1
+		self.emdat_global_features['stddevrelpathangles'] 		= -1
 		# Fixation features
-		self.emdat_features['numfixations'] 			= 0
-		self.emdat_features['fixationrate'] 			= -1
-		self.emdat_features['meanfixationduration'] 	= -1
-		self.emdat_features['stddevfixationduration'] 	= -1
-		self.emdat_features['sumfixationduration'] 		= -1
-		self.emdat_features['fixationrate'] 			= -1
+		self.emdat_global_features['numfixations'] 			= 0
+		self.emdat_global_features['fixationrate'] 			= -1
+		self.emdat_global_features['meanfixationduration'] 	= -1
+		self.emdat_global_features['stddevfixationduration'] 	= -1
+		self.emdat_global_features['sumfixationduration'] 		= -1
+		self.emdat_global_features['fixationrate'] 			= -1
 
 	def flush(self):
 		self.x = []
