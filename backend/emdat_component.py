@@ -9,9 +9,9 @@ from ... import params
 class EMDATComponent(DetectionComponent):
 
     #TODO: Remove websocket
-    def  __init__(self, tobii_controller, app_state_control, callback_time, liveWebSocket):
+    def  __init__(self, tobii_controller, app_state_control, callback_time):
         #TODO: Specify which features should be calculated
-        DetectionComponent.__init__(self, tobii_controller, app_state_control, is_periodic = True, callback_time = callback_time, liveWebSocket =  liveWebSocket)
+        DetectionComponent.__init__(self, tobii_controller, app_state_control, is_periodic = True, callback_time = callback_time)
         self.pups_idx = 0
         self.pupv_idx = 0
         self.dist_idx = 0
