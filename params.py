@@ -1,8 +1,7 @@
 # Features to use
 USE_PUPIL_FEATURES = True
 USE_DISTANCE_FEATURES = True
-USE_PATH_FEATURES = True
-USE_FIXATION_FEATURES = True
+USE_FIXATION_PATH_FEATURES = True
 
 
 # Sets of features to keep

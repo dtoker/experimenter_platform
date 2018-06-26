@@ -26,10 +26,6 @@ class EMDATComponent(DetectionComponent):
     def run(self):
         start_time = time.time()
         print("EMDAT!!!!!!!")
-        print("EMDAT!!!!!!!")
-        print("EMDAT!!!!!!!")
-        print("EMDAT!!!!!!!")
-        print("EMDAT!!!!!!!")
         self.start = self.tobii_controller.time[0]
         self.end = self.tobii_controller.time[-1]
         self.length = self.end - self.start
@@ -39,16 +35,16 @@ class EMDATComponent(DetectionComponent):
         self.length_invalid = self.get_length_invalid()
 
         """ calculate pupil dilation features """
-        self.calc_pupil_features()
+        if (params.USE_PUPIL_FEATURES):
+            self.calc_pupil_features()
 
         """ calculate distance from screen features"""
-        self.calc_distance_features()
+        if (params.USE_DISTANCE_FEATURES):
+            self.calc_distance_features()
 
         """ calculate fixations, angles and path features"""
-        self.calc_fix_ang_path_features()
-
-        """ calculate saccades features if available """
-        #self.calc_saccade_features()
+        if (params.USE_FIXATION_PATH_FEATURES):
+            self.calc_fix_ang_path_features()
 
         """ calculate AOIs features """
         #self.has_aois = False
@@ -63,11 +59,7 @@ class EMDATComponent(DetectionComponent):
             self.merge_features(self.emdat_interval_features, self.emdat_task_features)
         elif (params.KEEP_GLOBAL_FEATURES):
             self.merge_features(self.emdat_interval_features, self.tobii_controller.emdat_global_features)
-        print("EMDAT DONE")
-        print("EMDAT DONE")
-        print("EMDAT DONE")
-        print("EMDAT DONE")
-        print("EMDAT DONE")
+
         print("EMDAT DONE")
         print("--- %s seconds ---" % (time.time() - start_time))
 
@@ -95,31 +87,14 @@ class EMDATComponent(DetectionComponent):
         self.emdat_task_features['mindistance'] 				= -1
 		#self.emdat_task_features['startdistance'] 			= -1
 		#self.emdat_task_features['enddistance'] 				= -1
-		# Saccade features
-        """
-		self.emdat_task_features['numsaccades'] 				= 0
-		self.emdat_task_features['sumsaccadedistance'] 		= -1
-		self.emdat_task_features['meansaccadedistance'] 		= -1
-		self.emdat_task_features['stddevsaccadedistance'] 	= -1
-		self.emdat_task_features['longestsaccadedistance'] 	= -1
-		self.emdat_task_features['sumsaccadeduration'] 		= -1
-		self.emdat_task_features['meansaccadeduration'] 		= -1
-		self.emdat_task_features['stddevsaccadeduration'] 	= -1
-		self.emdat_task_features['longestsaccadeduration'] 	= -1
-		self.emdat_task_features['meansaccadespeed'] 		= -1
-		self.emdat_task_features['stddevsaccadespeed'] 		= -1
-		self.emdat_task_features['maxsaccadespeed'] 			= -1
-		self.emdat_task_features['minsaccadespeed'] 			= -1
-		self.emdat_task_features['fixationsaccadetimeratio'] = -1
-        """
 		# Path features
-        self.emdat_task_features['numfixdistances'] 							= 0
-        self.emdat_task_features['numabsangles'] 								= 0
-        self.emdat_task_features['numrelangles'] 								= 0
+        self.emdat_task_features['numfixdistances'] 		= 0
+        self.emdat_task_features['numabsangles'] 			= 0
+        self.emdat_task_features['numrelangles'] 			= 0
         self.emdat_task_features['meanpathdistance'] 		= -1
-        self.emdat_task_features['sumpathdistance'] 			= -1
+        self.emdat_task_features['sumpathdistance'] 		= -1
         self.emdat_task_features['stddevpathdistance'] 		= -1
-        self.emdat_task_features['eyemovementvelocity'] 		= -1
+        self.emdat_task_features['eyemovementvelocity'] 	= -1
         self.emdat_task_features['sumabspathangles'] 		= -1
         self.emdat_task_features['abspathanglesrate'] 		= -1
         self.emdat_task_features['meanabspathangles']		= -1
@@ -133,15 +108,21 @@ class EMDATComponent(DetectionComponent):
         self.emdat_task_features['fixationrate'] 			= -1
         self.emdat_task_features['meanfixationduration'] 	= -1
         self.emdat_task_features['stddevfixationduration'] 	= -1
-        self.emdat_task_features['sumfixationduration'] 		= -1
+        self.emdat_task_features['sumfixationduration'] 	= -1
         self.emdat_task_features['fixationrate'] 			= -1
 
     def merge_features(self, part_features, accumulator_features):
-        self.merge_pupil_features(part_features, accumulator_features)
-        self.merge_distance_features(part_features, accumulator_features)
-        self.merge_path_angle_features(part_features, accumulator_features)
-        self.merge_fixation_features(part_features, accumulator_features)
-        pass
+        if (params.USE_PUPIL_FEATURES):
+            self.merge_pupil_features(part_features, accumulator_features)
+
+        """ calculate distance from screen features"""
+        if (params.USE_DISTANCE_FEATURES):
+            self.merge_distance_features(part_features, accumulator_features)
+
+        """ calculate fixations, angles and path features"""
+        if (params.USE_FIXATION_PATH_FEATURES):
+            self.merge_path_angle_features(part_features, accumulator_features)
+            self.merge_fixation_features(part_features, accumulator_features)
 
     def calc_pupil_features(self):
         """ Calculates pupil features such as
@@ -497,58 +478,7 @@ class EMDATComponent(DetectionComponent):
             accumulator_features['mindistance']                     = -1
             #self.features['startdistance'] = -1
             #self.features['enddistance'] = -1
-    """
-    def merge_saccade_data(self, saccade_data, segments):
-        Merge saccade features such as
-                numsaccades:              number of saccades in the segment
-                sumsaccadedistance:       sum of distances during each saccade
-                meansaccadedistance:      mean of distances during each saccade
-                stddevsaccadedistance:    standard deviation of distances during each saccade
-                longestsaccadedistance:   distance of longest saccade
-                sumsaccadeduration:       total time spent on saccades in this segment
-                meansaccadeduration:      average saccade duration
-                stddevsaccadeduration:    standard deviation of saccade durations
-                longestsaccadeduration:   longest duration of saccades in this segment
-                meansaccadespeed:         average speed of saccades in this segment
-                stddevsaccadespeed:       standard deviation of speed of saccades in this segment
-                maxsaccadespeed:          highest saccade speed in this segment
-                minsaccadespeed:          lowest saccade speed in this  segment
-                fixationsaccadetimeratio: fixation to saccade time ratio for this segment
-            Args:
-                saccade_data: The list of saccade datapoints for this Scene
-                segments: The list of Segments for this Scene with pre-calculated features
 
-        if saccade_data != None:
-            self.features['numsaccades'] = sumfeat(segments,'numsaccades')
-            self.features['sumsaccadedistance'] = sumfeat(segments, "features['sumsaccadedistance']")
-            self.features['meansaccadedistance'] = weightedmeanfeat(self.segments,'numsaccades',"features['meansaccadedistance']")
-            self.features['stddevsaccadedistance'] = aggregatestddevfeat(segments, 'numsaccades', "features['stddevsaccadedistance']", "features['meansaccadedistance']", self.features['meansaccadedistance'])
-            self.features['longestsaccadedistance'] = maxfeat(segments, "features['longestsaccadedistance']")
-            self.features['sumsaccadeduration'] = sumfeat(segments,"features['sumsaccadeduration']")
-            self.features['meansaccadeduration'] = weightedmeanfeat(self.segments,'numsaccades',"features['meansaccadeduration']")
-            self.features['stddevsaccadeduration'] = aggregatestddevfeat(segments, 'numsaccades', "features['stddevsaccadeduration']", "features['meansaccadeduration']", self.features['meansaccadeduration'])
-            self.features['longestsaccadeduration'] = maxfeat(segments, "features['longestsaccadeduration']")
-            self.features['meansaccadespeed'] = weightedmeanfeat(self.segments,'numsaccades',"features['meansaccadespeed']")
-            self.features['stddevsaccadespeed'] = aggregatestddevfeat(segments, 'numsaccades', "features['stddevsaccadespeed']", "features['meansaccadespeed']", self.features['meansaccadespeed'])
-            self.features['maxsaccadespeed'] = maxfeat(segments, "features['maxsaccadespeed']")
-            self.features['minsaccadespeed'] = minfeat(segments, "features['minsaccadespeed']", -1)
-            self.features['fixationsaccadetimeratio'] = sumfeat(segments, "features['fixationsaccadetimeratio']") / float(len(segments))
-        else:
-            self.features['numsaccades'] = 0
-            self.features['sumsaccadedistance'] = -1
-            self.features['meansaccadedistance'] = -1
-            self.features['stddevsaccadedistance'] = -1
-            self.features['longestsaccadedistance'] = -1
-            self.features['sumsaccadeduration'] = -1
-            self.features['meansaccadeduration'] = -1
-            self.features['stddevsaccadeduration'] = -1
-            self.features['longestsaccadeduration'] = -1
-            self.features['meansaccadespeed'] = -1
-            self.features['stddevsaccadespeed'] = -1
-            self.features['maxsaccadespeed'] = -1
-            self.features['minsaccadespeed'] = -1
-            self.features['fixationsaccadetimeratio'] = -1
-    """
     def calc_distances(self, fixdata):
         """returns the Euclidean distances between a sequence of "Fixation"s
 
@@ -810,57 +740,3 @@ def mergevalues(obj_list, field):
     for obj in obj_list:
         mergedlist.extend(eval('obj.'+ field))
     return mergedlist
-
-"""
-    def calc_saccade_features(self, saccade_data):
-        Calculates saccade features such as
-                numsaccades:              number of saccades in the segment
-                sumsaccadedistance:       sum of distances during each saccade
-                meansaccadedistance:      mean of distances during each saccade
-                stddevsaccadedistance:    standard deviation of distances during each saccade
-                longestsaccadedistance:   distance of longest saccade
-                sumsaccadeduration:       total time spent on saccades in this segment
-                meansaccadeduration:      average saccade duration
-                stddevsaccadeduration:    standard deviation of saccade durations
-                longestsaccadeduration:   longest duration of saccades in this segment
-                meansaccadespeed:         average speed of saccades in this segment
-                stddevsaccadespeed:       standard deviation of speed of saccades in this segment
-                maxsaccadespeed:          highest saccade speed in this segment
-                minsaccadespeed:          lowest saccade speed in this  segment
-                fixationsaccadetimeratio: fixation to saccade time ratio for this segment
-            Args:
-                saccade_data: The list of saccade datapoints for this Segment
-
-        if saccade_data != None and len(saccade_data) > 0:
-            self.numsaccades = len(saccade_data)
-            self.features['numsaccades'] = self.numsaccades
-            self.features['sumsaccadedistance'] = sum(map(lambda x: float(x.saccadedistance), saccade_data))
-            self.features['meansaccadedistance'] = mean(map(lambda x: float(x.saccadedistance), saccade_data))
-            self.features['stddevsaccadedistance'] = stddev(map(lambda x: float(x.saccadedistance), saccade_data))
-            self.features['longestsaccadedistance'] = max(map(lambda x: float(x.saccadedistance), saccade_data))
-            self.features['sumsaccadeduration'] = sum(map(lambda x: float(x.saccadeduration), saccade_data))
-            self.features['meansaccadeduration'] = mean(map(lambda x: float(x.saccadeduration), saccade_data))
-            self.features['stddevsaccadeduration'] = stddev(map(lambda x: float(x.saccadeduration), saccade_data))
-            self.features['longestsaccadeduration'] = max(map(lambda x: float(x.saccadeduration), saccade_data))
-            self.features['meansaccadespeed'] = mean(map(lambda x: float(x.saccadespeed), saccade_data))
-            self.features['stddevsaccadespeed'] = stddev(map(lambda x: float(x.saccadespeed), saccade_data))
-            self.features['maxsaccadespeed'] = max(map(lambda x: float(x.saccadespeed), saccade_data))
-            self.features['minsaccadespeed'] = min(map(lambda x: float(x.saccadespeed), saccade_data))
-            self.features['fixationsaccadetimeratio'] = float(self.features['sumfixationduration']) / self.features['sumsaccadeduration']
-        else:
-            self.numsaccades = 0
-            self.features['numsaccades'] = 0
-            self.features['sumsaccadedistance'] = -1
-            self.features['meansaccadedistance'] = -1
-            self.features['stddevsaccadedistance'] = -1
-            self.features['longestsaccadedistance'] = -1
-            self.features['sumsaccadeduration'] = -1
-            self.features['meansaccadeduration'] = -1
-            self.features['stddevsaccadeduration'] = -1
-            self.features['longestsaccadeduration'] = -1
-            self.features['meansaccadespeed'] = -1
-            self.features['stddevsaccadespeed'] = -1
-            self.features['maxsaccadespeed'] = -1
-            self.features['minsaccadespeed'] = -1
-            self.features['fixationsaccadetimeratio'] = -1
-"""
