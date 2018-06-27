@@ -8,20 +8,17 @@ from ... import params
 
 class EMDATComponent(DetectionComponent):
 
-    #TODO: Remove websocket
     def  __init__(self, tobii_controller, app_state_control, callback_time):
         #TODO: Specify which features should be calculated
         DetectionComponent.__init__(self, tobii_controller, app_state_control, is_periodic = True, callback_time = callback_time)
-        self.pups_idx = 0
-        self.pupv_idx = 0
-        self.dist_idx = 0
-        self.fix_idx = 0
+        self.pups_idx   = 0
+        self.pupv_idx   = 0
+        self.dist_idx   = 0
+        self.fix_idx    = 0
 
     def notify_app_state_controller(self):
         self.merge_features()
-        """
-        Code to send features to AppStateController
-        """
+        
 
 
     @gen.coroutine
@@ -603,9 +600,6 @@ class EMDATComponent(DetectionComponent):
     def gen_aoi_features(self):
         #init features
         self.emdat_interval_features['aoi_features'] = {}
-        self.starttime = starttime
-        self.endtime = endtime
-        self.length = endtime - starttime
         self.emdat_interval_features['aoi_features']['numfixations'] = 0
         self.emdat_interval_features['aoi_features']['longestfixation'] = -1
         self.emdat_interval_features['aoi_features']['meanfixationduration'] = -1
@@ -619,19 +613,15 @@ class EMDATComponent(DetectionComponent):
 
         self.total_trans_from = 0
         self.variance = 0
-        for aoi in active_aois:
-            aid = aoi.aid
-            self.features['numtransfrom_%s'%(aid)] = 0
-            self.features['proptransfrom_%s'%(aid)] = 0
-
-
+        #for aoi in active_aois:
+        #    aid = aoi.aid
+        #    self.features['numtransfrom_%s'%(aid)] = 0
+        #    self.features['proptransfrom_%s'%(aid)] = 0
         all_data = []
         fixation_data = []
         event_data = []
         all_data = seg_all_data
         fixation_data = seg_fixation_data
-        if seg_event_data != None:
-            event_data = seg_event_data
 
         ## Remove datapoints with invalid gaze coordinates
         datapoints = filter(lambda datapoint: datapoint.gazepointx != -1 and datapoint.gazepointy != -1, all_data)
@@ -645,7 +635,6 @@ class EMDATComponent(DetectionComponent):
         for aoi in active_aois:
             aid = aoi.aid
             self.features['numtransfrom_%s'%(aid)] = 0
-
         sumtransfrom = 0
         for i in fixation_indices:
             if i > 0:
@@ -670,7 +659,7 @@ class EMDATComponent(DetectionComponent):
         self.total_trans_from = sumtransfrom
 ###end of transition calculation
 
-    def generate_aoi_pupil_features(self, datapoints, rest_pupil_size, export_pupilinfo):
+    def generate_aoi_pupil_features(self): ##datapoints, rest_pupil_size, export_pupilinfo):
         #get all datapoints where pupil size is available
         valid_pupil_data = filter(lambda x: x.pupilsize > 0, datapoints)
         valid_pupil_velocity = filter(lambda x: x.pupilvelocity != -1, datapoints)
@@ -786,7 +775,6 @@ class EMDATComponent(DetectionComponent):
             self.features['timetolastleftclic'] = leftc[-1].timestamp - self.starttime if len(leftc) > 0 else -1
             self.features['timetolastrightclic'] = rightc[-1].timestamp - self.starttime if len(rightc) > 0 else -1
             self.features['timetolastdoubleclic'] = doublec[-1].timestamp - self.starttime if len(doublec) > 0 else -1
-
 
     def generate_transition_features(self, active_aois, fixation_data, fixation_indices):
         #calculating the transitions to and from this AOI and other active AOIs at the moment
