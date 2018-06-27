@@ -121,11 +121,11 @@ class FixationDetector(DetectionComponent):
                             y_fixation += self.tobii_controller.y[start_fix + i]
                         else:
                             points_in_fixation -= 1
-                    #print('points in fixatipon %d' % points_in_fixation)
+                    # If for some reason detected fixation is outside of the screen
                     if (points_in_fixation == 0):
-                        for i in range(points_in_fixation):
-                            print self.tobii_controller.x[start_fix + i]
-                            print self.tobii_controller.y[start_fix + i]
+                        Efix = []
+                        Sfix = []
+                        break
 
                     print(Efix[0][3], Efix[0][4])
                     x_fixation /= points_in_fixation
@@ -138,33 +138,8 @@ class FixationDetector(DetectionComponent):
                         for aoi in self.AOIS:
                             if (fixation_inside_aoi(x_fixation, y_fixation, self.AOIS[aoi])):
                                 ws.write_message('{"x":"%d", "y":"%d"}' % (x_fixation, y_fixation))
-                                # TODO: Add fixation table name
-                                print('JUST TYPE')
-                                print(type(self.cur_fix_id))
-                                print(type(Sfix[0]))
-                                print(type(EfixEndTime))
-                                print(type(EfixEndTime - Sfix[0]))
-                                print('TYPE INT')
-                                print(type(int(self.cur_fix_id)))
-                                print(type(int(Sfix[0])))
-                                print(type(int(EfixEndTime)))
-                                print(type(int(EfixEndTime - Sfix[0])))
-
-                                print("INT")
-                                print(int(self.cur_fix_id))
-                                print(int(Sfix[0]))
-                                print(int(EfixEndTime))
-                                print(int(EfixEndTime - Sfix[0]))
-                                print("NAKED")
-                                print(self.cur_fix_id)
-                                print(Sfix[0])
-                                print(EfixEndTime)
-                                print(EfixEndTime - Sfix[0])
                                 self.cur_fix_id += 1
                                 self.application_state_controller.updateFixTable(aoi, int(self.cur_fix_id), int(Sfix[0]), int(EfixEndTime), int(EfixEndTime - Sfix[0]))
-
-                                #self.application_state_controller.updateFixTable(aoi, 1, 1, 5, -10)
-
                                 break
                     #May wanrt to use something like this in the future in there are performace issues
                     #self.x = self.x[array_index:]
