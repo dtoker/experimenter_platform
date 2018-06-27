@@ -79,7 +79,7 @@ class TobiiController:
 					self.eyetrackers dict
 		"""
 
-		while len(self.eyetrackers.keys())==0:
+		while len(self.eyetrackers.keys()) == 0:
 			pass
 
 	def on_eyetracker_browser_event(self, event_type, event_name, eyetracker_info):

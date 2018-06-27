@@ -22,6 +22,8 @@ class EMDATComponent(DetectionComponent):
         """
         Code to send features to AppStateController
         """
+
+
     @gen.coroutine
     def run(self):
         start_time = time.time()
@@ -597,6 +599,222 @@ class EMDATComponent(DetectionComponent):
                     d = validity[dindex]
                     self.time_gaps.append((gap_start, time[dindex]))
             dindex += 1
+
+    def gen_aoi_features(self):
+        #init features
+        self.emdat_interval_features['aoi_features'] = {}
+        self.starttime = starttime
+        self.endtime = endtime
+        self.length = endtime - starttime
+        self.emdat_interval_features['aoi_features']['numfixations'] = 0
+        self.emdat_interval_features['aoi_features']['longestfixation'] = -1
+        self.emdat_interval_features['aoi_features']['meanfixationduration'] = -1
+        self.emdat_interval_features['aoi_features']['stddevfixationduration'] = -1
+        self.emdat_interval_features['aoi_features']['timetofirstfixation'] = -1
+        self.emdat_interval_features['aoi_features']['timetolastfixation'] = -1
+        self.emdat_interval_features['aoi_features']['proportionnum'] = 0
+        self.emdat_interval_features['aoi_features']['proportiontime'] = 0
+        self.emdat_interval_features['aoi_features']['fixationrate'] = 0
+        self.emdat_interval_features['aoi_features']['totaltimespent'] = 0
+
+        self.total_trans_from = 0
+        self.variance = 0
+        for aoi in active_aois:
+            aid = aoi.aid
+            self.features['numtransfrom_%s'%(aid)] = 0
+            self.features['proptransfrom_%s'%(aid)] = 0
+
+
+        all_data = []
+        fixation_data = []
+        event_data = []
+        all_data = seg_all_data
+        fixation_data = seg_fixation_data
+        if seg_event_data != None:
+            event_data = seg_event_data
+
+        ## Remove datapoints with invalid gaze coordinates
+        datapoints = filter(lambda datapoint: datapoint.gazepointx != -1 and datapoint.gazepointy != -1, all_data)
+        # Only keep samples inside AOI
+        datapoints = filter(lambda datapoint: _datapoint_inside_aoi(datapoint, self.aoi.polyin, self.aoi.polyout), datapoints)
+        self.generate_aoi_pupil_features(datapoints, rest_pupil_size, export_pupilinfo)
+        self.generate_aoi_distance_features(datapoints)
+        fixation_indices = self.generate_fixation_aoi_features(datapoints, fixation_data, sum_discarded)
+        self.generate_transition_features(active_aois, fixation_data, fixation_indices)
+        #calculating the transitions to and from this AOI and other active AOIs at the moment
+        for aoi in active_aois:
+            aid = aoi.aid
+            self.features['numtransfrom_%s'%(aid)] = 0
+
+        sumtransfrom = 0
+        for i in fixation_indices:
+            if i > 0:
+                for aoi in active_aois:
+                    aid = aoi.aid
+                    polyin = aoi.polyin
+                    polyout = aoi.polyout
+                    key = 'numtransfrom_%s'%(aid)
+
+                    if _fixation_inside_aoi(fixation_data[i-1], polyin, polyout):
+                        self.features[key] += 1
+                        sumtransfrom += 1
+
+        for aoi in active_aois:
+            aid = aoi.aid
+
+            if sumtransfrom > 0:
+                val = self.features['numtransfrom_%s'%(aid)]
+                self.features['proptransfrom_%s'%(aid)] = float(val) / sumtransfrom
+            else:
+                self.features['proptransfrom_%s'%(aid)] = 0
+        self.total_trans_from = sumtransfrom
+###end of transition calculation
+
+    def generate_aoi_pupil_features(self, datapoints, rest_pupil_size, export_pupilinfo):
+        #get all datapoints where pupil size is available
+        valid_pupil_data = filter(lambda x: x.pupilsize > 0, datapoints)
+        valid_pupil_velocity = filter(lambda x: x.pupilvelocity != -1, datapoints)
+        #number of valid pupil sizes
+        self.features['meanpupilsize'] = -1
+        self.features['stddevpupilsize'] = -1
+        self.features['maxpupilsize'] = -1
+        self.features['minpupilsize'] = -1
+        self.features['startpupilsize'] = -1
+        self.features['endpupilsize'] = -1
+        self.features['meanpupilvelocity'] = -1
+        self.features['stddevpupilvelocity'] = -1
+        self.features['maxpupilvelocity'] = -1
+        self.features['minpupilvelocity'] = -1
+        self.numpupilsizes = len(valid_pupil_data)
+        self.numpupilvelocity = len(valid_pupil_velocity)
+
+        if self.numpupilsizes > 0: #check if the current segment has pupil data available
+            if params.PUPIL_ADJUSTMENT == "rpscenter":
+                adjvalidpupilsizes = map(lambda x: x.pupilsize - rest_pupil_size, valid_pupil_data)
+            elif params.PUPIL_ADJUSTMENT == "PCPS":
+                adjvalidpupilsizes = map(lambda x: (x.pupilsize - rest_pupil_size) / (1.0 * rest_pupil_size), valid_pupil_data)
+            else:
+                adjvalidpupilsizes = map(lambda x: x.pupilsize, valid_pupil_data)#valid_pupil_data
+
+            valid_pupil_velocity = map(lambda x: x.pupilvelocity, valid_pupil_velocity)#valid_pupil_data
+
+            if export_pupilinfo:
+                self.pupilinfo_for_export = map(lambda x: [x.timestamp, x.pupilsize, rest_pupil_size], valid_pupil_data)
+
+            self.features['meanpupilsize'] = mean(adjvalidpupilsizes)
+            self.features['stddevpupilsize'] = stddev(adjvalidpupilsizes)
+            self.features['maxpupilsize'] = max(adjvalidpupilsizes)
+            self.features['minpupilsize'] = min(adjvalidpupilsizes)
+            self.features['startpupilsize'] = adjvalidpupilsizes[0]
+            self.features['endpupilsize'] = adjvalidpupilsizes[-1]
+
+            if len(valid_pupil_velocity) > 0:
+                self.features['meanpupilvelocity'] = mean(valid_pupil_velocity)
+                self.features['stddevpupilvelocity'] = stddev(valid_pupil_velocity)
+                self.features['maxpupilvelocity'] = max(valid_pupil_velocity)
+                self.features['minpupilvelocity'] = min(valid_pupil_velocity)
+
+
+    def generate_aoi_distance_features(self, datapoints):
+        # check if pupil sizes are available for all missing points
+        invalid_distance_data = filter(lambda x: x.distance <= 0 and x.gazepointx >= 0, datapoints)
+        if len(invalid_distance_data) > 0:
+            warn("Distance from screen is unavailable for a valid data sample. Number of missing points: " + str(len(invalid_distance_data)))
+
+        #get all datapoints where distance is available
+        valid_distance_data = filter(lambda x: x.distance > 0, datapoints)
+
+        #number of valid pupil sizes
+        self.numdistancedata = len(valid_distance_data)
+        if self.numdistancedata > 0: #check if the current segment has pupil data available
+            distances_from_screen = map(lambda x: x.distance, valid_distance_data)
+            self.features['meandistance'] = mean(distances_from_screen)
+            self.features['stddevdistance'] = stddev(distances_from_screen)
+            self.features['maxdistance'] = max(distances_from_screen)
+            self.features['mindistance'] = min(distances_from_screen)
+            self.features['startdistance'] = distances_from_screen[0]
+            self.features['enddistance'] = distances_from_screen[-1]
+        else:
+            self.features['stddevdistance'] = -1
+            self.features['maxdistance'] = -1
+            self.features['mindistance'] = -1
+            self.features['startdistance'] = -1
+            self.features['enddistance'] = -1
+
+    def generate_aoi_fixation_features(self, datapoints, fixation_data, sum_discarded):
+
+        fixation_indices = []
+        fixation_indices = filter(lambda i: _fixation_inside_aoi(fixation_data[i], self.aoi.polyin, self.aoi.polyout), range(len(fixation_data)))
+        fixations = map(lambda i: fixation_data[i], fixation_indices)
+        numfixations = len(fixations)
+        self.features['numfixations'] = numfixations
+        self.features['longestfixation'] = -1
+        self.features['timetofirstfixation'] = -1
+        self.features['timetolastfixation'] = -1
+        self.features['proportionnum'] = 0
+        totaltimespent = sum(map(lambda x: x.fixationduration, fixations))
+        self.features['totaltimespent'] = totaltimespent
+
+        self.features['proportiontime'] = float(totaltimespent)/(self.length - sum_discarded)
+        if numfixations > 0:
+            self.features['longestfixation'] = max(map(lambda x: x.fixationduration, fixations))
+            self.features['meanfixationduration'] = mean(map(lambda x: float(x.fixationduration), fixations))
+            self.features['stddevfixationduration'] = stddev(map(lambda x: float(x.fixationduration), fixations))
+            self.features['timetofirstfixation'] = fixations[0].timestamp - self.starttime
+            self.features['timetolastfixation'] = fixations[-1].timestamp - self.starttime
+            self.features['proportionnum'] = float(numfixations)/len(fixation_data)
+            self.features['fixationrate'] = numfixations / float(totaltimespent)
+            self.variance = self.features['stddevfixationduration'] ** 2
+        return fixation_indices
+
+    def generate_event_features(self, seg_event_data, event_data, sum_discarded):
+
+        if seg_event_data != None:
+            events = filter(lambda event: _event_inside_aoi(event,self.aoi.polyin, self.aoi.polyout), event_data)
+            leftc, rightc, doublec, _ = generate_event_lists(events)
+        if seg_event_data != None:
+            self.features['numevents'] = len(events)
+            self.features['numleftclic'] = len(leftc)
+            self.features['numrightclic'] = len(rightc)
+            self.features['numdoubleclic'] = len(doublec)
+            self.features['leftclicrate'] = float(len(leftc))/(self.length - sum_discarded) if (self.length - sum_discarded)>0 else 0
+            self.features['rightclicrate'] = float(len(rightc))/(self.length - sum_discarded) if (self.length - sum_discarded)>0 else 0
+            self.features['doubleclicrate'] = float(len(doublec))/(self.length - sum_discarded) if (self.length - sum_discarded)>0 else 0
+            self.features['timetofirstleftclic'] = leftc[0].timestamp - self.starttime if len(leftc) > 0 else -1
+            self.features['timetofirstrightclic'] = rightc[0].timestamp - self.starttime if len(rightc) > 0 else -1
+            self.features['timetofirstdoubleclic'] = doublec[0].timestamp - self.starttime if len(doublec) > 0 else -1
+            self.features['timetolastleftclic'] = leftc[-1].timestamp - self.starttime if len(leftc) > 0 else -1
+            self.features['timetolastrightclic'] = rightc[-1].timestamp - self.starttime if len(rightc) > 0 else -1
+            self.features['timetolastdoubleclic'] = doublec[-1].timestamp - self.starttime if len(doublec) > 0 else -1
+
+
+    def generate_transition_features(self, active_aois, fixation_data, fixation_indices):
+        #calculating the transitions to and from this AOI and other active AOIs at the moment
+        for aoi in active_aois:
+            aid = aoi.aid
+            self.features['numtransfrom_%s'%(aid)] = 0
+
+        sumtransfrom = 0
+        for i in fixation_indices:
+            if i > 0:
+                for aoi in active_aois:
+                    aid = aoi.aid
+                    polyin = aoi.polyin
+                    polyout = aoi.polyout
+                    key = 'numtransfrom_%s'%(aid)
+
+                    if _fixation_inside_aoi(fixation_data[i-1], polyin, polyout):
+                        self.features[key] += 1
+                        sumtransfrom += 1
+        for aoi in active_aois:
+            aid = aoi.aid
+
+            if sumtransfrom > 0:
+                val = self.features['numtransfrom_%s'%(aid)]
+                self.features['proptransfrom_%s'%(aid)] = float(val) / sumtransfrom
+            else:
+                self.features['proptransfrom_%s'%(aid)] = 0
+        self.total_trans_from = sumtransfrom
 
     def get_length_invalid(self):
         """Returns the sum of the length of the invalid gaps > params.MAX_SEG_TIMEGAP
