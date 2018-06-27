@@ -15,11 +15,22 @@ class EMDATComponent(DetectionComponent):
         self.pupv_idx   = 0
         self.dist_idx   = 0
         self.fix_idx    = 0
+        self.feature_select = {}
 
     def notify_app_state_controller(self):
         self.merge_features()
-        
+        self.app_state_controller.send_interval_features(self.select_features(self.emdat_interval_features))
+        self.app_state_controller.send_task_features(self.select_features(self.emdat_task_features))
+        self.app_state_controller.send_global_features(self.select_features(self.tobii_controller.emdat_global_features))
 
+    def select_features(self, feature_source):
+        features_to_send = {}
+        for key, value in self.feature_select:
+            if value.AOI == []:
+                features_to_send[key] = feature_source[value.feature]
+            else:
+                features_to_send[key] = feature_source[key][value.feature]
+        return features_to_send
 
     @gen.coroutine
     def run(self):
