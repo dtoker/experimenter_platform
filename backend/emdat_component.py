@@ -632,18 +632,19 @@ class EMDATComponent(DetectionComponent):
         dist_vals = np.array(self.tobii_controller.head_distance)
 
         for aoi in self.AOIS:
+            this_aoi_features = {}
             ## Indices of x-y array where datapoints are inside the specified AOI
             valid_indices = np.where(_datapoint_inside_aoi(x_y_coords, self.aoi.polyin, self.aoi.polyout))
             ## Select valid pupil sizes inside the AOI
             valid_pipil_sizes = pup_size_vals[valid_indices]
-            valid_pipil_sizes = valid_pupil_sizes[np.where(valid_pupil_sizes != -1)]
+            valid_pipil_sizes = valid_pupil_sizes[np.where(valid_pupil_sizes > 0)]
             ## Select valid velocities inside the AOI
             valid_pupil_vel = pup_vel_vals[valid_indices]
             valid_pupil_vel = valid_pipil_vel[np.where(valid_pupil_vel != -1)]
 
             valid_dist_vals = dist_vals[valid_indices]
 
-            self.generate_aoi_pupil_features(valid_pipil_sizes, valid_pupil_vel, rest_pupil_size)
+            self.generate_aoi_pupil_features(this_aoi_features, valid_pipil_sizes, valid_pupil_vel, rest_pupil_size)
             self.generate_aoi_distance_features(valid_dist_vals)
             fixation_indices = self.generate_aoi_fixation_features(datapoints, fixation_data, sum_discarded)
             self.generate_transition_features(active_aois, fixation_data, fixation_indices)
@@ -675,43 +676,38 @@ class EMDATComponent(DetectionComponent):
             self.total_trans_from = sumtransfrom
 ###end of transition calculation
 
-    def generate_aoi_pupil_features(self): ##datapoints, rest_pupil_size, export_pupilinfo):
-        #get all datapoints where pupil size is available
-        valid_pupil_data = filter(lambda x: x.pupilsize > 0, datapoints)
-        valid_pupil_velocity = filter(lambda x: x.pupilvelocity != -1, datapoints)
+    def generate_aoi_pupil_features(self, features_dict, valid_pupil_data, valid_pupil_velocity, rest_pupil_size): ##datapoints, rest_pupil_size, export_pupilinfo):
         #number of valid pupil sizes
-        self.features['meanpupilsize'] = -1
-        self.features['stddevpupilsize'] = -1
-        self.features['maxpupilsize'] = -1
-        self.features['minpupilsize'] = -1
-        self.features['startpupilsize'] = -1
-        self.features['endpupilsize'] = -1
-        self.features['meanpupilvelocity'] = -1
-        self.features['stddevpupilvelocity'] = -1
-        self.features['maxpupilvelocity'] = -1
-        self.features['minpupilvelocity'] = -1
-        self.numpupilsizes = len(valid_pupil_data)
-        self.numpupilvelocity = len(valid_pupil_velocity)
+        features_dict['meanpupilsize'] = -1
+        features_dict['stddevpupilsize'] = -1
+        features_dict['maxpupilsize'] = -1
+        features_dict['minpupilsize'] = -1
+        features_dict['startpupilsize'] = -1
+        features_dict['endpupilsize'] = -1
+        features_dict['meanpupilvelocity'] = -1
+        features_dict['stddevpupilvelocity'] = -1
+        features_dict['maxpupilvelocity'] = -1
+        features_dict['minpupilvelocity'] = -1
+        features_dict['numpupilsize'] = len(valid_pupil_data)
+        features_dict['numpupilvelocity'] = len(valid_pupil_velocity)
 
         if self.numpupilsizes > 0: #check if the current segment has pupil data available
+
             if params.PUPIL_ADJUSTMENT == "rpscenter":
-                adjvalidpupilsizes = map(lambda x: x.pupilsize - rest_pupil_size, valid_pupil_data)
+                valid_pupil_data = valid_pupil_data - rest_pupil_size
             elif params.PUPIL_ADJUSTMENT == "PCPS":
-                adjvalidpupilsizes = map(lambda x: (x.pupilsize - rest_pupil_size) / (1.0 * rest_pupil_size), valid_pupil_data)
+                adjvalidpupilsizes = (valid_pupil_data - rest_pupil_size) / (1.0 * rest_pupil_size)
             else:
-                adjvalidpupilsizes = map(lambda x: x.pupilsize, valid_pupil_data)#valid_pupil_data
+                adjvalidpupilsizes = valid_pupil_data
 
-            valid_pupil_velocity = map(lambda x: x.pupilvelocity, valid_pupil_velocity)#valid_pupil_data
+            valid_pupil_velocity = map(lambda x: x.pupilvelocity, valid_pupil_velocity) #valid_pupil_data
 
-            if export_pupilinfo:
-                self.pupilinfo_for_export = map(lambda x: [x.timestamp, x.pupilsize, rest_pupil_size], valid_pupil_data)
-
-            self.features['meanpupilsize'] = mean(adjvalidpupilsizes)
-            self.features['stddevpupilsize'] = stddev(adjvalidpupilsizes)
-            self.features['maxpupilsize'] = max(adjvalidpupilsizes)
-            self.features['minpupilsize'] = min(adjvalidpupilsizes)
-            self.features['startpupilsize'] = adjvalidpupilsizes[0]
-            self.features['endpupilsize'] = adjvalidpupilsizes[-1]
+            features_dict['meanpupilsize'] = mean(adjvalidpupilsizes)
+            features_dict['stddevpupilsize'] = stddev(adjvalidpupilsizes)
+            features_dict['maxpupilsize'] = max(adjvalidpupilsizes)
+            features_dict['minpupilsize'] = min(adjvalidpupilsizes)
+            features_dict['startpupilsize'] = adjvalidpupilsizes[0]
+            features_dict['endpupilsize'] = adjvalidpupilsizes[-1]
 
             if len(valid_pupil_velocity) > 0:
                 self.features['meanpupilvelocity'] = mean(valid_pupil_velocity)
