@@ -2,6 +2,7 @@ import tornado.httpserver
 import tornado.ioloop
 import tornado.options
 import tornado.web
+import tornado.websocket
 from tornado.options import define, options
 import os.path
 
@@ -10,6 +11,8 @@ import datetime
 import json
 import random
 
+from application.application_state_controller import ApplicationStateController
+from application.middleend.adaptation_loop import AdaptationLoop
 
 
 define("port", default=8888, help="run on the given port", type=int)
@@ -29,6 +32,7 @@ class Application(tornado.web.Application):
             (r"/questionnaire", QuestionnaireHandler),
             (r"/saveCoordinates", AjaxHandler),
             (r"/resume", ResumeHandler),
+            (r"/socket", SocketHandler),
 
         ]
         #connects to database
@@ -50,6 +54,34 @@ class Application(tornado.web.Application):
 #each ____Handler is associated with a url
 #def get is for when a http get request is made to the url
 #def post is for when a http post request is made to the url(ex: form is submitted)
+
+class SocketHandler(tornado.websocket.WebSocketHandler):
+
+        def open(self):
+
+            #TODO: delete this handler
+            #For testing connection between middle and front end
+
+            #self.set_status(200)
+            #self.set_header('Content-Type', 'text/event-stream')
+            #self.set_header('Cache-Control', 'no-cache')
+            #self.set_header('Connection', 'keep-alive')
+
+            #self.write('\n')
+            #self.flush()
+            #self.flush()
+            #self.flush()
+            #self.write('data:' + 'hello hello \n\n')
+            #self.flush()
+            #self.app_state_control = ApplicationStateController(1)
+            #self.adapt_loop = AdaptationLoop(self.app_state_control)
+            #self.adapt_loop.liveWebSocket.append(self)
+            #self.adapt_loop.test()
+            #self.app_state_control = ApplicationStateController(1)
+            #self.adapt_loop = AdaptationLoop(self.app_state_control)
+            #self.adapt_loop.liveWebSocket.append(self)
+            #self.adapt_loop.test()
+            self.write_message('{"message":"hey"}')
 
 class MainHandler(tornado.web.RequestHandler):
     def get(self):

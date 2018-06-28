@@ -18,6 +18,14 @@ class ApplicationStateController():
         arguments
         task            -- first task to load into, defaults to 1
 
+        class variables:
+
+        currTask        -- integer, representing the current, active task id
+        userStates      -- list of sqlite3.Row object, representing a set of tuples retrieved from a query result
+                                - two keys are: event_name, type
+                                - captures all the active user states
+        eventNames      -- list, representing a list of all active user state names
+
         keyword arguments
         None
         """
@@ -44,13 +52,12 @@ class ApplicationStateController():
         tempfile = StringIO()
         for line in self.conn.iterdump():
             tempfile.write('%s\n' % line)
-            print line
         tempfile.seek(0)
         return tempfile
 
     def __readDBFromDisk__(self):
 
-        """Initializes the db in memory by reading it from '../user_model_state.db'
+        """Initializes the db in memory by reading it from './user_model_state.db'
 
         arguments
         None
@@ -75,7 +82,7 @@ class ApplicationStateController():
 
     def __writeDBToDisk__(self):
 
-        """ Writes the current state of the db in memory back to '../user_model_state.db'
+        """ Writes the current state of the db in memory back to './user_model_state.db'
 
         arguments
         None
@@ -155,6 +162,9 @@ class ApplicationStateController():
         None
         """
 
+        self.conn.execute("CREATE TABLE intervention_state ( `intervention` TEXT, `active` INTEGER, time_stamp INTEGER, occurences INTEGER, PRIMARY KEY(`intervention`))")
+        self.conn.execute("CREATE TABLE rule_state ( `rule` TEXT, time_stamp INTEGER, occurences INTEGER, PRIMARY KEY(`rule`))")
+        self.conn.commit()
         for user in self.userStates:
             table_name = user['event_name']
             print "creating table:" + table_name
@@ -181,6 +191,9 @@ class ApplicationStateController():
         returns
         None
         """
+        self.conn.execute("DROP TABLE IF EXISTS intervention_state")
+        self.conn.execute("DROP TABLE IF EXISTS rule_state")
+        self.conn.commit()
         for user in self.userStates:
             table_name = user['event_name']
             self.conn.execute("DROP TABLE IF EXISTS {}".format(table_name))
@@ -203,6 +216,11 @@ class ApplicationStateController():
         """
 
         print "deleting all dynamic tables"
+
+        self.conn.execute("DROP TABLE IF EXISTS intervention_state")
+        self.conn.execute("DROP TABLE IF EXISTS rule_state")
+        self.conn.commit()
+
         query_results = self.conn.execute('SELECT user_state.event_name FROM user_state')
         userStates = query_results.fetchall()
 
@@ -396,6 +414,117 @@ class ApplicationStateController():
         #TODO: type checking
         self.conn.execute("INSERT INTO {} VALUES (?,?,?,?)".format(table), (id, time_stamp, raw_prediction, value))
         self.conn.commit()
+
+    def getInterventionOccurences(self, intervention_name):
+
+        """Get the number of times a intervention has been delivered
+
+        arguments
+        intervention_name               -- string, name of the intervention to check for rule_occurences
+
+        keyword arguments
+        None
+
+        returns
+        int                     -- number of times intervention has been delivered so far
+
+        """
+        query_results = self.conn.execute("SELECT occurences FROM intervention_state WHERE intervention = ?", (intervention_name,)).fetchone()
+        if query_results is None:
+            return 0
+        else:
+            return query_results['occurences']
+
+    def getRuleOccurences(self, rule_name):
+
+        """Get the number of times a rule has been delivered
+
+        arguments
+        rule_name               -- string, name of the rule to check for rule_occurences
+
+        keyword arguments
+        None
+
+        returns
+        int                     -- number of times rule has been delivered so far
+
+        """
+        query_results = self.conn.execute("SELECT occurences FROM rule_state WHERE rule = ?", (rule_name,)).fetchone()
+        if query_results is None:
+            return 0
+        else:
+            return int(query_results['occurences'])
+
+    def setInterventionActive(self, intervention_name, rule_name, time_stamp):
+
+        """Apply state changes in the User Model for a rule and its associated intervention
+                - sets the invertention to be active
+                - increments the occurences of both the rule and the intervention
+                - update the time stamp of the last occurence for the rule and intervention
+
+        arguments
+        intervention_name             -- string, name of the intervention to update
+        rule_name                     -- string, name of the associated rule to update
+        time_stamp                    -- time stamp of triggering event
+
+        keyword arguments
+        None
+
+        """
+
+        #update intervention occurences
+        intervention_occurences = self.conn.execute("SELECT occurences FROM intervention_state WHERE intervention = ?", (intervention_name,)).fetchone()
+        if intervention_occurences is None:
+            self.conn.execute("INSERT INTO intervention_state values (?, 1, ?, ?)", (intervention_name, time_stamp, 1))
+        else:
+            occurences = int(intervention_occurences['occurences']) + 1
+            self.conn.execute("UPDATE intervention_state SET active = 1, time_stamp = ?, occurences = ? WHERE intervention = ?", (time_stamp, occurences, intervention_name))
+        self.conn.commit()
+        #update rule occurences
+        rule_occurences = self.conn.execute("SELECT occurences FROM rule_state WHERE rule = ?", (rule_name,)).fetchone()
+        if rule_occurences is None:
+            self.conn.execute("INSERT INTO rule_state values (?, ?, ?)", (rule_name, time_stamp, 1))
+        else:
+            occurences = int(rule_occurences['occurences']) + 1
+            self.conn.execute("UPDATE rule_state SET time_stamp = ?, occurences = ? WHERE rule = ?", (time_stamp, occurences, rule_name))
+        self.conn.commit()
+
+    def setInterventionInactive(self, intervention_name):
+
+        """Sets active column on intervention to be false
+
+        arguments
+        intervention_name       -- string, name of the intervention to update
+
+        keyword arguments
+        None
+
+        returns
+        boolean                 -- true if the number of occurences so far is less than the maximum allowed repeats,
+                                if max_repeats is set as NULL or a negative number, always return True
+                                otherwise return false
+
+        """
+
+        self.conn.execute("UPDATE intervention_state SET active = 0 WHERE intervention = ?", (intervention_name,))
+        self.conn.commit()
+
+    def isInterventionActive(self, intervention_name):
+
+        """Checks if this intervention is currently active
+
+        arguments
+        intervention_name       -- string, name of the intervention to be checked
+
+        keyword arguments
+        None
+
+        returns
+        boolean                 -- true if active column of the intervention == 1, else false
+
+        """
+        query_results = self.conn.execute("SELECT * from intervention_state where intervention = ? and active = 1", (intervention_name,)).fetchone()
+        return not (query_results is None)
 
 def main():
     app_contr = ApplicationStateController(1)
