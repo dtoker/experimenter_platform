@@ -5,6 +5,7 @@ from utils import *
 import geometry
 import time
 from ... import params
+import numpy as np
 
 class EMDATComponent(DetectionComponent):
 
@@ -612,6 +613,7 @@ class EMDATComponent(DetectionComponent):
 
     def gen_aoi_features(self):
         #init features
+        '''
         self.emdat_interval_features['aoi_features'] = {}
         self.emdat_interval_features['aoi_features']['numfixations'] = 0
         self.emdat_interval_features['aoi_features']['longestfixation'] = -1
@@ -623,53 +625,54 @@ class EMDATComponent(DetectionComponent):
         self.emdat_interval_features['aoi_features']['proportiontime'] = 0
         self.emdat_interval_features['aoi_features']['fixationrate'] = 0
         self.emdat_interval_features['aoi_features']['totaltimespent'] = 0
+        '''
+        x_y_coords = np.column_stack((np.array(self.tobii_controller.x), np.array(self.tobii_controller.y)))
+        pup_size_vals = np.array(self.tobii_controller.pupilsize)
+        pup_vel_vals = np.array(self.tobii_controller.pupilvelocity)
+        dist_vals = np.array(self.tobii_controller.head_distance)
 
-        self.total_trans_from = 0
-        self.variance = 0
-        #for aoi in active_aois:
-        #    aid = aoi.aid
-        #    self.features['numtransfrom_%s'%(aid)] = 0
-        #    self.features['proptransfrom_%s'%(aid)] = 0
-        all_data = []
-        fixation_data = []
-        event_data = []
-        all_data = seg_all_data
-        fixation_data = seg_fixation_data
+        for aoi in self.AOIS:
+            ## Indices of x-y array where datapoints are inside the specified AOI
+            valid_indices = np.where(_datapoint_inside_aoi(x_y_coords, self.aoi.polyin, self.aoi.polyout))
+            ## Select valid pupil sizes inside the AOI
+            valid_pipil_sizes = pup_size_vals[valid_indices]
+            valid_pipil_sizes = valid_pupil_sizes[np.where(valid_pupil_sizes != -1)]
+            ## Select valid velocities inside the AOI
+            valid_pupil_vel = pup_vel_vals[valid_indices]
+            valid_pupil_vel = valid_pipil_vel[np.where(valid_pupil_vel != -1)]
 
-        ## Remove datapoints with invalid gaze coordinates
-        datapoints = filter(lambda datapoint: datapoint.gazepointx != -1 and datapoint.gazepointy != -1, all_data)
-        # Only keep samples inside AOI
-        datapoints = filter(lambda datapoint: _datapoint_inside_aoi(datapoint, self.aoi.polyin, self.aoi.polyout), datapoints)
-        self.generate_aoi_pupil_features(datapoints, rest_pupil_size, export_pupilinfo)
-        self.generate_aoi_distance_features(datapoints)
-        fixation_indices = self.generate_fixation_aoi_features(datapoints, fixation_data, sum_discarded)
-        self.generate_transition_features(active_aois, fixation_data, fixation_indices)
-        #calculating the transitions to and from this AOI and other active AOIs at the moment
-        for aoi in active_aois:
-            aid = aoi.aid
-            self.features['numtransfrom_%s'%(aid)] = 0
-        sumtransfrom = 0
-        for i in fixation_indices:
-            if i > 0:
-                for aoi in active_aois:
-                    aid = aoi.aid
-                    polyin = aoi.polyin
-                    polyout = aoi.polyout
-                    key = 'numtransfrom_%s'%(aid)
+            valid_dist_vals = dist_vals[valid_indices]
 
-                    if _fixation_inside_aoi(fixation_data[i-1], polyin, polyout):
-                        self.features[key] += 1
-                        sumtransfrom += 1
+            self.generate_aoi_pupil_features(valid_pipil_sizes, valid_pupil_vel, rest_pupil_size)
+            self.generate_aoi_distance_features(valid_dist_vals)
+            fixation_indices = self.generate_aoi_fixation_features(datapoints, fixation_data, sum_discarded)
+            self.generate_transition_features(active_aois, fixation_data, fixation_indices)
+            #calculating the transitions to and from this AOI and other active AOIs at the moment
+            for aoi in active_aois:
+                aid = aoi.aid
+                self.features['numtransfrom_%s'%(aid)] = 0
+            sumtransfrom = 0
+            for i in fixation_indices:
+                if i > 0:
+                    for aoi in active_aois:
+                        aid = aoi.aid
+                        polyin = aoi.polyin
+                        polyout = aoi.polyout
+                        key = 'numtransfrom_%s'%(aid)
 
-        for aoi in active_aois:
-            aid = aoi.aid
+                        if _fixation_inside_aoi(fixation_data[i-1], polyin, polyout):
+                            self.features[key] += 1
+                            sumtransfrom += 1
 
-            if sumtransfrom > 0:
-                val = self.features['numtransfrom_%s'%(aid)]
-                self.features['proptransfrom_%s'%(aid)] = float(val) / sumtransfrom
-            else:
-                self.features['proptransfrom_%s'%(aid)] = 0
-        self.total_trans_from = sumtransfrom
+            for aoi in active_aois:
+                aid = aoi.aid
+
+                if sumtransfrom > 0:
+                    val = self.features['numtransfrom_%s'%(aid)]
+                    self.features['proptransfrom_%s'%(aid)] = float(val) / sumtransfrom
+                else:
+                    self.features['proptransfrom_%s'%(aid)] = 0
+            self.total_trans_from = sumtransfrom
 ###end of transition calculation
 
     def generate_aoi_pupil_features(self): ##datapoints, rest_pupil_size, export_pupilinfo):
@@ -743,7 +746,7 @@ class EMDATComponent(DetectionComponent):
             self.features['startdistance'] = -1
             self.features['enddistance'] = -1
 
-    def generate_aoi_fixation_features(self, datapoints, fixation_data, sum_discarded):
+    def generate_aoi_fixation_features(self, fixation_data, sum_discarded):
 
         fixation_indices = []
         fixation_indices = filter(lambda i: _fixation_inside_aoi(fixation_data[i], self.aoi.polyin, self.aoi.polyout), range(len(fixation_data)))
@@ -768,26 +771,6 @@ class EMDATComponent(DetectionComponent):
             self.features['fixationrate'] = numfixations / float(totaltimespent)
             self.variance = self.features['stddevfixationduration'] ** 2
         return fixation_indices
-
-    def generate_event_features(self, seg_event_data, event_data, sum_discarded):
-
-        if seg_event_data != None:
-            events = filter(lambda event: _event_inside_aoi(event,self.aoi.polyin, self.aoi.polyout), event_data)
-            leftc, rightc, doublec, _ = generate_event_lists(events)
-        if seg_event_data != None:
-            self.features['numevents'] = len(events)
-            self.features['numleftclic'] = len(leftc)
-            self.features['numrightclic'] = len(rightc)
-            self.features['numdoubleclic'] = len(doublec)
-            self.features['leftclicrate'] = float(len(leftc))/(self.length - sum_discarded) if (self.length - sum_discarded)>0 else 0
-            self.features['rightclicrate'] = float(len(rightc))/(self.length - sum_discarded) if (self.length - sum_discarded)>0 else 0
-            self.features['doubleclicrate'] = float(len(doublec))/(self.length - sum_discarded) if (self.length - sum_discarded)>0 else 0
-            self.features['timetofirstleftclic'] = leftc[0].timestamp - self.starttime if len(leftc) > 0 else -1
-            self.features['timetofirstrightclic'] = rightc[0].timestamp - self.starttime if len(rightc) > 0 else -1
-            self.features['timetofirstdoubleclic'] = doublec[0].timestamp - self.starttime if len(doublec) > 0 else -1
-            self.features['timetolastleftclic'] = leftc[-1].timestamp - self.starttime if len(leftc) > 0 else -1
-            self.features['timetolastrightclic'] = rightc[-1].timestamp - self.starttime if len(rightc) > 0 else -1
-            self.features['timetolastdoubleclic'] = doublec[-1].timestamp - self.starttime if len(doublec) > 0 else -1
 
     def generate_transition_features(self, active_aois, fixation_data, fixation_indices):
         #calculating the transitions to and from this AOI and other active AOIs at the moment
@@ -827,7 +810,6 @@ class EMDATComponent(DetectionComponent):
         for gap in self.time_gaps:
             length += gap[1] - gap[0]
         return length
-
 
 def weightedmeanfeat(part_features, accumulator_features, totalfeat, ratefeat):
     """a helper method that calculates the weighted average of a target feature over a list of Segments
@@ -893,7 +875,6 @@ def aggregatestddevfeat(part_features, accumulator_features, totalfeat, sdfeat, 
     if den > 1:
         return math.sqrt(float(num)/(den-1))
     return 0
-
 
 def sumfeat(part_features, accumulator_features, feat):
     """a helper method that calculates the sum of a target feature over a list of objects
