@@ -627,32 +627,32 @@ class EMDATComponent(DetectionComponent):
         self.emdat_interval_features['aoi_features']['fixationrate'] = 0
         self.emdat_interval_features['aoi_features']['totaltimespent'] = 0
         '''
-        x_y_coords = np.column_stack((np.array(self.tobii_controller.x), np.array(self.tobii_controller.y)))
-        pup_size_vals = np.array(self.tobii_controller.pupilsize)
-        pup_vel_vals = np.array(self.tobii_controller.pupilvelocity)
-        dist_vals = np.array(self.tobii_controller.head_distance)
-        fixation_vals = numpy.asarray(self.tobii_controller.EndFixations)
+        x_y_coords      = np.column_stack((np.array(self.tobii_controller.x), np.array(self.tobii_controller.y)))
+        pup_size_vals   = np.array(self.tobii_controller.pupilsize)
+        pup_vel_vals    = np.array(self.tobii_controller.pupilvelocity)
+        dist_vals       = np.array(self.tobii_controller.head_distance)
+        fixation_vals   = numpy.asarray(self.tobii_controller.EndFixations)
 
         for aoi in self.AOIS:
             this_aoi_features = {}
             ## Indices of x-y array where datapoints are inside the specified AOI
-            valid_indices = np.where(_datapoint_inside_aoi(x_y_coords, self.aoi.polyin, self.aoi.polyout))
+            valid_indices     = np.where(_datapoint_inside_aoi(x_y_coords, self.aoi.polyin, self.aoi.polyout))
             ## Select valid pupil sizes inside the AOI
             valid_pupil_sizes = pup_size_vals[valid_indices]
             valid_pupil_sizes = valid_pupil_sizes[np.where(valid_pupil_sizes > 0)]
             ## Select valid velocities inside the AOI
-            valid_pupil_vel = pup_vel_vals[valid_indices]
-            valid_pupil_vel = valid_pipil_vel[np.where(valid_pupil_vel != -1)]
+            valid_pupil_vel   = pup_vel_vals[valid_indices]
+            valid_pupil_vel   = valid_pipil_vel[np.where(valid_pupil_vel != -1)]
             ## Select valid head distances inside the AOI
-            valid_dist_vals = dist_vals[valid_indices]
+            valid_dist_vals   = dist_vals[valid_indices]
 
             valid_fixation_indices = np.where(_fixation_inside_aoi(fixation_vals, aoi))
-            valid_fixation_vals = fixation_vals[valid_fixation_indices]
+            valid_fixation_vals    = fixation_vals[valid_fixation_indices]
 
             self.generate_aoi_pupil_features(this_aoi_features, valid_pipil_sizes, valid_pupil_vel, rest_pupil_size)
             self.generate_aoi_distance_features(valid_dist_vals)
 
-            fixation_indices = self.generate_aoi_fixation_features(datapoints, valid_fixation_vals, self.length_invalid)
+            fixation_indices       = self.generate_aoi_fixation_features(datapoints, valid_fixation_vals, self.length_invalid)
             self.generate_transition_features(active_aois, fixation_data, fixation_indices)
 
     def generate_aoi_pupil_features(self, features_dict, valid_pupil_data, valid_pupil_velocity, rest_pupil_size): ##datapoints, rest_pupil_size, export_pupilinfo):
@@ -719,16 +719,17 @@ class EMDATComponent(DetectionComponent):
         features_dict['timetolastfixation']         = -1
         features_dict['proportionnum']              =  0
         #TODO Check that
-        totaltimespent                              = sum(map(lambda x: x[4], fixation_data))
+        fixation_durations = fixation_data[:,4]
+        totaltimespent                              = np.sum(fixation_durations)
         features_dict['totaltimespent']             = totaltimespent
         #TODO Check that
         features_dict['proportiontime']             = float(totaltimespent)/(self.length - self.length_invalid)
         if numfixations > 0:
-            features_dict['longestfixation']        = max(map(lambda x: x[4], fixation_data))
-            features_dict['meanfixationduration']   = mean(map(lambda x: float(x.fixationduration), fixation_data))
-            features_dict['stddevfixationduration'] = stddev(map(lambda x: float(x.fixationduration), fixation_data))
-            features_dict['timetofirstfixation']    = fixation_data[0][] - self.starttime
-            features_dict['timetolastfixation']     = fixation_data[-1][] - self.starttime
+            features_dict['longestfixation']        = np.max(fixation_durations)
+            features_dict['meanfixationduration']   = np.mean(fixation_durations)
+            features_dict['stddevfixationduration'] = np.stddev(fixation_durations)
+            features_dict['timetofirstfixation']    = fixation_data[0][3] - self.starttime
+            features_dict['timetolastfixation']     = fixation_data[-1][3] - self.starttime
             features_dict['proportionnum']          = float(numfixations)/len(fixation_data)
             features_dict['fixationrate']           = numfixations / float(totaltimespent)
         return fixation_indices
