@@ -40,7 +40,8 @@ class EMDATComponent(DetectionComponent):
     def run(self):
         start_time = time.time()
         print("EMDAT!!!!!!!")
-        self.start = self.tobii_controller.time[0]
+        # Could use any other indexing variable
+        self.start = self.tobii_controller.time[pups_idx]
         self.end = self.tobii_controller.time[-1]
         self.length = self.end - self.start
         self.calc_validity_gaps()
@@ -595,9 +596,9 @@ class EMDATComponent(DetectionComponent):
         fixations = self.tobii_controller.EndFixations
         validity = self.tobii_controller.validity
         if len(fixations) == 0:
-            return time[-1] - time[0]
+            return time[-1] - time[self.pups_idx]
         self.time_gaps = []
-        dindex = 0
+        dindex = self.pups_idx
         datalen = len(validity)
         while dindex < datalen:
             d = validity[dindex]
@@ -650,10 +651,11 @@ class EMDATComponent(DetectionComponent):
             valid_fixation_vals    = fixation_vals[valid_fixation_indices]
 
             self.generate_aoi_pupil_features(this_aoi_features, valid_pipil_sizes, valid_pupil_vel, rest_pupil_size)
-            self.generate_aoi_distance_features(valid_dist_vals)
+            self.generate_aoi_distance_features(this_aoi_features, valid_dist_vals)
 
-            fixation_indices       = self.generate_aoi_fixation_features(datapoints, valid_fixation_vals, self.length_invalid)
-            self.generate_transition_features(active_aois, fixation_data, fixation_indices)
+            fixation_indices       = self.generate_aoi_fixation_features(this_aoi_features, datapoints, valid_fixation_vals, self.length_invalid)
+
+            self.generate_transition_features(this_aoi_features, fixation_data, fixation_indices)
 
     def generate_aoi_pupil_features(self, features_dict, valid_pupil_data, valid_pupil_velocity, rest_pupil_size): ##datapoints, rest_pupil_size, export_pupilinfo):
         #number of valid pupil sizes
@@ -732,34 +734,30 @@ class EMDATComponent(DetectionComponent):
             features_dict['timetolastfixation']     = fixation_data[-1][3] - self.starttime
             features_dict['proportionnum']          = float(numfixations)/len(fixation_data)
             features_dict['fixationrate']           = numfixations / float(totaltimespent)
-        return fixation_indices
 
-    def generate_transition_features(self, active_aois, fixation_data, fixation_indices):
-        #calculating the transitions to and from this AOI and other active AOIs at the moment
-        for aoi in active_aois:
-            aid = aoi.aid
-            self.features['numtransfrom_%s'%(aid)] = 0
+    def generate_transition_features(self, features_dict, fixation_data, fixation_indices):
+        for aoi in self.AOIS.keys():
+            aid = aoi
+            self.features_dict['numtransfrom_%s'%(aid)] = 0
 
         sumtransfrom = 0
         for i in fixation_indices:
             if i > 0:
                 for aoi in active_aois:
-                    aid = aoi.aid
                     polyin = aoi.polyin
                     polyout = aoi.polyout
                     key = 'numtransfrom_%s'%(aid)
-                    if _fixation_inside_aoi(fixation_data[i-1], polyin, polyout):
-                        self.features[key] += 1
+                    # ADD POLYOUT
+                    if _fixation_inside_aoi((fixation_data[i-1][0], fixation_data[i-1][1]), polyin):
+                        features_dict[key] += 1
                         sumtransfrom += 1
-        for aoi in active_aois:
-            aid = aoi.aid
-
+        for aoi in AOIs.keys():
             if sumtransfrom > 0:
-                val = self.features['numtransfrom_%s'%(aid)]
-                self.features['proptransfrom_%s'%(aid)] = float(val) / sumtransfrom
+                val = features_dict['numtransfrom_%s'%(aoi)]
+                features_dict['proptransfrom_%s'%(aoi)] = float(val) / sumtransfrom
             else:
-                self.features['proptransfrom_%s'%(aid)] = 0
-        self.total_trans_from = sumtransfrom
+                features_dict['proptransfrom_%s'%(aoi)] = 0
+        features_dict['total_trans_from'] = sumtransfrom
 
     def get_length_invalid(self):
         """Returns the sum of the length of the invalid gaps > params.MAX_SEG_TIMEGAP
@@ -851,7 +849,7 @@ def aggregatestddevfeat(part_features, accumulator_features, totalfeat, sdfeat, 
         if math.isnan(sd): sd = 0
         meanobj = eval('part_features'+meanfeat)
 
-        num += (t-1) * sd**2 + t * (meanobj-meanscene)**2
+        num += (t-1) * sd ** 2 + t * (meanobj-meanscene) ** 2
         den += t
 
     t = eval('accumulator_features'+totalfeat)
