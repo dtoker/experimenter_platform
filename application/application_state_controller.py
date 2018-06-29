@@ -355,7 +355,7 @@ class ApplicationStateController():
         table       -- String, name of an existing dynamic fixation table
                     (ie. one of the user states)
         id          -- int, id associated with the fixation
-        time_state  -- int, time_stamp of the start of the fixation in ms
+        time_start  -- int, time_stamp of the start of the fixation in ms
         time_end    -- int, time_stamp of the end of the fixation in ms
         duration    -- int, duration of the fixation in ms
 
@@ -365,7 +365,7 @@ class ApplicationStateController():
         returns
         None
         """
-        if not (isinstance(id, int) and isinstance(time_start, int) and isinstance(time_end, int) and isinstance(duration, int)):
+        if not (isinstance(id, int) and isinstance(time_start, long) and isinstance(time_end, long) and isinstance(duration, int)):
             raise TypeError('Value for columns of a fixation table must be an int')
         self.conn.execute("INSERT INTO {} VALUES (?,?,?,?)".format(table), (id, time_start, time_end, duration))
         self.conn.commit()

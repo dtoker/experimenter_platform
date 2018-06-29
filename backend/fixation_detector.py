@@ -4,15 +4,23 @@ from tornado import gen
 import ast
 
 class FixationDetector(DetectionComponent):
+    controller_num = 0
 
+<<<<<<< HEAD
+    def __init__(self, tobii_controller, adaptation_loop, liveWebSocket):
+        DetectionComponent.__init__(self, tobii_controller, adaptation_loop, liveWebSocket = liveWebSocket)
+=======
     def __init__(self, tobii_controller, application_state_controller, liveWebSocket):
         DetectionComponent.__init__(self, tobii_controller, application_state_controller, liveWebSocket = liveWebSocket)
+>>>>>>> 60bdb5c1465e4446f1b718311043ed62f3ac1981
+        FixationDetector.controller_num += 1
         self.runOnlineFix = True
+        self.cur_fix_id = 0
 
-    def notify_app_state_controller(self, x, y):
-        for aoi in self.AOIs:
-            if (fixation_inside_aoi(x, y, aoi)):
-                yield #update_controller_and_usermodel()
+    #def notify_app_state_controller(self, x, y):
+    #    for aoi in self.AOIs:
+    #        if (fixation_inside_aoi(x, y, aoi)):
+    #            yield #update_controller_and_usermodel()
 
     def stop(self):
         #TODO: Maybe something else?
@@ -21,7 +29,6 @@ class FixationDetector(DetectionComponent):
     #Preetpal's Online/Realtime fixation algorithm
     @gen.coroutine
     def run(self):
-<<<<<<< HEAD
         """
         Concurrently detects fixations, defined as consecutive samples with an inter-sample
         distance of less than a set amount of pixels (disregarding missing data)
@@ -33,8 +40,6 @@ class FixationDetector(DetectionComponent):
                     fixation candidates will be disregarded if they are below
                     this duration (default = 100)
         """
-=======
->>>>>>> 4aaaad4b22e648ec43b9dfcd68c69bcc4b670fd9
         #list of lists, each containing [starttime, endtime, duration, endx, endy]
         self.EndFixations = []
         #Keep track of index in x,y,time array
@@ -46,11 +51,7 @@ class FixationDetector(DetectionComponent):
         newTime = []
         newValid = []
         while(self.runOnlineFix):
-<<<<<<< HEAD
             yield self.wait_for_new_data(array_index, array_iterator)
-=======
-            yield self.wait_for_new_data(self, array_index, array_iterator)
->>>>>>> 4aaaad4b22e648ec43b9dfcd68c69bcc4b670fd9
             #Get segments of size 7
             curX, curY, curTime, curValid = self.get_data_batch(array_index, array_iterator)
             newX = curX
@@ -64,11 +65,7 @@ class FixationDetector(DetectionComponent):
                 if(Sfix == []):
                     array_index += array_iterator
                     #Wait till array has filled with enough data
-<<<<<<< HEAD
                     yield self.wait_for_new_data(array_index, array_iterator)
-=======
-                    yield self.wait_for_new_data(self, array_index, array_iterator)
->>>>>>> 4aaaad4b22e648ec43b9dfcd68c69bcc4b670fd9
                     #Get next 7 element chunk of data
                     nextX, nextY, nextTime, nextValid = self.get_data_batch(array_index, array_iterator)
                     #Append next segment with current arrays of interest
@@ -94,7 +91,7 @@ class FixationDetector(DetectionComponent):
                     # A start fixation has been detected!
                     for ws in self.liveWebSocket:
                         if ((xVal != -1280) & (yVal != -1024)):
-                            for aoi in self.AOIS:
+                            for aoi in self.AOIS.values():
                                 if (fixation_inside_aoi(xVal, yVal, aoi)):
                                     ws.write_message('{"x":"%d", "y":"%d"}' % (xVal, yVal))
                                     break
@@ -104,11 +101,7 @@ class FixationDetector(DetectionComponent):
                 if(Efix == []):
                     array_index = array_index + array_iterator
                     #Wait till array has enough data
-<<<<<<< HEAD
                     yield self.wait_for_new_data(array_index, array_iterator)
-=======
-                    yield self.wait_for_new_data(self, array_index, array_iterator)
->>>>>>> 4aaaad4b22e648ec43b9dfcd68c69bcc4b670fd9
                     #Get next segment of data to append to current array of interest
                     nextX, nextY, nextTime, nextValid = self.get_data_batch(array_index, array_iterator)
                     newX.extend(nextX)
@@ -119,17 +112,12 @@ class FixationDetector(DetectionComponent):
                 #a genuine end fixation has been found!
                 else:
                     #Add the newly found end fixation to our collection of end fixations
-                    self.tobii_controller.EndFixations.append(Efix)
                     #Get time stamp for newly found end fixation
                     EfixEndTime = Efix[0][1]
                     #Update index to data points after newly found end fixation
                     start_fix = self.tobii_controller.time.index(Sfix[0])
                     array_index = self.tobii_controller.time.index(EfixEndTime) + 1
-<<<<<<< HEAD
                     points_in_fixation = array_index - 1 - start_fix
-=======
-                    points_in_fixation = array_index - start_fix
->>>>>>> 4aaaad4b22e648ec43b9dfcd68c69bcc4b670fd9
                     x_fixation = 0
                     y_fixation = 0
                     for i in range(points_in_fixation):
@@ -138,24 +126,26 @@ class FixationDetector(DetectionComponent):
                             y_fixation += self.tobii_controller.y[start_fix + i]
                         else:
                             points_in_fixation -= 1
-<<<<<<< HEAD
-                    print('points in fixatipon %d' % points_in_fixation)
+                    # If for some reason detected fixation is outside of the screen
                     if (points_in_fixation == 0):
-                        for i in range(points_in_fixation):
-                            print self.tobii_controller.x[start_fix + i]
-                            print self.tobii_controller.y[start_fix + i]
+                        Efix = []
+                        Sfix = []
+                        break
 
                     print(Efix[0][3], Efix[0][4])
-=======
->>>>>>> 4aaaad4b22e648ec43b9dfcd68c69bcc4b670fd9
                     x_fixation /= points_in_fixation
                     y_fixation /= points_in_fixation
-                    #Fixation ended, get it off the screen!
+
+                    self.tobii_controller.add_fixation(Efix[0][3], Efix[0][4], Efix[0][2])
+
                     for ws in self.liveWebSocket:
-                        print(len(self.AOIS))
                         for aoi in self.AOIS:
-                            if (fixation_inside_aoi(x_fixation, y_fixation, aoi)):
+                            if (fixation_inside_aoi(x_fixation, y_fixation, self.AOIS[aoi])):
                                 ws.write_message('{"x":"%d", "y":"%d"}' % (x_fixation, y_fixation))
+                                print(Efix[0][3], Efix[0][4])
+                                self.cur_fix_id += 1
+                                self.application_state_controller.updateFixTable(aoi, self.cur_fix_id, int(Sfix[0]), int(EfixEndTime), int(EfixEndTime - Sfix[0]))
+                                self.adaptation_loop.evaluateRules(aoi, EfixEndTime)
                                 break
                     #May wanrt to use something like this in the future in there are performace issues
                     #self.x = self.x[array_index:]
@@ -210,26 +200,16 @@ class FixationDetector(DetectionComponent):
             dist = ((x[si] - x[i])**2 + (y[si] - y[i])**2)**0.5
             # check if the next coordinate is below maximal distance
             if dist <= maxdist and not fixstart:
-<<<<<<< HEAD
                 # if point is not valid, don't treat it as start of a fixation
                 if not validity[i]:
                     si += 1
                     continue
                 # start a new fixation
                 fixstart = True
-                print(validity[si])
-                print(i)
-                print(si)
+                #print(validity[si])
+                #print(i)
+                #print(si)
                 Sfix.append(time[si])
-=======
-                si = i - 1
-                # if point is not valid, don't treat it as start of a fixation
-                if not validity[i]:
-                    continue
-                # start a new fixation
-                fixstart = True
-                Sfix.append(time[i])
->>>>>>> 4aaaad4b22e648ec43b9dfcd68c69bcc4b670fd9
                 # Currently last valid point
                 last_valid = i
                 invalid_count = 0
@@ -247,63 +227,39 @@ class FixationDetector(DetectionComponent):
                     else:
                     	duration = time[last_valid] - Sfix[-1]
                     	if duration >= mindur:
-<<<<<<< HEAD
-                            print('9 invalid')
-=======
->>>>>>> 4aaaad4b22e648ec43b9dfcd68c69bcc4b670fd9
+                            #print('9 invalid')
                             Efix.append((Sfix[-1], time[last_valid], time[last_valid] - Sfix[-1], x[last_valid], y[last_valid]))
                             break
                     	else:
                             Sfix.pop(-1)
-<<<<<<< HEAD
                             si = i
-=======
-                            si = 0 + i
->>>>>>> 4aaaad4b22e648ec43b9dfcd68c69bcc4b670fd9
                             invalid_count = 0
                             continue
                 elif not validity[i-1]:
                     duration = time[last_valid] - Sfix[-1]
                     if duration >= mindur:
-<<<<<<< HEAD
-                        print('prev invalid')
-=======
->>>>>>> 4aaaad4b22e648ec43b9dfcd68c69bcc4b670fd9
+                        #print('prev invalid')
                     	Efix.append((Sfix[-1], time[last_valid], time[last_valid] - Sfix[-1], x[last_valid], y[last_valid]))
                     	break
                     else:
                     	Sfix.pop(-1)
-<<<<<<< HEAD
                     	si = i
                     	invalid_count = 0
                         last_valid = i
                     	continue
                 # only store the fixation if the duration is ok
                 if time[i-1] - Sfix[-1] >= mindur:
-                    print('chill')
+                    #print('chill')
                     Efix.append((Sfix[-1], time[i - 1], time[i - 1] - Sfix[-1], x[i - 1], y[i - 1]))
-=======
-                    	si = 0 + i
-                    	invalid_count = 0
-                    	continue
-                # only store the fixation if the duration is ok
-                if time[i-1] - Sfix[-1] >= mindur:
-                    Efix.append((Sfix[-1], time[i - 1], time[i - 1] - Sfix[-1], x[si], y[si]))
->>>>>>> 4aaaad4b22e648ec43b9dfcd68c69bcc4b670fd9
                     break
                 # delete the last fixation start if it was too short
                 Sfix.pop(-1)
                 si = self.find_new_start(x, y, maxdist, i, si)
                 if (si != i):
                     fixstart = True
-<<<<<<< HEAD
-                    print(validity[si])
+                    #print(validity[si])
                     Sfix.append(time[si])
                 last_valid = i
-=======
-                    Sfix.append(time[si])
-                last_valid = si
->>>>>>> 4aaaad4b22e648ec43b9dfcd68c69bcc4b670fd9
                 invalid_count = 0
             elif not fixstart:
                 si += 1
@@ -327,26 +283,13 @@ class FixationDetector(DetectionComponent):
 
 def fixation_inside_aoi(x,y,poly):
     """Determines if a point is inside a given polygon or not
-<<<<<<< HEAD
         The algorithm is called "Ray Casting Method".
-=======
-
-        The algorithm is called "Ray Casting Method".
-
->>>>>>> 4aaaad4b22e648ec43b9dfcd68c69bcc4b670fd9
     Args:
         poly: is a list of (x,y) pairs defining the polgon
 
     Returns:
         True or False.
     """
-<<<<<<< HEAD
-=======
-
-
-
-
->>>>>>> 4aaaad4b22e648ec43b9dfcd68c69bcc4b670fd9
     inside = False
     poly = ast.literal_eval(str(poly))
 

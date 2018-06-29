@@ -1,6 +1,6 @@
 
 import sys
-
+import params
 #This sets the path in our computer to where the eyetracker stuff is located
 #sys.path.append('/Users/Preetpal/desktop/ubc_4/experimenter_platform/modules')
 sys.path.append('C:\\Users\\admin\\Desktop\\experimenter_platform\\modules')
@@ -44,6 +44,9 @@ class TobiiController:
 		self.y = []
 		self.time = []
 		self.validity = []
+		self.pupilsize = []
+		self.pupilvelocity = []
+		self.head_distance = []
 		self.EndFixations = []
 		#This contains the websocket to send data to be displayed on front end
 		self.liveWebSocket = set()
@@ -54,6 +57,12 @@ class TobiiController:
 		self.mainloop_thread = tobii.eye_tracking_io.mainloop.MainloopThread()
 		self.browser = tobii.eye_tracking_io.browsing.EyetrackerBrowser(self.mainloop_thread, lambda t, n, i: self.on_eyetracker_browser_event(t, n, i))
 		self.mainloop_thread.start()
+
+		# for computing pupil velocity
+		self.last_pupil_left = -1
+		self.last_pupil_right = -1
+		self.LastTimestamp = -1
+		self.init_emdat_global_features()
 
 	def waitForFindEyeTracker(self):
 
@@ -70,7 +79,7 @@ class TobiiController:
 					self.eyetrackers dict
 		"""
 
-		while len(self.eyetrackers.keys())==0:
+		while len(self.eyetrackers.keys()) == 0:
 			pass
 
 	def on_eyetracker_browser_event(self, event_type, event_name, eyetracker_info):
@@ -218,6 +227,9 @@ class TobiiController:
 		self.y = []
 		self.time = []
 		self.validity = []
+		self.pupilsize = []
+		self.pupilvelocity = []
+		self.head_distance = []
 
 	def stopTracking(self):
 
@@ -249,6 +261,9 @@ class TobiiController:
 		self.y = []
 		self.time = []
 		self.validity = []
+		self.pupilsize = []
+		self.pupilvelocity = []
+		self.head_distance = []
 
 	def on_gazedata(self,error,gaze):
 
@@ -295,19 +310,132 @@ class TobiiController:
 		else:
 			self.x.append(-1 * 1280)
 			self.y.append(-1 * 1024)
+		# Pupil size feature
+		self.pupilsize.append(self.get_pupil_size(gaze.LeftPupil, gaze.RightPupil))
+		if (self.last_pupil_right != -1):
+			self.pupilvelocity.append(self.get_pupil_velocity(self.last_pupil_left, self.last_pupil_right, gaze.LeftPupil, gaze.RightPupil, gaze.Timestamp - self.LastTimestamp))
+		else:
+			self.pupilvelocity.append(-1)
 		#Future work: Validity Checking
 		#if ((gaze.LeftValidity != 0) & (gaze.RightValidity != 0)):
 		self.time.append(gaze.Timestamp)
+		self.head_distance.append(self.get_distance(gaze.LeftEyePosition3D.z, gaze.RightEyePosition3D.z))
 		self.validity.append(gaze.LeftValidity == 0 or gaze.RightValidity == 0)
+		# for pupil velocity
+		self.last_pupil_left = gaze.LeftPupil
+		self.last_pupil_right = gaze.LeftPupil
+		self.LastTimestamp = gaze.Timestamp
 
-	def add_fixation(self, start_index, end_index, x, y):
-		self.EndFixations.append((start_index, end_index, x, y))
+	def add_fixation(self, x, y, duration):
+		self.EndFixations.append((x, y, duration))
+
+	def get_pupil_size(self, pupilleft, pupilright):
+	    '''
+	    If recordings for both eyes are available, return their average,
+	    else return value for a recorded eye (if any)
+	    Args:
+	        pupilleft - recording of pupil size on left eye
+	        pupilright - recording of pupil size on right eye
+	    Returns:
+	        pupil size to generate pupil features with.
+	    '''
+	    if pupilleft is None and pupilright is None:
+	        return -1
+	    if pupilleft is None:
+	        return pupilright
+	    if pupilright is None:
+	        return pupilleft
+	    return (pupilleft + pupilright) / 2.0
+
+
+	def get_pupil_velocity(self, last_pupilleft, last_pupilright, pupilleft, pupilright, time):
+	    if (last_pupilleft is None or pupilleft is None) and (last_pupilright is None or pupilright is None):
+	        return -1
+	    if (last_pupilleft is None or pupilleft is None):
+	        return abs(pupilright - last_pupilright) / time
+	    if (last_pupilright is None or pupilright is None):
+	        return abs(pupilleft - last_pupilleft) / time
+	    return abs( (pupilleft + pupilright) / 2 - (last_pupilleft + last_pupilright) / 2 ) / time
+
+	def get_distance(self, distanceleft, distanceright):
+	    if distanceleft is None and distanceright is None:
+	        return -1
+	    if distanceleft is None:
+	        return distanceright
+	    if distanceright is None:
+	        return distanceleft
+	    return (distanceleft + distanceright) / 2.0
+
+	def init_emdat_global_features(self):
+		self.emdat_global_features = {}
+		# Pupil features
+		self.emdat_global_features['numpupilsizes']		= 0
+		self.emdat_global_features['numpupilvelocity']  = 0
+		self.emdat_global_features['meanpupilsize'] 			= -1
+		self.emdat_global_features['stddevpupilsize'] 			= -1
+		self.emdat_global_features['maxpupilsize'] 			= -1
+		self.emdat_global_features['minpupilsize'] 			= -1
+		#self.emdat_global_features['startpupilsize'] 			= -1
+		#self.emdat_global_features['endpupilsize'] 			= -1
+		self.emdat_global_features['meanpupilvelocity'] 		= -1
+		self.emdat_global_features['stddevpupilvelocity'] 		= -1
+		self.emdat_global_features['maxpupilvelocity'] 		= -1
+		self.emdat_global_features['minpupilvelocity'] 		= -1
+		# Distance features
+		self.emdat_global_features['numdistancedata']							= 0
+		self.emdat_global_features['meandistance'] 			= -1
+		self.emdat_global_features['stddevdistance'] 			= -1
+		self.emdat_global_features['maxdistance'] 				= -1
+		self.emdat_global_features['mindistance'] 				= -1
+		#self.emdat_global_features['startdistance'] 			= -1
+		#self.emdat_global_features['enddistance'] 			= -1
+		# Saccade features
+		"""
+		self.emdat_global_features['numsaccades'] 				= 0
+		self.emdat_global_features['sumsaccadedistance'] 		= -1
+		self.emdat_global_features['meansaccadedistance'] 		= -1
+		self.emdat_global_features['stddevsaccadedistance'] 	= -1
+		self.emdat_global_features['longestsaccadedistance'] 	= -1
+		self.emdat_global_features['sumsaccadeduration'] 		= -1
+		self.emdat_global_features['meansaccadeduration'] 		= -1
+		self.emdat_global_features['stddevsaccadeduration'] 	= -1
+		self.emdat_global_features['longestsaccadeduration'] 	= -1
+		self.emdat_global_features['meansaccadespeed'] 		= -1
+		self.emdat_global_features['stddevsaccadespeed'] 		= -1
+		self.emdat_global_features['maxsaccadespeed'] 			= -1
+		self.emdat_global_features['minsaccadespeed'] 			= -1
+		self.emdat_global_features['fixationsaccadetimeratio'] = -1
+		"""
+		# Path features
+		self.emdat_global_features['numfixdistances'] = 0
+		self.emdat_global_features['numabsangles'] = 0
+		self.emdat_global_features['numrelangles'] = 0
+		self.emdat_global_features['meanpathdistance'] 		= -1
+		self.emdat_global_features['sumpathdistance'] 			= -1
+		self.emdat_global_features['stddevpathdistance'] 		= -1
+		self.emdat_global_features['eyemovementvelocity'] 		= -1
+		self.emdat_global_features['sumabspathangles'] 		= -1
+		self.emdat_global_features['abspathanglesrate'] 		= -1
+		self.emdat_global_features['meanabspathangles']		= -1
+		self.emdat_global_features['stddevabspathangles']		= -1
+		self.emdat_global_features['sumrelpathangles'] 		= -1
+		self.emdat_global_features['relpathanglesrate'] 		= -1
+		self.emdat_global_features['meanrelpathangles']		= -1
+		self.emdat_global_features['stddevrelpathangles'] 		= -1
+		# Fixation features
+		self.emdat_global_features['numfixations'] 			= 0
+		self.emdat_global_features['fixationrate'] 			= -1
+		self.emdat_global_features['meanfixationduration'] 	= -1
+		self.emdat_global_features['stddevfixationduration'] 	= -1
+		self.emdat_global_features['sumfixationduration'] 		= -1
+		self.emdat_global_features['fixationrate'] 			= -1
 
 	def flush(self):
 		self.x = []
 		self.y = []
 		self.time = []
 		self.validity = []
+
 #Original code provided by Roberto showing how to start the the eyetracker
 """
 #this will be called from a tornado handler
