@@ -95,6 +95,7 @@ class AdaptationLoop():
                 if self.controller.evaluateConditional(removal_condition):
                     self.controller.setInterventionInactive(intervention_name)
                     to_remove.append(intervention_name)
+                    print("removing: " + intervention_name)
 
         to_remove = json.dumps({'remove': to_remove})
         print to_remove
@@ -187,6 +188,7 @@ class AdaptationLoop():
                         intervention_params = results.fetchone()
                         to_deliver_rules.append(intervention_params)
                         self.controller.setInterventionActive(intervention_name, rule_name, time_stamp)
+                        #print("triggered: " + rule_name + " deliverying: " + intervention_name)
 
         to_deliver_rules = json.dumps({'deliver': to_deliver_rules})
         print to_deliver_rules
@@ -226,14 +228,25 @@ class AdaptationLoop():
         table = "text_fix"
         self.controller.updateFixTable(table, 1, 700, 1200, 200)
         self.controller.updateFixTable(table, 2, 700, 1200, 200)
-        self.controller.setInterventionInactive("intervention_1")
-        self.controller.setInterventionActive("intervention_1", "rule_1", 2000)
-        self.controller.setInterventionActive("intervention_1", "rule_2", 3000)
-        self.controller.setInterventionInactive("intervention_1")
+        #self.controller.setInterventionInactive("intervention_1")
+        #self.controller.setInterventionActive("intervention_1", "rule_1", 2000)
+        #self.controller.setInterventionActive("intervention_1", "rule_2", 3000)
+        #self.controller.setInterventionInactive("intervention_1")
+        print("new fix")
         self.evaluateRules('text_fix', 3000)
-        self.evaluateRules('vis_fix', 4000)
-        self.evaluateRules('vis_fix', 5000)
+        #self.evaluateRules('vis_fix', 4000)
+        #self.evaluateRules('vis_fix', 5000)
+        print("new fix")
         self.evaluateRules('text_fix', 6000)
+        print("new fix")
+        self.evaluateRules('text_fix', 6000)
+        print("new fix")
+        self.evaluateRules('text_fix', 3000)
+        print("new fix")
+        #self.evaluateRules('vis_fix', 4000)
+        #self.evaluateRules('vis_fix', 5000)
+        self.evaluateRules('text_fix', 6000)
+        print("new fix")
         self.evaluateRules('text_fix', 6000)
         self.controller.resetApplication()
 

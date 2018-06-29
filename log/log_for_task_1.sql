@@ -18,14 +18,14 @@ CREATE TABLE "aoi_state" (
         PRIMARY KEY(`aoi`)
 );
 CREATE TABLE intervention_state ( `intervention` TEXT, `active` INTEGER, time_stamp INTEGER, occurences INTEGER, PRIMARY KEY(`intervention`));
-INSERT INTO "intervention_state" VALUES('intervention_1',0,3000,3);
-INSERT INTO "intervention_state" VALUES('intervention_2',1,6000,2);
+INSERT INTO "intervention_state" VALUES('intervention_1',1,6000,3);
+INSERT INTO "intervention_state" VALUES('intervention_2',1,6000,5);
 CREATE TABLE pupil ( `id` INTEGER, `value` INTEGER, PRIMARY KEY(`id`) );
 CREATE TABLE reading_proficiency ( `id` INTEGER, `time_stamp` INTEGER, `raw_prediction` REAL, `value` TEXT, PRIMARY KEY(`id`) );
 CREATE TABLE rule_state ( `rule` TEXT, time_stamp INTEGER, occurences INTEGER, PRIMARY KEY(`rule`));
-INSERT INTO "rule_state" VALUES('rule_1',2000,1);
-INSERT INTO "rule_state" VALUES('rule_2',3000,2);
-INSERT INTO "rule_state" VALUES('rule_3',6000,2);
+INSERT INTO "rule_state" VALUES('rule_1',3000,1);
+INSERT INTO "rule_state" VALUES('rule_2',6000,2);
+INSERT INTO "rule_state" VALUES('rule_3',6000,5);
 CREATE TABLE `task_state` (
         `property`      TEXT NOT NULL,
         `value` INTEGER,

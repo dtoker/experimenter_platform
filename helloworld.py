@@ -77,10 +77,11 @@ class SocketHandler(tornado.websocket.WebSocketHandler):
             #self.adapt_loop = AdaptationLoop(self.app_state_control)
             #self.adapt_loop.liveWebSocket.append(self)
             #self.adapt_loop.test()
-            #self.app_state_control = ApplicationStateController(1)
-            #self.adapt_loop = AdaptationLoop(self.app_state_control)
-            #self.adapt_loop.liveWebSocket.append(self)
-            #self.adapt_loop.test()
+
+            self.app_state_control = ApplicationStateController(1)
+            self.adapt_loop = AdaptationLoop(self.app_state_control)
+            self.adapt_loop.liveWebSocket.append(self)
+            self.adapt_loop.test()
             self.write_message('{"message":"hey"}')
 
 class MainHandler(tornado.web.RequestHandler):
