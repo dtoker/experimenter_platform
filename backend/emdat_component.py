@@ -4,36 +4,20 @@ import math
 from utils import *
 import geometry
 import time
-<<<<<<< HEAD
 import params
-=======
-from ... import params
->>>>>>> 60bdb5c1465e4446f1b718311043ed62f3ac1981
 import numpy as np
 
 # TODO figure out length_valid and length_invalid things
 class EMDATComponent(DetectionComponent):
 
-<<<<<<< HEAD
     def  __init__(self, tobii_controller, adaptation_loop, callback_time):
         #TODO: Specify which features should be calculated
         DetectionComponent.__init__(self, tobii_controller, adaptation_loop, is_periodic = True, callback_time = callback_time)
-=======
-    def  __init__(self, tobii_controller, app_state_control, callback_time):
-        #TODO: Specify which features should be calculated
-        DetectionComponent.__init__(self, tobii_controller, app_state_control, is_periodic = True, callback_time = callback_time)
->>>>>>> 60bdb5c1465e4446f1b718311043ed62f3ac1981
         self.pups_idx   = 0
         self.pupv_idx   = 0
         self.dist_idx   = 0
         self.fix_idx    = 0
         self.feature_select = {}
-<<<<<<< HEAD
-        print("EMDAT created!!!!!!!")
-        print("EMDAT created!!!!!!!")
-        print("EMDAT created!!!!!!!")
-=======
->>>>>>> 60bdb5c1465e4446f1b718311043ed62f3ac1981
 
     def notify_app_state_controller(self):
         self.merge_features()
@@ -56,18 +40,12 @@ class EMDATComponent(DetectionComponent):
     def run(self):
         start_time = time.time()
         print("EMDAT!!!!!!!")
-<<<<<<< HEAD
-        print("EMDAT!!!!!!!")
         print("EMDAT!!!!!!!")
         print("EMDAT!!!!!!!")
         print("EMDAT!!!!!!!")
         print("EMDAT!!!!!!!")
         # Could use any other indexing variable
         self.start = self.tobii_controller.time[self.pups_idx]
-=======
-        # Could use any other indexing variable
-        self.start = self.tobii_controller.time[pups_idx]
->>>>>>> 60bdb5c1465e4446f1b718311043ed62f3ac1981
         self.end = self.tobii_controller.time[-1]
         self.length = self.end - self.start
         self.calc_validity_gaps()
@@ -103,10 +81,8 @@ class EMDATComponent(DetectionComponent):
 
         print("EMDAT DONE")
         print("--- %s seconds ---" % (time.time() - start_time))
-<<<<<<< HEAD
         #self.adaptation_loop.evaluateRules(aoi, EfixEndTime)
-=======
->>>>>>> 60bdb5c1465e4446f1b718311043ed62f3ac1981
+
 
 
     def init_emdat_task_features(self):
@@ -306,12 +282,9 @@ class EMDATComponent(DetectionComponent):
         fixation_data = self.tobii_controller.EndFixations[self.fix_idx:]
         numfixations = len(fixation_data)
         self.fix_idx = len(self.tobii_controller.EndFixations)
-<<<<<<< HEAD
         distances = []
         abs_angles = []
         rel_angles = []
-=======
->>>>>>> 60bdb5c1465e4446f1b718311043ed62f3ac1981
         if numfixations > 0:
             self.emdat_interval_features['meanfixationduration'] = mean(map(lambda x: float(x[2]), fixation_data))
             self.emdat_interval_features['stddevfixationduration'] = stddev(map(lambda x: float(x[2]), fixation_data))
@@ -363,13 +336,8 @@ class EMDATComponent(DetectionComponent):
             self.emdat_interval_features['meanrelpathangles'] = -1
             self.emdat_interval_features['stddevrelpathangles'] = -1
             self.emdat_interval_features['numfixdistances'] = 0
-<<<<<<< HEAD
             self.emdat_interval_features['numabsangles'] = 0
             self.emdat_interval_features['numrelangles'] = 0
-
-
-=======
->>>>>>> 60bdb5c1465e4446f1b718311043ed62f3ac1981
 
     def merge_fixation_features(self, part_features, accumulator_features):
         """ Merge fixation features such as

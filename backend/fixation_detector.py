@@ -6,13 +6,8 @@ import ast
 class FixationDetector(DetectionComponent):
     controller_num = 0
 
-<<<<<<< HEAD
     def __init__(self, tobii_controller, adaptation_loop, liveWebSocket):
         DetectionComponent.__init__(self, tobii_controller, adaptation_loop, liveWebSocket = liveWebSocket)
-=======
-    def __init__(self, tobii_controller, application_state_controller, liveWebSocket):
-        DetectionComponent.__init__(self, tobii_controller, application_state_controller, liveWebSocket = liveWebSocket)
->>>>>>> 60bdb5c1465e4446f1b718311043ed62f3ac1981
         FixationDetector.controller_num += 1
         self.runOnlineFix = True
         self.cur_fix_id = 0
