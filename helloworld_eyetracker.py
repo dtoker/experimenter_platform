@@ -69,6 +69,7 @@ class EchoWebSocketHandler(tornado.websocket.WebSocketHandler):
     def open(self):
         self.app_state_control = ApplicationStateController(1)
         self.adaptation_loop = AdaptationLoop(self.app_state_control)
+        self.adaptation_loop.liveWebSocket.append(self)
 
         self.tobii_controller = TobiiController()
         self.tobii_controller.liveWebSocket.add(self)
