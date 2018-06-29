@@ -4,7 +4,7 @@ import math
 from utils import *
 import geometry
 import time
-from ... import params
+import params
 import numpy as np
 
 # TODO figure out length_valid and length_invalid things
@@ -18,6 +18,9 @@ class EMDATComponent(DetectionComponent):
         self.dist_idx   = 0
         self.fix_idx    = 0
         self.feature_select = {}
+        print("EMDAT created!!!!!!!")
+        print("EMDAT created!!!!!!!")
+        print("EMDAT created!!!!!!!")
 
     def notify_app_state_controller(self):
         self.merge_features()
@@ -40,8 +43,13 @@ class EMDATComponent(DetectionComponent):
     def run(self):
         start_time = time.time()
         print("EMDAT!!!!!!!")
+        print("EMDAT!!!!!!!")
+        print("EMDAT!!!!!!!")
+        print("EMDAT!!!!!!!")
+        print("EMDAT!!!!!!!")
+        print("EMDAT!!!!!!!")
         # Could use any other indexing variable
-        self.start = self.tobii_controller.time[pups_idx]
+        self.start = self.tobii_controller.time[self.pups_idx]
         self.end = self.tobii_controller.time[-1]
         self.length = self.end - self.start
         self.calc_validity_gaps()
@@ -276,6 +284,9 @@ class EMDATComponent(DetectionComponent):
         fixation_data = self.tobii_controller.EndFixations[self.fix_idx:]
         numfixations = len(fixation_data)
         self.fix_idx = len(self.tobii_controller.EndFixations)
+        distances = []
+        abs_angles = []
+        rel_angles = []
         if numfixations > 0:
             self.emdat_interval_features['meanfixationduration'] = mean(map(lambda x: float(x[2]), fixation_data))
             self.emdat_interval_features['stddevfixationduration'] = stddev(map(lambda x: float(x[2]), fixation_data))
@@ -327,6 +338,10 @@ class EMDATComponent(DetectionComponent):
             self.emdat_interval_features['meanrelpathangles'] = -1
             self.emdat_interval_features['stddevrelpathangles'] = -1
             self.emdat_interval_features['numfixdistances'] = 0
+            self.emdat_interval_features['numabsangles'] = 0
+            self.emdat_interval_features['numrelangles'] = 0
+
+
 
     def merge_fixation_features(self, part_features, accumulator_features):
         """ Merge fixation features such as

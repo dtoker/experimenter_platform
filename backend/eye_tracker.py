@@ -1,6 +1,6 @@
 
 import sys
-from ... import params
+import params
 #This sets the path in our computer to where the eyetracker stuff is located
 #sys.path.append('/Users/Preetpal/desktop/ubc_4/experimenter_platform/modules')
 sys.path.append('C:\\Users\\admin\\Desktop\\experimenter_platform\\modules')

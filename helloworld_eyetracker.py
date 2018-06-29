@@ -24,6 +24,7 @@ import thread
 from threading import Thread
 from tornado import gen
 from tornado.ioloop import IOLoop
+import params
 
 from application.application_state_controller import ApplicationStateController
 ##########################################
