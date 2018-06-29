@@ -65,6 +65,8 @@ class EMDATComponent(DetectionComponent):
         if (params.USE_FIXATION_PATH_FEATURES):
             self.calc_fix_ang_path_features()
 
+        if  (params.USE_TRANSITION_FEATURES):
+            self.calc_tra()
         """ calculate AOIs features """
         #self.has_aois = False
         #if aois:
@@ -78,7 +80,6 @@ class EMDATComponent(DetectionComponent):
             self.merge_features(self.emdat_interval_features, self.emdat_task_features)
         elif (params.KEEP_GLOBAL_FEATURES):
             self.merge_features(self.emdat_interval_features, self.tobii_controller.emdat_global_features)
-
         print("EMDAT DONE")
         print("--- %s seconds ---" % (time.time() - start_time))
         #self.adaptation_loop.evaluateRules(aoi, EfixEndTime)
@@ -135,15 +136,19 @@ class EMDATComponent(DetectionComponent):
     def merge_features(self, part_features, accumulator_features):
         if (params.USE_PUPIL_FEATURES):
             self.merge_pupil_features(part_features, accumulator_features)
-
+            self.merge_aoi_pupil()
         """ calculate distance from screen features"""
         if (params.USE_DISTANCE_FEATURES):
             self.merge_distance_features(part_features, accumulator_features)
-
+            self.merge_aoi_distance()
         """ calculate fixations, angles and path features"""
         if (params.USE_FIXATION_PATH_FEATURES):
             self.merge_path_angle_features(part_features, accumulator_features)
             self.merge_fixation_features(part_features, accumulator_features)
+            self.merge_aoi_fixations()
+
+        if (params.USE_TRANSITION_AOI_FEATURES):
+            self.merge_aoi_transitions()
 
     def calc_pupil_features(self):
         """ Calculates pupil features such as
@@ -769,6 +774,152 @@ class EMDATComponent(DetectionComponent):
             else:
                 features_dict['proptransfrom_%s'%(aoi)] = 0
         features_dict['total_trans_from'] = sumtransfrom
+
+    def merge_aoistats(main_AOI_Stat, new_AOI_Stat, total_time, total_numfixations, sc_start=0):
+        """a helper method that updates the AOI_Stat object of this Scene with a new AOI_Stat object
+        Args:
+            main_AOI_Stat: AOI_Stat object of this Scene (must have been initialised)
+            new_AOI_Stat: a new AOI_Stat object
+            total_time: duration of the scene
+            total_numfixations: number of fixations in the scene
+            sc_start: start time (timestamp) of the scene
+        Returns:
+            the updated AOI_Sata object
+        """
+        maois = main_AOI_Stat
+
+        merge_aoi_fixations(maois, new_AOI_Stat. total_time, total_numfixations, sc_start)
+
+        merge_aoi_distance(maois, new_AOI_Stat)
+        merge_aoi_pupil(maois, new_AOI_Stat)
+        # updating the proportion tansition features based on new transitions to and from this AOI
+        maois_transition_aois = filter(lambda x: x.startswith('numtransfrom_'),maois.features.keys()) #all the transition features for this AOI should be aupdated even if they are not active for this segment
+        for feat in maois_transition_aois:
+            aid = feat[len('numtransfrom_'):]
+            if maois.total_trans_from > 0:
+                maois.features['proptransfrom_%s'%(aid)] = float(maois.features[feat]) / maois.total_trans_from
+            else:
+                maois.features['proptransfrom_%s'%(aid)] = 0
+        ###endof transition calculation
+        return maois
+
+
+    def merge_aoi_fixations(maois, new_AOI_Stat, total_time, total_numfixations, sc_start):
+        """ Merge fixation features such as
+                meanfixationduration:     mean duration of fixations
+                stddevfixationduration    standard deviation of duration of fixations
+                sumfixationduration:      sum of durations of fixations
+                fixationrate:             rate of fixation datapoints relative to all datapoints
+            Args:
+                main_AOI_Stat: AOI_Stat object of this Scene (must have been initialised)
+                new_AOI_Stat: a new AOI_Stat object
+                total_time: duration of the scene
+                total_numfixations: number of fixations in the scene
+                sc_start: start time (timestamp) of the scene
+        """
+        maois.features['numfixations'] += new_AOI_Stat.features['numfixations']
+        maois.features['longestfixation'] = max(maois.features['longestfixation'],new_AOI_Stat.features['longestfixation'])
+        maois.features['totaltimespent'] += new_AOI_Stat.features['totaltimespent']
+
+        maois.features['meanfixationduration'] = maois.features['totaltimespent'] / maois.features['numfixations'] if maois.features['numfixations'] != 0 else -1
+
+        maois.features['proportiontime'] = float(maois.features['totaltimespent'])/total_time
+        maois.features['proportionnum'] = float(maois.features['numfixations'])/total_numfixations
+        if maois.features['totaltimespent'] > 0:
+            maois.features['fixationrate'] = float(maois.features['numfixations']) / maois.features['totaltimespent']
+        else:
+            maois.features['fixationrate'] = -1
+
+        if new_AOI_Stat.features['timetofirstfixation'] != -1:
+            maois.features['timetofirstfixation'] = min(maois.features['timetofirstfixation'], deepcopy(new_AOI_Stat.features['timetofirstfixation']) + new_AOI_Stat.starttime - sc_start)
+        if new_AOI_Stat.features['timetolastfixation'] != -1:
+            maois.features['timetolastfixation'] = max(maois.features['timetolastfixation'], deepcopy(new_AOI_Stat.features['timetolastfixation']) + new_AOI_Stat.starttime - sc_start)
+
+
+    def merge_aoi_distance(maois, new_AOI_Stat):
+        """ Merge distance features such as
+                mean_distance:            mean of distances from the screen
+                stddev_distance:          standard deviation of distances from the screen
+                min_distance:             smallest distance from the screen
+                max_distance:             largest distance from the screen
+                start_distance:           distance from the screen in the beginning of this scene
+                end_distance:             distance from the screen in the end of this scene
+            Args:
+                maois: AOI_Stat object of this Scene (must have been initialised)
+                new_AOI_Stat: a new AOI_Stat object
+        """
+        if new_AOI_Stat.numdistancedata + maois.numdistancedata > 1 and new_AOI_Stat.numdistancedata > 0:
+            total_distances = maois.numdistancedata + new_AOI_Stat.numdistancedata
+            aggregate_mean_distance = maois.features['meandistance'] * float(maois.numdistancedata) / total_distances + new_AOI_Stat.features['meandistance'] * float(new_AOI_Stat.numdistancedata) / total_distances
+            maois.features['stddevdistance'] = pow(((maois.numdistancedata - 1) * pow(maois.features['stddevdistance'], 2) + \
+                                        (new_AOI_Stat.numdistancedata - 1) * pow(new_AOI_Stat.features['stddevdistance'], 2) + \
+                                        maois.numdistancedata * pow(maois.features['meandistance'] - aggregate_mean_distance , 2) \
+                                        + new_AOI_Stat.numdistancedata * pow(new_AOI_Stat.features['meandistance'] - aggregate_mean_distance, 2)) / (total_distances - 1), 0.5)
+            maois.features['maxdistance'] = max(maois.features['maxdistance'], new_AOI_Stat.features['maxdistance'])
+            maois.features['mindistance'] = min(maois.features['mindistance'], new_AOI_Stat.features['mindistance'])
+            maois.features['meandistance'] = aggregate_mean_distance
+            if maois.starttime > new_AOI_Stat.starttime:
+                maois.features['startdistance'] = new_AOI_Stat.features['startdistance']
+            if maois.endtime < new_AOI_Stat.endtime:
+                maois.features['enddistance'] = new_AOI_Stat.features['enddistance']
+            maois.numdistancedata += new_AOI_Stat.numdistancedata
+
+
+    def merge_aoi_pupil(maois, new_AOI_Stat):
+        """ Merge pupil features asuch as
+                mean_pupil_size:            mean of pupil sizes
+                stddev_pupil_size:          standard deviation of pupil sizes
+                min_pupil_size:             smallest pupil size
+                max_pupil_size:             largest pupil size
+                mean_pupil_velocity:        mean of pupil velocities
+                stddev_pupil_velocity:      standard deviation of pupil velocities
+                min_pupil_velocity:         smallest pupil velocity
+                max_pupil_velocity:         largest pupil velocity
+            Args:
+                maois: AOI_Stat object of this Scene (must have been initialised)
+                new_AOI_Stat: a new AOI_Stat object
+        """
+        if new_AOI_Stat.numpupilsizes + maois.numpupilsizes > 1 and new_AOI_Stat.numpupilsizes > 0:
+            total_numpupilsizes = maois.numpupilsizes + new_AOI_Stat.numpupilsizes
+            aggregate_mean_pupil =  maois.features['meanpupilsize'] * float(maois.numpupilsizes) / total_numpupilsizes + new_AOI_Stat.features['meanpupilsize'] * float(new_AOI_Stat.numpupilsizes) / total_numpupilsizes
+            maois.features['stddevpupilsize'] = pow(((maois.numpupilsizes - 1) * pow(maois.features['stddevpupilsize'], 2) \
+                                                + (new_AOI_Stat.numpupilsizes - 1) * pow(new_AOI_Stat.features['stddevpupilsize'], 2) + \
+                                                maois.numpupilsizes *  pow(maois.features['meanpupilsize'] - aggregate_mean_pupil, 2) + \
+                                                new_AOI_Stat.numpupilsizes * pow(new_AOI_Stat.features['meanpupilsize'] - aggregate_mean_pupil, 2)) \
+                                                / (total_numpupilsizes - 1), 0.5)
+            maois.features['maxpupilsize'] = max(maois.features['maxpupilsize'], new_AOI_Stat.features['maxpupilsize'])
+            maois.features['minpupilsize'] = min(maois.features['maxpupilsize'], new_AOI_Stat.features['maxpupilsize'])
+            maois.features['meanpupilsize'] = aggregate_mean_pupil
+            if maois.starttime > new_AOI_Stat.starttime:
+                maois.features['startpupilsize'] = new_AOI_Stat.features['startpupilsize']
+            if maois.endtime < new_AOI_Stat.endtime:
+                maois.features['endpupilsize'] = new_AOI_Stat.features['endpupilsize']
+
+            maois.numpupilsizes += new_AOI_Stat.numpupilsizes
+
+    def merge_aoi_transitions(self):
+        #calculating the transitions to and from this AOI and other active AOIs at the moment
+        new_AOI_Stat_transition_aois = filter(lambda x: x.startswith('numtransfrom_'), new_AOI_Stat.features.keys())
+        if params.DEBUG or params.VERBOSE == "VERBOSE":
+            print "Segment's transition_aois", new_AOI_Stat_transition_aois
+
+        maois.total_trans_from += new_AOI_Stat.total_trans_from   #updating the total number of transition from this AOI
+        for feat in new_AOI_Stat_transition_aois:
+            if feat in maois.features:
+                maois.features[feat] += new_AOI_Stat.features[feat]
+            else:
+                maois.features[feat] = new_AOI_Stat.features[feat]
+#               sumtransfrom += maois.features[feat]
+        # updating the proportion tansition features based on new transitions to and from this AOI
+        maois_transition_aois = filter(lambda x: x.startswith('numtransfrom_'),maois.features.keys()) #all the transition features for this AOI should be aupdated even if they are not active for this segment
+        for feat in maois_transition_aois:
+            aid = feat[len('numtransfrom_'):]
+            if maois.total_trans_from > 0:
+                maois.features['proptransfrom_%s'%(aid)] = float(maois.features[feat]) / maois.total_trans_from
+            else:
+                maois.features['proptransfrom_%s'%(aid)] = 0
+        ###endof transition calculation
+
 
     def get_length_invalid(self):
         """Returns the sum of the length of the invalid gaps > params.MAX_SEG_TIMEGAP
