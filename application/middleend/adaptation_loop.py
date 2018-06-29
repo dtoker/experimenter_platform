@@ -96,13 +96,13 @@ class AdaptationLoop():
                     self.app_state_controller.setInterventionInactive(intervention_name)
                     to_remove.append(intervention_name)
 
-        to_remove = json.dumps({'remove': to_remove})
-        print to_remove
-
         #dispatch a call to remove all the interventions from the UI
         #TODO: Whether or not liveWebSocket should be an array
-        for ws in self.liveWebSocket:
-            ws.write_message(to_remove)
+        if to_remove:
+            to_remove = json.dumps({'remove': to_remove})
+            print to_remove
+            for ws in self.liveWebSocket:
+                ws.write_message(to_remove)
 
     def __ruleRepeatsAllowed__(self, rule_name):
 
@@ -188,12 +188,12 @@ class AdaptationLoop():
                         to_deliver_rules.append(intervention_params)
                         self.app_state_controller.setInterventionActive(intervention_name, rule_name, time_stamp)
 
-        to_deliver_rules = json.dumps({'deliver': to_deliver_rules})
-        print to_deliver_rules
-
         #TODO: whether or not liveWebSocket should be an array
-        for ws in self.liveWebSocket:
-            ws.write_message(to_deliver_rules)
+        if to_deliver_rules:
+            to_deliver_rules = json.dumps({'deliver': to_deliver_rules})
+            print to_deliver_rules
+            for ws in self.liveWebSocket:
+                ws.write_message(to_deliver_rules)
 
     def evaluateRules(self, event_name, time_stamp):
 
