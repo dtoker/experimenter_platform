@@ -35,14 +35,26 @@ ws.onmessage = function (evt) {
    //alert(evt.data);
 
    var obj = JSON.parse(evt.data);
-   document.getElementById("demo").innerHTML =  evt.data;
+   if (obj.deliver == null & obj.remove == null) {
+     document.getElementById("demo").innerHTML =  evt.data;
 
-   elem.style.top = obj.y-75;
-   elem.style.left = obj.x-75;
+     elem.style.top = obj.y-75;
+     elem.style.left = obj.x-75;
+  } else if (obj.deliver != null) {
+    // document.getElementById("demo").innerHTML =  evt.data;
+    elem.style.backgroundColor = 'red';
+  } else if (obj.remove != null){
+    console.log("reached here");
+    elem.style.backgroundColor = 'blue';
+  }
 };
 
 function myFunction() {
     ws.send("Hello, world");
+}
+
+function myNextTask() {
+    ws.send("next_task");
 }
 
 function myCloseFunction() {
@@ -53,6 +65,7 @@ function myCloseFunction() {
 </script>
 
 <button onclick="myFunction()">Start</button>
+<button onclick="myNextTask()">Next task</button>
 <button onclick="myCloseFunction()">Close</button>
 
 

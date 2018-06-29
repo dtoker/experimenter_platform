@@ -12,7 +12,7 @@ class AdaptationLoop():
 
     """Class to evaluate user defined rules and dispatch interventions as neccesary"""
 
-    def __init__(self, applicationStateController, liveWebSocket = []):
+    def __init__(self, app_state_controller, liveWebSocket = []):
 
         """Initiliazes the class variables
 
@@ -30,7 +30,7 @@ class AdaptationLoop():
         keyword arguments
         None
         """
-        self.controller = applicationStateController
+        self.app_state_controller = app_state_controller
         self.liveWebSocket = liveWebSocket
         self.__readDBFromDisk__()
 
@@ -91,19 +91,19 @@ class AdaptationLoop():
             intervention_name = removal['intervention']
             removal_condition = removal['removal_sql_condition']
 
-            if self.controller.isInterventionActive(intervention_name):
-                if self.controller.evaluateConditional(removal_condition):
-                    self.controller.setInterventionInactive(intervention_name)
+            if self.app_state_controller.isInterventionActive(intervention_name):
+                if self.app_state_controller.evaluateConditional(removal_condition):
+                    self.app_state_controller.setInterventionInactive(intervention_name)
                     to_remove.append(intervention_name)
                     print("removing: " + intervention_name)
 
-        to_remove = json.dumps({'remove': to_remove})
-        print to_remove
-
         #dispatch a call to remove all the interventions from the UI
         #TODO: Whether or not liveWebSocket should be an array
-        for ws in self.liveWebSocket:
-            ws.write_message(to_remove)
+        if to_remove:
+            to_remove = json.dumps({'remove': to_remove})
+            print to_remove
+            for ws in self.liveWebSocket:
+                ws.write_message(to_remove)
 
     def __ruleRepeatsAllowed__(self, rule_name):
 
@@ -125,7 +125,7 @@ class AdaptationLoop():
         max_repeat = self.conn.execute("SELECT max_repeat FROM rule where name = ?", (rule_name,)).fetchone()
         if max_repeat is None or max_repeat['max_repeat'] < 0:
             return True
-        occurences = self.controller.getRuleOccurences(rule_name)
+        occurences = self.app_state_controller.getRuleOccurences(rule_name)
         return occurences < max_repeat['max_repeat']
 
     def __interventionRepeatsAllowed__(self, intervention_name):
@@ -148,7 +148,7 @@ class AdaptationLoop():
         max_repeat = self.conn.execute("SELECT max_repeat FROM intervention where name = ?", (intervention_name,)).fetchone()
         if max_repeat is None or max_repeat['max_repeat'] < 0:
             return True
-        occurences = self.controller.getInterventionOccurences(intervention_name)
+        occurences = self.app_state_controller.getInterventionOccurences(intervention_name)
         return occurences < max_repeat['max_repeat']
 
     def __deliverNewInterventions__(self, event_name, task, time_stamp):
@@ -179,23 +179,23 @@ class AdaptationLoop():
             intervention_name = rule['intervention']
             active_retrigger = rule['active_retrigger']
             #check the rule if it is not currently active or if active_retrigger = 1
-            if active_retrigger == 1 or not self.controller.isInterventionActive(intervention_name):
+            if active_retrigger == 1 or not self.app_state_controller.isInterventionActive(intervention_name):
                 #if both the rule and intervention has not exceeded max repeats
                 if self.__ruleRepeatsAllowed__(rule_name) and self.__interventionRepeatsAllowed__(intervention_name):
                     #check the delivery conditional
-                    if self.controller.evaluateConditional(rule['delivery_sql_condition']):
+                    if self.app_state_controller.evaluateConditional(rule['delivery_sql_condition']):
                         results = self.conn.execute("SELECT * FROM intervention WHERE intervention.name = ?", (intervention_name,))
                         intervention_params = results.fetchone()
                         to_deliver_rules.append(intervention_params)
-                        self.controller.setInterventionActive(intervention_name, rule_name, time_stamp)
+                        self.app_state_controller.setInterventionActive(intervention_name, rule_name, time_stamp)
                         #print("triggered: " + rule_name + " deliverying: " + intervention_name)
 
-        to_deliver_rules = json.dumps({'deliver': to_deliver_rules})
-        print to_deliver_rules
-
         #TODO: whether or not liveWebSocket should be an array
-        for ws in self.liveWebSocket:
-            ws.write_message(to_deliver_rules)
+        if to_deliver_rules:
+            to_deliver_rules = json.dumps({'deliver': to_deliver_rules})
+            print to_deliver_rules
+            for ws in self.liveWebSocket:
+                ws.write_message(to_deliver_rules)
 
     def evaluateRules(self, event_name, time_stamp):
 
@@ -213,9 +213,10 @@ class AdaptationLoop():
         returns
         """
         #if the triggering event is not one of the active user states for this task, an error has occured
-        if event_name not in self.controller.eventNames:
+        print("CHECKING RULES")
+        if event_name not in self.app_state_controller.eventNames:
             raise ValueError("Event name received is not one of the user states active for this task")
-        task = self.controller.currTask
+        task = self.app_state_controller.currTask
 
         #remove all interventions that have this event as a removal_triggger
         self.__removeExpiredInterventions__(event_name, task)
@@ -226,12 +227,12 @@ class AdaptationLoop():
     def test(self):
         # for testing purposes:
         table = "text_fix"
-        self.controller.updateFixTable(table, 1, 700, 1200, 200)
-        self.controller.updateFixTable(table, 2, 700, 1200, 200)
-        #self.controller.setInterventionInactive("intervention_1")
-        #self.controller.setInterventionActive("intervention_1", "rule_1", 2000)
-        #self.controller.setInterventionActive("intervention_1", "rule_2", 3000)
-        #self.controller.setInterventionInactive("intervention_1")
+        self.app_state_controller.updateFixTable(table, 1, 700, 1200, 200)
+        self.app_state_controller.updateFixTable(table, 2, 700, 1200, 200)
+        #self.app_state_controller.setInterventionInactive("intervention_1")
+        #self.app_state_controller.setInterventionActive("intervention_1", "rule_1", 2000)
+        #self.app_state_controller.setInterventionActive("intervention_1", "rule_2", 3000)
+        #self.app_state_controller.setInterventionInactive("intervention_1")
         print("new fix")
         self.evaluateRules('text_fix', 3000)
         #self.evaluateRules('vis_fix', 4000)
@@ -248,7 +249,7 @@ class AdaptationLoop():
         self.evaluateRules('text_fix', 6000)
         print("new fix")
         self.evaluateRules('text_fix', 6000)
-        self.controller.resetApplication()
+        self.app_state_controller.resetApplication()
 
 def main():
     print "main"

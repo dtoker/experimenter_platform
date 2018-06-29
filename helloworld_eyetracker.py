@@ -17,13 +17,16 @@ import backend.eye_tracker
 from backend.eye_tracker import TobiiController
 from backend.dummy_controller import DummyController
 from backend.fixation_detector import FixationDetector
+from backend.emdat_component import EMDATComponent
 import csv
 
 import thread
 from threading import Thread
 from tornado import gen
 from tornado.ioloop import IOLoop
+import params
 
+from application.middleend.adaptation_loop import AdaptationLoop
 from application.application_state_controller import ApplicationStateController
 ##########################################
 
@@ -65,25 +68,44 @@ class EchoWebSocketHandler(tornado.websocket.WebSocketHandler):
 
     def open(self):
         self.app_state_control = ApplicationStateController(1)
+        self.adaptation_loop = AdaptationLoop(self.app_state_control)
+        self.adaptation_loop.liveWebSocket.append(self)
+
         self.tobii_controller = TobiiController()
         self.tobii_controller.liveWebSocket.add(self)
         self.tobii_controller.waitForFindEyeTracker()
         print self.tobii_controller.eyetrackers
-        self.fixation_component = FixationDetector(self.tobii_controller, self.app_state_control, liveWebSocket = self.tobii_controller.liveWebSocket)
+        self.fixation_component = FixationDetector(self.tobii_controller, self.adaptation_loop, liveWebSocket = self.tobii_controller.liveWebSocket)
+        self.emdat_component = EMDATComponent(self.tobii_controller, self.adaptation_loop, callback_time = params.EMDAT_CALL_PERIOD)
 
     def on_message(self, message):
-        print message == "close"
         if (message == "close"):
             print("destroying")
             #DummyController.receiveFixations = False
             self.fixation_component.stop()
+            #self.emdat_component.stop()
+
             self.tobii_controller.stopTracking()
             self.tobii_controller.destroy()
+            self.app_state_control.resetApplication()
             return
+        elif (message == "next_task"):
+            del self.fixation_component
+            # TODO: Decide what to do with emdat when task finishes!
+            self.tobii_controller.stop()
+            self.tobii_controller.flush()
+            self.app_state_control.changeTask(2)
+            self.fixation_component = FixationDetector(self.tobii_controller, self.app_state_control, liveWebSocket = self.tobii_controller.liveWebSocket)
+            #self.emdat_component = EMDATComponent(self.tobii_controller, self.app_state_control, liveWebSocket = self.tobii_controller.liveWebSocket, callback_time = 6000)
+            self.tobii_controller.start()
+            self.fixation_component.start()
+            #self.emdat_component.start()
         else:
+
             self.tobii_controller.activate(self.tobii_controller.eyetrackers.keys()[0])
             self.tobii_controller.startTracking()
             self.fixation_component.start()
+            self.emdat_component.start()
             print "tracking started"
 
     def on_close(self):

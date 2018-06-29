@@ -1,17 +1,18 @@
 from abc import abstractmethod
 from tornado import gen
-from tornado.ioloop import IOLoop
+from tornado.ioloop import IOLoop, PeriodicCallback
 
 class DetectionComponent():
 
-    def __init__(self, tobii_controller, application_state_controller, is_periodic = False, callback_time = 600000, liveWebSocket = None):
+    def __init__(self, tobii_controller, adaptation_loop, is_periodic = False, callback_time = 600000, liveWebSocket = None):
         self.tobii_controller  = tobii_controller
-        self.application_state_controller = application_state_controller
+        self.adaptation_loop = adaptation_loop
+        self.application_state_controller = self.adaptation_loop.app_state_controller
         self.is_periodic = is_periodic
         self.callback_time = callback_time
         self.liveWebSocket = liveWebSocket
         print("querying db")
-        self.AOIS = self.application_state_controller.getAoiMapping().values()
+        self.AOIS = self.application_state_controller.getAoiMapping()
         print("queried db")
 
     @abstractmethod
@@ -27,8 +28,8 @@ class DetectionComponent():
         pass
 
     def start(self):
-        #if (self.is_periodic):
-        #    cb = IOLoop.PeriodicCallback(callback = self.run(), self.callback_time)
-        #    cb.start()
-        #else:
-        IOLoop.instance().add_callback(callback = self.run)
+        if (self.is_periodic):
+            cb = PeriodicCallback(callback = self.run, callback_time = self.callback_time)
+            cb.start()
+        else:
+            IOLoop.instance().add_callback(callback = self.run)
