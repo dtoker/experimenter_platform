@@ -76,6 +76,25 @@ var AppCtrl = function($scope, $http, $location) {
     matchMode: 'lenient'
   };
 
+ // TODO: delete
+ // begins here:
+ // for testing connection between middlend and front-end
+  //var handleCallback = function (msg) {
+    //  console.log("reached here");
+      //console.log(msg.data);
+  //};
+
+  //var source = new EventSource('/socket');
+  //source.addEventListener('message', handleCallback, false);
+
+  var ws = new WebSocket("ws://localhost:8888/socket");
+  ws.onmessage = function (evt){
+    var obj = JSON.parse(evt.data);
+    console.log(evt.data);
+  }
+
+  //ends here
+
   $scope.curMarksManager;
   $scope.curSpanManager;
   console.log(currentMMD);
@@ -943,7 +962,7 @@ function clone(obj) {
       if($scopeGlobal.lastSelectedReference!=-1){//remove previous intervention
         console.log("removing interventions");
         $scopeGlobal.curMarksManager.unhighlight();
-        
+
       }
 
     }
