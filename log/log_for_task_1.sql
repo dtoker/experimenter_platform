@@ -69,8 +69,8 @@ CREATE TABLE "user_state_task" (
 );
 INSERT INTO "user_state_task" VALUES('text_fix',1);
 INSERT INTO "user_state_task" VALUES('text_fix',2);
-INSERT INTO "user_state_task" VALUES('pupil',1);
-INSERT INTO "user_state_task" VALUES('reading_proficiency',1);
+INSERT INTO "user_state_task" VALUES('pupil',2);
+INSERT INTO "user_state_task" VALUES('reading_proficiency',3);
 INSERT INTO "user_state_task" VALUES('reading_proficiency',2);
 INSERT INTO "user_state_task" VALUES('vis_fix',1);
 CREATE TABLE vis_fix ( `id` INTEGER, `time_start` INTEGER, `time_end` INTEGER, `duration` INTEGER, PRIMARY KEY(`id`) );
