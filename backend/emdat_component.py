@@ -10,9 +10,9 @@ import numpy as np
 # TODO figure out length_valid and length_invalid things
 class EMDATComponent(DetectionComponent):
 
-    def  __init__(self, tobii_controller, app_state_control, callback_time):
+    def  __init__(self, tobii_controller, adaptation_loop, callback_time):
         #TODO: Specify which features should be calculated
-        DetectionComponent.__init__(self, tobii_controller, app_state_control, is_periodic = True, callback_time = callback_time)
+        DetectionComponent.__init__(self, tobii_controller, adaptation_loop, is_periodic = True, callback_time = callback_time)
         self.pups_idx   = 0
         self.pupv_idx   = 0
         self.dist_idx   = 0
@@ -85,6 +85,7 @@ class EMDATComponent(DetectionComponent):
 
         print("EMDAT DONE")
         print("--- %s seconds ---" % (time.time() - start_time))
+        #self.adaptation_loop.evaluateRules(aoi, EfixEndTime)
 
 
     def init_emdat_task_features(self):

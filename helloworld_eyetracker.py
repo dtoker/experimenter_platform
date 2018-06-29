@@ -26,6 +26,7 @@ from tornado import gen
 from tornado.ioloop import IOLoop
 import params
 
+from application.middleend.adaptation_loop import AdaptationLoop
 from application.application_state_controller import ApplicationStateController
 ##########################################
 
@@ -67,12 +68,14 @@ class EchoWebSocketHandler(tornado.websocket.WebSocketHandler):
 
     def open(self):
         self.app_state_control = ApplicationStateController(1)
+        self.adaptation_loop = AdaptationLoop(self.app_state_control)
+
         self.tobii_controller = TobiiController()
         self.tobii_controller.liveWebSocket.add(self)
         self.tobii_controller.waitForFindEyeTracker()
         print self.tobii_controller.eyetrackers
-        self.fixation_component = FixationDetector(self.tobii_controller, self.app_state_control, liveWebSocket = self.tobii_controller.liveWebSocket)
-        self.emdat_component = EMDATComponent(self.tobii_controller, self.app_state_control, callback_time = params.EMDAT_CALL_PERIOD)
+        self.fixation_component = FixationDetector(self.tobii_controller, self.adaptation_loop, liveWebSocket = self.tobii_controller.liveWebSocket)
+        self.emdat_component = EMDATComponent(self.tobii_controller, self.adaptation_loop, callback_time = params.EMDAT_CALL_PERIOD)
 
     def on_message(self, message):
         if (message == "close"):

@@ -6,8 +6,8 @@ import ast
 class FixationDetector(DetectionComponent):
     controller_num = 0
 
-    def __init__(self, tobii_controller, application_state_controller, liveWebSocket):
-        DetectionComponent.__init__(self, tobii_controller, application_state_controller, liveWebSocket = liveWebSocket)
+    def __init__(self, tobii_controller, adaptation_loop, liveWebSocket):
+        DetectionComponent.__init__(self, tobii_controller, adaptation_loop, liveWebSocket = liveWebSocket)
         FixationDetector.controller_num += 1
         self.runOnlineFix = True
         self.cur_fix_id = 0
@@ -127,19 +127,19 @@ class FixationDetector(DetectionComponent):
                         Sfix = []
                         break
 
-                    print(Efix[0][3], Efix[0][4])
                     x_fixation /= points_in_fixation
                     y_fixation /= points_in_fixation
 
                     self.tobii_controller.add_fixation(Efix[0][3], Efix[0][4], Efix[0][2])
 
                     for ws in self.liveWebSocket:
-                        print(len(self.AOIS.values()))
                         for aoi in self.AOIS:
                             if (fixation_inside_aoi(x_fixation, y_fixation, self.AOIS[aoi])):
                                 ws.write_message('{"x":"%d", "y":"%d"}' % (x_fixation, y_fixation))
+                                print(Efix[0][3], Efix[0][4])
                                 self.cur_fix_id += 1
-                                self.application_state_controller.updateFixTable(aoi, int(self.cur_fix_id), int(Sfix[0]), int(EfixEndTime), int(EfixEndTime - Sfix[0]))
+                                self.application_state_controller.updateFixTable(aoi, self.cur_fix_id, int(Sfix[0]), int(EfixEndTime), int(EfixEndTime - Sfix[0]))
+                                self.adaptation_loop.evaluateRules(aoi, EfixEndTime)
                                 break
                     #May wanrt to use something like this in the future in there are performace issues
                     #self.x = self.x[array_index:]

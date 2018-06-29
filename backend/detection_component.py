@@ -4,9 +4,10 @@ from tornado.ioloop import IOLoop, PeriodicCallback
 
 class DetectionComponent():
 
-    def __init__(self, tobii_controller, application_state_controller, is_periodic = False, callback_time = 600000, liveWebSocket = None):
+    def __init__(self, tobii_controller, adaptation_loop, is_periodic = False, callback_time = 600000, liveWebSocket = None):
         self.tobii_controller  = tobii_controller
-        self.application_state_controller = application_state_controller
+        self.adaptation_loop = adaptation_loop
+        self.application_state_controller = self.adaptation_loop.app_state_controller
         self.is_periodic = is_periodic
         self.callback_time = callback_time
         self.liveWebSocket = liveWebSocket
