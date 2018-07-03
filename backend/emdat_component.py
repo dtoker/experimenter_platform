@@ -65,8 +65,7 @@ class EMDATComponent(DetectionComponent):
         if (params.USE_FIXATION_PATH_FEATURES):
             self.calc_fix_ang_path_features()
 
-        if  (params.USE_TRANSITION_FEATURES):
-            self.calc_tra()
+        self.calc_aoi_features()
         """ calculate AOIs features """
         #self.has_aois = False
         #if aois:
@@ -145,8 +144,6 @@ class EMDATComponent(DetectionComponent):
             self.merge_fixation_features(part_features, accumulator_features)
             self.merge_aoi_fixations()
 
-        if (params.USE_TRANSITION_AOI_FEATURES):
-            self.merge_aoi_transitions()
 
     def calc_pupil_features(self):
         """ Calculates pupil features such as
@@ -372,66 +369,57 @@ class EMDATComponent(DetectionComponent):
                     self.time_gaps.append((gap_start, time[dindex]))
             dindex += 1
 
-    def gen_aoi_features(self):
+    def calc_aoi_features(self):
         #init features
-        '''
-        self.emdat_interval_features['aoi_features'] = {}
-        self.emdat_interval_features['aoi_features']['numfixations'] = 0
-        self.emdat_interval_features['aoi_features']['longestfixation'] = -1
-        self.emdat_interval_features['aoi_features']['meanfixationduration'] = -1
-        self.emdat_interval_features['aoi_features']['stddevfixationduration'] = -1
-        self.emdat_interval_features['aoi_features']['timetofirstfixation'] = -1
-        self.emdat_interval_features['aoi_features']['timetolastfixation'] = -1
-        self.emdat_interval_features['aoi_features']['proportionnum'] = 0
-        self.emdat_interval_features['aoi_features']['proportiontime'] = 0
-        self.emdat_interval_features['aoi_features']['fixationrate'] = 0
-        self.emdat_interval_features['aoi_features']['totaltimespent'] = 0
-        '''
-        x_y_coords      = np.column_stack((np.array(self.tobii_controller.x), np.array(self.tobii_controller.y)))
-        pup_size_vals   = np.array(self.tobii_controller.pupilsize)
-        pup_vel_vals    = np.array(self.tobii_controller.pupilvelocity)
-        dist_vals       = np.array(self.tobii_controller.head_distance)
-        fixation_vals   = numpy.asarray(self.tobii_controller.EndFixations)
+        x_y_coords                      = np.column_stack((np.array(self.tobii_controller.x), np.array(self.tobii_controller.y)))
+        pup_size_vals                   = np.array(self.tobii_controller.pupilsize)
+        pup_vel_vals                    = np.array(self.tobii_controller.pupilvelocity)
+        dist_vals                       = np.array(self.tobii_controller.head_distance)
+        fixation_vals                   = numpy.asarray(self.tobii_controller.EndFixations)
 
         for aoi in self.AOIS:
-            this_aoi_features = {}
+             self.emdat_interval_features[aoi] = {}
             ## Indices of x-y array where datapoints are inside the specified AOI
-            valid_indices     = np.where(_datapoint_inside_aoi(x_y_coords, self.aoi.polyin, self.aoi.polyout))
-            ## Select valid pupil sizes inside the AOI
-            valid_pupil_sizes = pup_size_vals[valid_indices]
-            valid_pupil_sizes = valid_pupil_sizes[np.where(valid_pupil_sizes > 0)]
-            ## Select valid velocities inside the AOI
-            valid_pupil_vel   = pup_vel_vals[valid_indices]
-            valid_pupil_vel   = valid_pipil_vel[np.where(valid_pupil_vel != -1)]
-            ## Select valid head distances inside the AOI
-            valid_dist_vals   = dist_vals[valid_indices]
+            valid_indices              = np.where(_datapoint_inside_aoi(x_y_coords, self.aoi.polyin, self.aoi.polyout))
 
-            valid_fixation_indices = np.where(_fixation_inside_aoi(fixation_vals, aoi))
-            valid_fixation_vals    = fixation_vals[valid_fixation_indices]
+            if params.USE_PUPIL_FEATURES:
+                ## Select valid pupil sizes inside the AOI
+                valid_pupil_sizes      = pup_size_vals[valid_indices]
+                valid_pupil_sizes      = valid_pupil_sizes[np.where(valid_pupil_sizes > 0)]
+                ## Select valid velocities inside the AOI
+                valid_pupil_vel        = pup_vel_vals[valid_indices]
+                valid_pupil_vel        = valid_pipil_vel[np.where(valid_pupil_vel != -1)]
+                self.generate_aoi_pupil_features(aoi, this_aoi_features, valid_pipil_sizes, valid_pupil_vel, rest_pupil_size)
 
-            self.generate_aoi_pupil_features(this_aoi_features, valid_pipil_sizes, valid_pupil_vel, rest_pupil_size)
-            self.generate_aoi_distance_features(this_aoi_features, valid_dist_vals)
+            if params.USE_DISTANCE_FEATURES:
+                ## Select valid head distances inside the AOI
+                valid_dist_vals        = dist_vals[valid_indices]
+                self.generate_aoi_distance_features(aoi, this_aoi_features, valid_dist_vals)
 
-            fixation_indices       = self.generate_aoi_fixation_features(this_aoi_features, datapoints, valid_fixation_vals, self.length_invalid)
+            if (params.USE_FIXATION_PATH_FEATURES):
+                valid_fixation_indices = np.where(_fixation_inside_aoi(fixation_vals, aoi))
+                valid_fixation_vals    = fixation_vals[valid_fixation_indices]
+                fixation_indices       = self.generate_aoi_fixation_features(aoi, this_aoi_features, datapoints, valid_fixation_vals, self.length_invalid
+            if  (params.USE_TRANSITION_AOI_FEATURES):
+                #self.generate_transition_features(this_aoi_features, fixation_data, fixation_indices)
 
-            self.generate_transition_features(this_aoi_features, fixation_data, fixation_indices)
-
-    def generate_aoi_pupil_features(self, features_dict, valid_pupil_data, valid_pupil_velocity, rest_pupil_size): ##datapoints, rest_pupil_size, export_pupilinfo):
+    def generate_aoi_pupil_features(self, aoi, valid_pupil_data, valid_pupil_velocity, rest_pupil_size): ##datapoints, rest_pupil_size, export_pupilinfo):
         #number of valid pupil sizes
-        features_dict['meanpupilsize'] = -1
-        features_dict['stddevpupilsize'] = -1
-        features_dict['maxpupilsize'] = -1
-        features_dict['minpupilsize'] = -1
-        features_dict['startpupilsize'] = -1
-        features_dict['endpupilsize'] = -1
-        features_dict['meanpupilvelocity'] = -1
-        features_dict['stddevpupilvelocity'] = -1
-        features_dict['maxpupilvelocity'] = -1
-        features_dict['minpupilvelocity'] = -1
-        features_dict['numpupilsizes'] = len(valid_pupil_data)
-        features_dict['numpupilvelocity'] = len(valid_pupil_velocity)
 
-        if features_dict['numpupilsizes'] > 0: #check if the current segment has pupil data available
+        self.emdat_interval_features[aoi]['meanpupilsize'] = -1
+        self.emdat_interval_features[aoi]['stddevpupilsize'] = -1
+        self.emdat_interval_features[aoi]['maxpupilsize'] = -1
+        self.emdat_interval_features[aoi]['minpupilsize'] = -1
+        self.emdat_interval_features[aoi]['startpupilsize'] = -1
+        self.emdat_interval_features[aoi]['endpupilsize'] = -1
+        self.emdat_interval_features[aoi]['meanpupilvelocity'] = -1
+        self.emdat_interval_features[aoi]['stddevpupilvelocity'] = -1
+        self.emdat_interval_features[aoi]['maxpupilvelocity'] = -1
+        self.emdat_interval_features[aoi]['minpupilvelocity'] = -1
+        self.emdat_interval_features[aoi]['numpupilsizes'] = len(valid_pupil_data)
+        self.emdat_interval_features[aoi]['numpupilvelocity'] = len(valid_pupil_velocity)
+
+        if self.emdat_interval_features[aoi]['numpupilsizes'] > 0: #check if the current segment has pupil data available
 
             if params.PUPIL_ADJUSTMENT == "rpscenter":
                 valid_pupil_data = valid_pupil_data - rest_pupil_size
@@ -440,64 +428,76 @@ class EMDATComponent(DetectionComponent):
             else:
                 adjvalidpupilsizes = valid_pupil_data
 
-            features_dict['meanpupilsize'] = np.mean(adjvalidpupilsizes)
-            features_dict['stddevpupilsize'] = np.std(adjvalidpupilsizes)
-            features_dict['maxpupilsize'] = np.max(adjvalidpupilsizes)
-            features_dict['minpupilsize'] = np.min(adjvalidpupilsizes)
-            features_dict['startpupilsize'] = adjvalidpupilsizes[0]
-            features_dict['endpupilsize'] = adjvalidpupilsizes[-1]
+            self.emdat_interval_features[aoi]['meanpupilsize'] = np.mean(adjvalidpupilsizes)
+            self.emdat_interval_features[aoi]['stddevpupilsize'] = np.std(adjvalidpupilsizes)
+            self.emdat_interval_features[aoi]['maxpupilsize'] = np.max(adjvalidpupilsizes)
+            self.emdat_interval_features[aoi]['minpupilsize'] = np.min(adjvalidpupilsizes)
+            self.emdat_interval_features[aoi]['startpupilsize'] = adjvalidpupilsizes[0]
+            self.emdat_interval_features[aoi]['endpupilsize'] = adjvalidpupilsizes[-1]
 
-            if features_dict['numpupilvelocity'] > 0:
-                features_dict['meanpupilvelocity']      = np.mean(valid_pupil_velocity)
-                features_dict['stddevpupilvelocity']    = np.std(valid_pupil_velocity)
-                features_dict['maxpupilvelocity']       = np.max(valid_pupil_velocity)
-                features_dict['minpupilvelocity']       = np.min(valid_pupil_velocity)
+            if self.emdat_interval_features[aoi]['numpupilvelocity'] > 0:
+                self.emdat_interval_features[aoi]['meanpupilvelocity']      = np.mean(valid_pupil_velocity)
+                self.emdat_interval_features[aoi]['stddevpupilvelocity']    = np.std(valid_pupil_velocity)
+                self.emdat_interval_features[aoi]['maxpupilvelocity']       = np.max(valid_pupil_velocity)
+                self.emdat_interval_features[aoi]['minpupilvelocity']       = np.min(valid_pupil_velocity)
 
 
-    def generate_aoi_distance_features(self, features_dict, valid_distance_data):
+    def generate_aoi_distance_features(self, aoi, valid_distance_data):
         #number of valid pupil sizes
-        features_dict['numdistancedata']        = len(valid_distance_data)
-        if features_dict['numdistancedata'] > 0:
-            features_dict['meandistance']       = np.mean(valid_distance_data)
-            features_dict['stddevdistance']     = np.std(valid_distance_data)
-            features_dict['maxdistance']        = np.amax(valid_distance_data)
-            features_dict['mindistance']        = np.amin(valid_distance_data)
-            features_dict['startdistance']      = valid_distance_data[0]
-            features_dict['enddistance']        = valid_distance_data[-1]
+        self.emdat_interval_features[aoi]['numdistancedata']        = len(valid_distance_data)
+        if self.emdat_interval_features[aoi]['numdistancedata'] > 0:
+            self.emdat_interval_features[aoi]['meandistance']       = np.mean(valid_distance_data)
+            self.emdat_interval_features[aoi]['stddevdistance']     = np.std(valid_distance_data)
+            self.emdat_interval_features[aoi]['maxdistance']        = np.amax(valid_distance_data)
+            self.emdat_interval_features[aoi]['mindistance']        = np.amin(valid_distance_data)
+            self.emdat_interval_features[aoi]['startdistance']      = valid_distance_data[0]
+            self.emdat_interval_features[aoi]['enddistance']        = valid_distance_data[-1]
         else:
-            features_dict['meandistance']       = -1
-            features_dict['stddevdistance']     = -1
-            features_dict['maxdistance']        = -1
-            features_dict['mindistance']        = -1
-            features_dict['startdistance']      = -1
-            features_dict['enddistance']        = -1
+            self.emdat_interval_features[aoi]['meandistance']       = -1
+            self.emdat_interval_features[aoi]['stddevdistance']     = -1
+            self.emdat_interval_features[aoi]['maxdistance']        = -1
+            self.emdat_interval_features[aoi]['mindistance']        = -1
+            self.emdat_interval_features[aoi]['startdistance']      = -1
+            self.emdat_interval_features[aoi]['enddistance']        = -1
 
-    def generate_aoi_fixation_features(self, features_dict, fixation_data, sum_discarded):
+    def generate_aoi_fixation_features(self, aoi, fixation_data, sum_discarded):
+
+        self.emdat_interval_features[aoi]['numfixations'] = 0
+        self.emdat_interval_features[aoi]['longestfixation'] = -1
+        self.emdat_interval_features[aoi]['meanfixationduration'] = -1
+        self.emdat_interval_features[aoi]['stddevfixationduration'] = -1
+        self.emdat_interval_features[aoi]['timetofirstfixation'] = -1
+        self.emdat_interval_features[aoi]['timetolastfixation'] = -1
+        self.emdat_interval_features[aoi]['proportionnum'] = 0
+        self.emdat_interval_features[aoi]['proportiontime'] = 0
+        self.emdat_interval_features[aoi]['fixationrate'] = 0
+        self.emdat_interval_features[aoi]['totaltimespent'] = 0
+
         numfixations                                = len(fixation_data)
-        features_dict['numfixations']               = numfixations
-        features_dict['longestfixation']            = -1
-        features_dict['timetofirstfixation']        = -1
-        features_dict['timetolastfixation']         = -1
-        features_dict['proportionnum']              =  0
+        self.emdat_interval_features[aoi]['numfixations']               = numfixations
+        self.emdat_interval_features[aoi]['longestfixation']            = -1
+        self.emdat_interval_features[aoi]['timetofirstfixation']        = -1
+        self.emdat_interval_features[aoi]['timetolastfixation']         = -1
+        self.emdat_interval_features[aoi]['proportionnum']              =  0
         #TODO Check that
-        fixation_durations = fixation_data[:,4]
+        fixation_durations                          = fixation_data[:, 4]
         totaltimespent                              = np.sum(fixation_durations)
-        features_dict['totaltimespent']             = totaltimespent
+        self.emdat_interval_features[aoi]['totaltimespent']             = totaltimespent
         #TODO Check that
-        features_dict['proportiontime']             = float(totaltimespent)/(self.length - self.length_invalid)
+        self.emdat_interval_features[aoi]['proportiontime']             = float(totaltimespent)/(self.length - self.length_invalid)
         if numfixations > 0:
-            features_dict['longestfixation']        = np.max(fixation_durations)
-            features_dict['meanfixationduration']   = np.mean(fixation_durations)
-            features_dict['stddevfixationduration'] = np.stddev(fixation_durations)
-            features_dict['timetofirstfixation']    = fixation_data[0][3] - self.starttime
-            features_dict['timetolastfixation']     = fixation_data[-1][3] - self.starttime
-            features_dict['proportionnum']          = float(numfixations)/len(fixation_data)
-            features_dict['fixationrate']           = numfixations / float(totaltimespent)
+            self.emdat_interval_features[aoi]['longestfixation']        = np.max(fixation_durations)
+            self.emdat_interval_features[aoi]['meanfixationduration']   = np.mean(fixation_durations)
+            self.emdat_interval_features[aoi]['stddevfixationduration'] = np.stddev(fixation_durations)
+            self.emdat_interval_features[aoi]['timetofirstfixation']    = fixation_data[0][3] - self.starttime
+            self.emdat_interval_features[aoi]['timetolastfixation']     = fixation_data[-1][3] - self.starttime
+            self.emdat_interval_features[aoi]['proportionnum']          = float(numfixations)/len(fixation_data)
+            self.emdat_interval_features[aoi]['fixationrate']           = numfixations / float(totaltimespent)
 
-    def generate_transition_features(self, features_dict, fixation_data, fixation_indices):
+    def generate_transition_features(self, aoi, fixation_data, fixation_indices):
         for aoi in self.AOIS.keys():
             aid = aoi
-            self.features_dict['numtransfrom_%s'%(aid)] = 0
+            self.emdat_interval_features[aoi]['numtransfrom_%s'%(aid)] = 0
 
         sumtransfrom = 0
         for i in fixation_indices:
@@ -508,15 +508,15 @@ class EMDATComponent(DetectionComponent):
                     key = 'numtransfrom_%s'%(aid)
                     # ADD POLYOUT
                     if _fixation_inside_aoi((fixation_data[i-1][0], fixation_data[i-1][1]), polyin):
-                        features_dict[key] += 1
+                        self.emdat_interval_features[aoi][key] += 1
                         sumtransfrom += 1
         for aoi in AOIs.keys():
             if sumtransfrom > 0:
-                val = features_dict['numtransfrom_%s'%(aoi)]
-                features_dict['proptransfrom_%s'%(aoi)] = float(val) / sumtransfrom
+                val = self.emdat_interval_features[aoi]['numtransfrom_%s'%(aoi)]
+                self.emdat_interval_features[aoi]['proptransfrom_%s'%(aoi)] = float(val) / sumtransfrom
             else:
-                features_dict['proptransfrom_%s'%(aoi)] = 0
-        features_dict['total_trans_from'] = sumtransfrom
+                self.emdat_interval_features[aoi]['proptransfrom_%s'%(aoi)] = 0
+        self.emdat_interval_features[aoi]['total_trans_from'] = sumtransfrom
 
     def merge_aoi_fixations(maois, new_AOI_Stat, total_time, total_numfixations, sc_start):
         """ Merge fixation features such as
@@ -548,7 +548,6 @@ class EMDATComponent(DetectionComponent):
             maois.features['timetofirstfixation'] = min(maois.features['timetofirstfixation'], deepcopy(new_AOI_Stat.features['timetofirstfixation']) + new_AOI_Stat.starttime - sc_start)
         if new_AOI_Stat.features['timetolastfixation'] != -1:
             maois.features['timetolastfixation'] = max(maois.features['timetolastfixation'], deepcopy(new_AOI_Stat.features['timetolastfixation']) + new_AOI_Stat.starttime - sc_start)
-
 
     def merge_aoi_distance(maois, new_AOI_Stat):
         """ Merge distance features such as
@@ -645,6 +644,7 @@ class EMDATComponent(DetectionComponent):
         for gap in self.time_gaps:
             length += gap[1] - gap[0]
         return length
+
 # TODO: Do we need this?
 def mergevalues(obj_list, field):
     """a helper method that merges lists of values stored in field
