@@ -406,34 +406,34 @@ class EMDATComponent(DetectionComponent):
     def generate_aoi_pupil_features(self, aoi, valid_pupil_data, valid_pupil_velocity, rest_pupil_size): ##datapoints, rest_pupil_size, export_pupilinfo):
         #number of valid pupil sizes
 
-        self.emdat_interval_features[aoi]['meanpupilsize'] = -1
-        self.emdat_interval_features[aoi]['stddevpupilsize'] = -1
-        self.emdat_interval_features[aoi]['maxpupilsize'] = -1
-        self.emdat_interval_features[aoi]['minpupilsize'] = -1
-        self.emdat_interval_features[aoi]['startpupilsize'] = -1
-        self.emdat_interval_features[aoi]['endpupilsize'] = -1
-        self.emdat_interval_features[aoi]['meanpupilvelocity'] = -1
-        self.emdat_interval_features[aoi]['stddevpupilvelocity'] = -1
-        self.emdat_interval_features[aoi]['maxpupilvelocity'] = -1
-        self.emdat_interval_features[aoi]['minpupilvelocity'] = -1
-        self.emdat_interval_features[aoi]['numpupilsizes'] = len(valid_pupil_data)
-        self.emdat_interval_features[aoi]['numpupilvelocity'] = len(valid_pupil_velocity)
+        self.emdat_interval_features[aoi]['meanpupilsize']          = -1
+        self.emdat_interval_features[aoi]['stddevpupilsize']        = -1
+        self.emdat_interval_features[aoi]['maxpupilsize']           = -1
+        self.emdat_interval_features[aoi]['minpupilsize']           = -1
+        self.emdat_interval_features[aoi]['startpupilsize']         = -1
+        self.emdat_interval_features[aoi]['endpupilsize']           = -1
+        self.emdat_interval_features[aoi]['meanpupilvelocity']      = -1
+        self.emdat_interval_features[aoi]['stddevpupilvelocity']    = -1
+        self.emdat_interval_features[aoi]['maxpupilvelocity']       = -1
+        self.emdat_interval_features[aoi]['minpupilvelocity']       = -1
+        self.emdat_interval_features[aoi]['numpupilsizes']          = len(valid_pupil_data)
+        self.emdat_interval_features[aoi]['numpupilvelocity']       = len(valid_pupil_velocity)
 
         if self.emdat_interval_features[aoi]['numpupilsizes'] > 0: #check if the current segment has pupil data available
 
             if params.PUPIL_ADJUSTMENT == "rpscenter":
-                valid_pupil_data = valid_pupil_data - rest_pupil_size
+                valid_pupil_data        = valid_pupil_data - rest_pupil_size
             elif params.PUPIL_ADJUSTMENT == "PCPS":
-                adjvalidpupilsizes = (valid_pupil_data - rest_pupil_size) / (1.0 * rest_pupil_size)
+                adjvalidpupilsizes      = (valid_pupil_data - rest_pupil_size) / (1.0 * rest_pupil_size)
             else:
-                adjvalidpupilsizes = valid_pupil_data
+                adjvalidpupilsizes      = valid_pupil_data
 
-            self.emdat_interval_features[aoi]['meanpupilsize'] = np.mean(adjvalidpupilsizes)
-            self.emdat_interval_features[aoi]['stddevpupilsize'] = np.std(adjvalidpupilsizes)
-            self.emdat_interval_features[aoi]['maxpupilsize'] = np.max(adjvalidpupilsizes)
-            self.emdat_interval_features[aoi]['minpupilsize'] = np.min(adjvalidpupilsizes)
-            self.emdat_interval_features[aoi]['startpupilsize'] = adjvalidpupilsizes[0]
-            self.emdat_interval_features[aoi]['endpupilsize'] = adjvalidpupilsizes[-1]
+            self.emdat_interval_features[aoi]['meanpupilsize']              = np.mean(adjvalidpupilsizes)
+            self.emdat_interval_features[aoi]['stddevpupilsize']            = np.std(adjvalidpupilsizes)
+            self.emdat_interval_features[aoi]['maxpupilsize']               = np.max(adjvalidpupilsizes)
+            self.emdat_interval_features[aoi]['minpupilsize']               = np.min(adjvalidpupilsizes)
+            self.emdat_interval_features[aoi]['startpupilsize']             = adjvalidpupilsizes[0]
+            self.emdat_interval_features[aoi]['endpupilsize']               = adjvalidpupilsizes[-1]
 
             if self.emdat_interval_features[aoi]['numpupilvelocity'] > 0:
                 self.emdat_interval_features[aoi]['meanpupilvelocity']      = np.mean(valid_pupil_velocity)
@@ -462,26 +462,26 @@ class EMDATComponent(DetectionComponent):
 
     def generate_aoi_fixation_features(self, aoi, fixation_data, sum_discarded):
 
-        self.emdat_interval_features[aoi]['numfixations'] = 0
-        self.emdat_interval_features[aoi]['longestfixation'] = -1
-        self.emdat_interval_features[aoi]['meanfixationduration'] = -1
-        self.emdat_interval_features[aoi]['stddevfixationduration'] = -1
-        self.emdat_interval_features[aoi]['timetofirstfixation'] = -1
-        self.emdat_interval_features[aoi]['timetolastfixation'] = -1
-        self.emdat_interval_features[aoi]['proportionnum'] = 0
-        self.emdat_interval_features[aoi]['proportiontime'] = 0
-        self.emdat_interval_features[aoi]['fixationrate'] = 0
-        self.emdat_interval_features[aoi]['totaltimespent'] = 0
+        self.emdat_interval_features[aoi]['numfixations']               = 0
+        self.emdat_interval_features[aoi]['longestfixation']            = -1
+        self.emdat_interval_features[aoi]['meanfixationduration']       = -1
+        self.emdat_interval_features[aoi]['stddevfixationduration']     = -1
+        self.emdat_interval_features[aoi]['timetofirstfixation']        = -1
+        self.emdat_interval_features[aoi]['timetolastfixation']         = -1
+        self.emdat_interval_features[aoi]['proportionnum']              = 0
+        self.emdat_interval_features[aoi]['proportiontime']             = 0
+        self.emdat_interval_features[aoi]['fixationrate']               = 0
+        self.emdat_interval_features[aoi]['totaltimespent']             = 0
 
-        numfixations                                = len(fixation_data)
+        numfixations                                                    = len(fixation_data)
         self.emdat_interval_features[aoi]['numfixations']               = numfixations
         self.emdat_interval_features[aoi]['longestfixation']            = -1
         self.emdat_interval_features[aoi]['timetofirstfixation']        = -1
         self.emdat_interval_features[aoi]['timetolastfixation']         = -1
         self.emdat_interval_features[aoi]['proportionnum']              =  0
         #TODO Check that
-        fixation_durations                          = fixation_data[:, 4]
-        totaltimespent                              = np.sum(fixation_durations)
+        fixation_durations                                              = fixation_data[:, 4]
+        totaltimespent                                                  = np.sum(fixation_durations)
         self.emdat_interval_features[aoi]['totaltimespent']             = totaltimespent
         #TODO Check that
         self.emdat_interval_features[aoi]['proportiontime']             = float(totaltimespent)/(self.length - self.length_invalid)
@@ -494,7 +494,7 @@ class EMDATComponent(DetectionComponent):
             self.emdat_interval_features[aoi]['proportionnum']          = float(numfixations)/len(fixation_data)
             self.emdat_interval_features[aoi]['fixationrate']           = numfixations / float(totaltimespent)
 
-    def generate_transition_features(self, aoi, fixation_data, fixation_indices):
+    def generate_transition_features(self, cur_aoi, fixation_data, fixation_indices):
         for aoi in self.AOIS.keys():
             aid = aoi
             self.emdat_interval_features[aoi]['numtransfrom_%s'%(aid)] = 0
@@ -502,13 +502,14 @@ class EMDATComponent(DetectionComponent):
         sumtransfrom = 0
         for i in fixation_indices:
             if i > 0:
-                for aoi in active_aois:
+                for aoi in self.AOIS:
                     polyin = aoi.polyin
                     polyout = aoi.polyout
                     key = 'numtransfrom_%s'%(aid)
                     # ADD POLYOUT
+                    #TODO FIX THAT
                     if _fixation_inside_aoi((fixation_data[i-1][0], fixation_data[i-1][1]), polyin):
-                        self.emdat_interval_features[aoi][key] += 1
+                        self.emdat_interval_features[cur_aoi][key] += 1
                         sumtransfrom += 1
         for aoi in AOIs.keys():
             if sumtransfrom > 0:
@@ -516,7 +517,7 @@ class EMDATComponent(DetectionComponent):
                 self.emdat_interval_features[aoi]['proptransfrom_%s'%(aoi)] = float(val) / sumtransfrom
             else:
                 self.emdat_interval_features[aoi]['proptransfrom_%s'%(aoi)] = 0
-        self.emdat_interval_features[aoi]['total_trans_from'] = sumtransfrom
+        self.emdat_interval_features[aoi]['total_trans_from']               = sumtransfrom
 
     def merge_aoi_fixations(maois, new_AOI_Stat, total_time, total_numfixations, sc_start):
         """ Merge fixation features such as
@@ -531,23 +532,23 @@ class EMDATComponent(DetectionComponent):
                 total_numfixations: number of fixations in the scene
                 sc_start: start time (timestamp) of the scene
         """
-        maois.features['numfixations'] += new_AOI_Stat.features['numfixations']
-        maois.features['longestfixation'] = max(maois.features['longestfixation'],new_AOI_Stat.features['longestfixation'])
-        maois.features['totaltimespent'] += new_AOI_Stat.features['totaltimespent']
+        maois.features['numfixations']          += new_AOI_Stat.features['numfixations']
+        maois.features['longestfixation']       = max(maois.features['longestfixation'],new_AOI_Stat.features['longestfixation'])
+        maois.features['totaltimespent']        += new_AOI_Stat.features['totaltimespent']
 
-        maois.features['meanfixationduration'] = maois.features['totaltimespent'] / maois.features['numfixations'] if maois.features['numfixations'] != 0 else -1
+        maois.features['meanfixationduration']  = maois.features['totaltimespent'] / maois.features['numfixations'] if maois.features['numfixations'] != 0 else -1
 
-        maois.features['proportiontime'] = float(maois.features['totaltimespent'])/total_time
-        maois.features['proportionnum'] = float(maois.features['numfixations'])/total_numfixations
+        maois.features['proportiontime']        = float(maois.features['totaltimespent'])/total_time
+        maois.features['proportionnum']         = float(maois.features['numfixations'])/total_numfixations
         if maois.features['totaltimespent'] > 0:
-            maois.features['fixationrate'] = float(maois.features['numfixations']) / maois.features['totaltimespent']
+            maois.features['fixationrate']      = float(maois.features['numfixations']) / maois.features['totaltimespent']
         else:
-            maois.features['fixationrate'] = -1
+            maois.features['fixationrate']      = -1
 
         if new_AOI_Stat.features['timetofirstfixation'] != -1:
-            maois.features['timetofirstfixation'] = min(maois.features['timetofirstfixation'], deepcopy(new_AOI_Stat.features['timetofirstfixation']) + new_AOI_Stat.starttime - sc_start)
-        if new_AOI_Stat.features['timetolastfixation'] != -1:
-            maois.features['timetolastfixation'] = max(maois.features['timetolastfixation'], deepcopy(new_AOI_Stat.features['timetolastfixation']) + new_AOI_Stat.starttime - sc_start)
+            maois.features['timetofirstfixation']       = min(maois.features['timetofirstfixation'], deepcopy(new_AOI_Stat.features['timetofirstfixation']) + new_AOI_Stat.starttime - sc_start)
+        if new_AOI_Stat.features['timetolastfixation']  != -1:
+            maois.features['timetolastfixation']        = max(maois.features['timetolastfixation'], deepcopy(new_AOI_Stat.features['timetolastfixation']) + new_AOI_Stat.starttime - sc_start)
 
     def merge_aoi_distance(maois, new_AOI_Stat):
         """ Merge distance features such as
