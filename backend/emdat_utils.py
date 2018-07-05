@@ -1,4 +1,6 @@
-
+import math
+import geometry
+import ast
 
 def merge_fixation_features(part_features, accumulator_features, length, length_invalid):
     """ Merge fixation features such as
@@ -81,7 +83,7 @@ def merge_path_angle_features(part_features, accumulator_features, length, lengt
         accumulator_features['meanrelpathangles']       = -1
         accumulator_features['stddevrelpathangles']     = -1
 
-    def merge_pupil_features(self, part_features, accumulator_features):
+def merge_pupil_features(part_features, accumulator_features):
     """ Merge pupil features asuch as
             mean_pupil_size:            mean of pupil sizes
             stddev_pupil_size:          standard deviation of pupil sizes
@@ -135,7 +137,7 @@ def merge_path_angle_features(part_features, accumulator_features, length, lengt
         accumulator_features['maxpupilvelocity']                = -1
         accumulator_features['minpupilvelocity']                = -1
 
-def merge_distance_features(self, part_features, accumulator_features):
+def merge_distance_features(part_features, accumulator_features):
     """ Merge distance features such as
             mean_distance:            mean of distances from the screen
             stddev_distance:          standard deviation of distances from the screen
@@ -166,6 +168,120 @@ def merge_distance_features(self, part_features, accumulator_features):
         #self.features['startdistance'] = -1
         #self.features['enddistance'] = -1
 
+def merge_aoi_fixations(new_AOI_Stat, maois, total_time, total_numfixations):
+    """ Merge fixation features such as
+            meanfixationduration:     mean duration of fixations
+            stddevfixationduration    standard deviation of duration of fixations
+            sumfixationduration:      sum of durations of fixations
+            fixationrate:             rate of fixation datapoints relative to all datapoints
+        Args:
+            main_AOI_Stat: AOI_Stat object of this Scene (must have been initialised)
+            new_AOI_Stat: a new AOI_Stat object
+            total_time: duration of the scene
+            total_numfixations: number of fixations in the scene
+            sc_start: start time (timestamp) of the scene
+    """
+    maois['numfixations']          += new_AOI_Stat['numfixations']
+    maois['longestfixation']       = max(maois['longestfixation'], new_AOI_Stat['longestfixation'])
+    maois['totaltimespent']        += new_AOI_Stat['totaltimespent']
+
+    maois['meanfixationduration']  = maois['totaltimespent'] / maois['numfixations'] if maois['numfixations'] != 0 else -1
+
+    maois['proportiontime']        = float(maois['totaltimespent'])/total_time
+    maois['proportionnum']         = float(maois['numfixations'])/total_numfixations
+    if maois['totaltimespent'] > 0:
+        maois['fixationrate']      = float(maois['numfixations']) / maois['totaltimespent']
+    else:
+        maois['fixationrate']      = -1
+
+    #if new_AOI_Stat['timetofirstfixation'] != -1:
+    #    maois['timetofirstfixation']       = min(maois['timetofirstfixation'], deepcopy(new_AOI_Stat['timetofirstfixation']) + new_AOI_Stat['starttime'] - sc_start)
+    #if new_AOI_Stat['timetolastfixation']  != -1:
+    #    maois['timetolastfixation']        = max(maois['timetolastfixation'], deepcopy(new_AOI_Stat['timetolastfixation']) + new_AOI_Stat['starttime'] - sc_start)
+
+def merge_aoi_distance(new_AOI_Stat, maois):
+    """ Merge distance features such as
+            mean_distance:            mean of distances from the screen
+            stddev_distance:          standard deviation of distances from the screen
+            min_distance:             smallest distance from the screen
+            max_distance:             largest distance from the screen
+            start_distance:           distance from the screen in the beginning of this scene
+            end_distance:             distance from the screen in the end of this scene
+        Args:
+            maois: AOI_Stat object of this Scene (must have been initialised)
+            new_AOI_Stat: a new AOI_Stat object
+    """
+    if new_AOI_Stat['numdistancedata'] + maois['numdistancedata'] > 1 and new_AOI_Stat['numdistancedata'] > 0:
+        total_distances = maois['numdistancedata'] + new_AOI_Stat['numdistancedata']
+        aggregate_mean_distance = maois['meandistance'] * float(maois['numdistancedata']) / total_distances + new_AOI_Stat['meandistance'] * float(new_AOI_Stat['numdistancedata']) / total_distances
+        maois['stddevdistance'] = pow(((maois['numdistancedata'] - 1) * pow(maois['stddevdistance'], 2) + \
+                                    (new_AOI_Stat['numdistancedata'] - 1) * pow(new_AOI_Stat['stddevdistance'], 2) + \
+                                    maois['numdistancedata'] * pow(maois['meandistance'] - aggregate_mean_distance , 2) \
+                                    + new_AOI_Stat['numdistancedata'] * pow(new_AOI_Stat['meandistance'] - aggregate_mean_distance, 2)) / (total_distances - 1), 0.5)
+        maois['maxdistance'] = max(maois['maxdistance'], new_AOI_Stat['maxdistance'])
+        maois['mindistance'] = min(maois['mindistance'], new_AOI_Stat['mindistance'])
+        maois['meandistance'] = aggregate_mean_distance
+        #if maois.starttime > new_AOI_Stat.starttime:
+        #    maois['startdistance'] = new_AOI_Stat['startdistance']
+    #    if maois.endtime < new_AOI_Stat.endtime:
+    #        maois['enddistance'] = new_AOI_Stat['enddistance']
+        maois['numdistancedata'] += new_AOI_Stat['numdistancedata']
+
+
+def merge_aoi_pupil(new_AOI_Stat, maois):
+    """ Merge pupil features asuch as
+            mean_pupil_size:            mean of pupil sizes
+            stddev_pupil_size:          standard deviation of pupil sizes
+            min_pupil_size:             smallest pupil size
+            max_pupil_size:             largest pupil size
+            mean_pupil_velocity:        mean of pupil velocities
+            stddev_pupil_velocity:      standard deviation of pupil velocities
+            min_pupil_velocity:         smallest pupil velocity
+            max_pupil_velocity:         largest pupil velocity
+        Args:
+            maois: AOI_Stat object of this Scene (must have been initialised)
+            new_AOI_Stat: a new AOI_Stat object
+        """
+    if new_AOI_Stat['numpupilsizes'] + maois['numpupilsizes'] > 1 and new_AOI_Stat['numpupilsizes'] > 0:
+        total_numpupilsizes = maois['numpupilsizes'] + new_AOI_Stat['numpupilsizes']
+        aggregate_mean_pupil =  maois['meanpupilsize'] * float(maois['numpupilsizes']) / total_numpupilsizes + new_AOI_Stat['meanpupilsize'] * float(new_AOI_Stat['numpupilsizes']) / total_numpupilsizes
+        maois['stddevpupilsize'] = pow(((maois['numpupilsizes'] - 1) * pow(maois['stddevpupilsize'], 2) \
+                                            + (new_AOI_Stat['numpupilsizes'] - 1) * pow(new_AOI_Stat['stddevpupilsize'], 2) + \
+                                            maois['numpupilsizes'] *  pow(maois['meanpupilsize'] - aggregate_mean_pupil, 2) + \
+                                            new_AOI_Stat['numpupilsizes'] * pow(new_AOI_Stat['meanpupilsize'] - aggregate_mean_pupil, 2)) \
+                                            / (total_numpupilsizes - 1), 0.5)
+        maois['maxpupilsize'] = max(maois['maxpupilsize'], new_AOI_Stat['maxpupilsize'])
+        maois['minpupilsize'] = min(maois['maxpupilsize'], new_AOI_Stat['maxpupilsize'])
+        maois['meanpupilsize'] = aggregate_mean_pupil
+        #if maois['starttime'] > new_AOI_Stat['starttime']:
+        #    maois['startpupilsize'] = new_AOI_Stat['startpupilsize']
+        #if maois['endtime'] < new_AOI_Stat['endtime']:
+        #    maois['endpupilsize'] = new_AOI_Stat['endpupilsize']
+
+        maois['numpupilsizes'] += new_AOI_Stat['numpupilsizes']
+
+def merge_aoi_transitions(self):
+        #calculating the transitions to and from this AOI and other active AOIs at the moment
+    new_AOI_Stat_transition_aois = filter(lambda x: x.startswith('numtransfrom_'), new_AOI_Stat.features.keys())
+    if params.DEBUG or params.VERBOSE == "VERBOSE":
+        print "Segment's transition_aois", new_AOI_Stat_transition_aois
+
+    maois.total_trans_from += new_AOI_Stat.total_trans_from   #updating the total number of transition from this AOI
+    for feat in new_AOI_Stat_transition_aois:
+        if feat in maois.features:
+            maois.features[feat] += new_AOI_Stat.features[feat]
+        else:
+            maois.features[feat] = new_AOI_Stat.features[feat]
+#              sumtransfrom += maois.features[feat]
+    # updating the proportion tansition features based on new transitions to and from this AOI
+    maois_transition_aois = filter(lambda x: x.startswith('numtransfrom_'),maois.features.keys()) #all the transition features for this AOI should be aupdated even if they are not active for this segment
+    for feat in maois_transition_aois:
+        aid = feat[len('numtransfrom_'):]
+        if maois.total_trans_from > 0:
+            maois.features['proptransfrom_%s'%(aid)] = float(maois.features[feat]) / maois.total_trans_from
+        else:
+            maois.features['proptransfrom_%s'%(aid)] = 0
+    ###endof transition calculation
 
 def calc_distances(fixdata):
     """returns the Euclidean distances between a sequence of "Fixation"s
@@ -286,7 +402,7 @@ def maxfeat(part_features, accumulator_features, feat):
     """
     return max(eval('part_features'+feat), eval('accumulator_features'+feat))
 
-def fixation_inside_aoi(fixation, poly):
+def datapoint_inside_aoi(coords, poly):
     """Determines if a point is inside a given polygon or not
         The algorithm is called "Ray Casting Method".
     Args:
@@ -295,9 +411,8 @@ def fixation_inside_aoi(fixation, poly):
     Returns:
         True or False.
     """
-    x,y = fixation[0], fixation[1]
     inside = False
-    poly = ast.literal_eval(str(poly))
+    x, y = coords[0], coords[1]
 
     n = len(poly)
     if n == 0:
