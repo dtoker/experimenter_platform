@@ -42,11 +42,6 @@ class EMDATComponent(DetectionComponent):
     @gen.coroutine
     def run(self):
         start_time = time.time()
-        print("EMDAT!!!!!!!")
-        print("EMDAT!!!!!!!")
-        print("EMDAT!!!!!!!")
-        print("EMDAT!!!!!!!")
-        print("EMDAT!!!!!!!")
         # Could use any other indexing variable
         self.start = self.tobii_controller.time[self.pups_idx]
         self.end = self.tobii_controller.time[-1]
@@ -305,6 +300,11 @@ class EMDATComponent(DetectionComponent):
             self.emdat_interval_features['startdistance']      = -1
             self.emdat_interval_features['enddistance']        = -1
             self.emdat_interval_features['numdistancedata']    = 0
+        print "mean distance %f" % self.emdat_interval_features['meandistance']
+        print "std distance %f" %self.emdat_interval_features['stddevdistance']
+        print "min distance %f" %self.emdat_interval_features['mindistance']
+        print "max distance %f" %self.emdat_interval_features['maxdistance']
+        print "num distance %f" %self.emdat_interval_features['numdistancedata']
 
     def calc_fix_ang_path_features(self):
         """ Calculates fixation, angle and path features such as
@@ -552,7 +552,7 @@ class EMDATComponent(DetectionComponent):
                     polyin =  ast.literal_eval(str(self.AOIS[aoi]))
                     #polyout = aoi.polyout
                     key = 'numtransfrom_%s'%(aid)
-                    # ADD POLYOUT
+                    #TODO ADD POLYOUT
                     #TODO FIX THAT
                     if datapoint_inside_aoi((fixation_data[i-1][0], fixation_data[i-1][1]), polyin):
                         self.emdat_interval_features[cur_aoi][key] += 1
