@@ -6,6 +6,8 @@ import geometry
 import time
 import params
 import numpy as np
+from emdat_utils import *
+import ast
 
 # TODO figure out length_valid and length_invalid things
 class EMDATComponent(DetectionComponent):
@@ -17,6 +19,7 @@ class EMDATComponent(DetectionComponent):
         self.pupv_idx   = 0
         self.dist_idx   = 0
         self.fix_idx    = 0
+        self.x_y_idx    = 0
         self.feature_select = {}
 
     def notify_app_state_controller(self):
@@ -65,20 +68,17 @@ class EMDATComponent(DetectionComponent):
         if (params.USE_FIXATION_PATH_FEATURES):
             self.calc_fix_ang_path_features()
 
-        self.calc_aoi_features()
         """ calculate AOIs features """
-        #self.has_aois = False
-        #if aois:
-        #    self.set_aois(aois, all_data, fixation_data, event_data, rest_pupil_size, export_pupilinfo)
-        #    self.features['aoisequence'] = self.generate_aoi_sequence(fixation_data, aois)
+        self.calc_aoi_features()# rest_pupil_size, export_pupilinfo)
 
         if (params.KEEP_TASK_FEATURES and params.KEEP_GLOBAL_FEATURES):
             self.merge_features(self.emdat_interval_features, self.emdat_task_features)
-            self.merge_features(self.emdat_task_features, self.tobii_controller.emdat_global_features)
+            print 'merged TASK FEATURES!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!'
+            self.merge_features(self.emdat_task_features, self.tobii_controller.emdat_global_features, isTotal = True)
         elif (params.KEEP_TASK_FEATURES):
             self.merge_features(self.emdat_interval_features, self.emdat_task_features)
         elif (params.KEEP_GLOBAL_FEATURES):
-            self.merge_features(self.emdat_interval_features, self.tobii_controller.emdat_global_features)
+            self.merge_features(self.emdat_interval_features, self.tobii_controller.emdat_global_features, isTotal = True)
         print("EMDAT DONE")
         print("--- %s seconds ---" % (time.time() - start_time))
         #self.adaptation_loop.evaluateRules(aoi, EfixEndTime)
@@ -86,24 +86,24 @@ class EMDATComponent(DetectionComponent):
     def init_emdat_task_features(self):
         self.emdat_task_features = {}
 		# Pupil features
-        self.emdat_task_features['numpupilsizes']    							= 0
-        self.emdat_task_features['numpupilvelocity']							= 0
+        self.emdat_task_features['numpupilsizes']    	    = 0
+        self.emdat_task_features['numpupilvelocity']		= 0
         self.emdat_task_features['meanpupilsize'] 			= -1
-        self.emdat_task_features['stddevpupilsize'] 			= -1
+        self.emdat_task_features['stddevpupilsize'] 		= -1
         self.emdat_task_features['maxpupilsize'] 			= -1
         self.emdat_task_features['minpupilsize'] 			= -1
 		#self.emdat_task_features['startpupilsize'] 			= -1
 		#self.emdat_task_features['endpupilsize'] 			= -1
         self.emdat_task_features['meanpupilvelocity'] 		= -1
-        self.emdat_task_features['stddevpupilvelocity'] 		= -1
+        self.emdat_task_features['stddevpupilvelocity'] 	= -1
         self.emdat_task_features['maxpupilvelocity'] 		= -1
         self.emdat_task_features['minpupilvelocity'] 		= -1
 		# Distance features
-        self.emdat_task_features['numdistancedata']							= 0
+        self.emdat_task_features['numdistancedata']			= 0
         self.emdat_task_features['meandistance'] 			= -1
         self.emdat_task_features['stddevdistance'] 			= -1
-        self.emdat_task_features['maxdistance'] 				= -1
-        self.emdat_task_features['mindistance'] 				= -1
+        self.emdat_task_features['maxdistance'] 			= -1
+        self.emdat_task_features['mindistance'] 			= -1
 		#self.emdat_task_features['startdistance'] 			= -1
 		#self.emdat_task_features['enddistance'] 				= -1
 		# Path features
@@ -121,7 +121,7 @@ class EMDATComponent(DetectionComponent):
         self.emdat_task_features['sumrelpathangles'] 		= -1
         self.emdat_task_features['relpathanglesrate'] 		= -1
         self.emdat_task_features['meanrelpathangles']		= -1
-        self.emdat_task_features['stddevrelpathangles'] 		= -1
+        self.emdat_task_features['stddevrelpathangles']     = -1
 		# Fixation features
         self.emdat_task_features['numfixations'] 			= 0
         self.emdat_task_features['fixationrate'] 			= -1
@@ -129,21 +129,64 @@ class EMDATComponent(DetectionComponent):
         self.emdat_task_features['stddevfixationduration'] 	= -1
         self.emdat_task_features['sumfixationduration'] 	= -1
         self.emdat_task_features['fixationrate'] 			= -1
+        for aoi in self.AOIS.keys():
+            self.emdat_task_features[aoi] = {}
+            self.emdat_task_features[aoi]['numfixations'] 			    = 0
+            self.emdat_task_features[aoi]['longestfixation']            = -1
+            self.emdat_task_features[aoi]['meanfixationduration']       = -1
+            self.emdat_task_features[aoi]['stddevfixationduration']     = -1
+            self.emdat_task_features[aoi]['timetofirstfixation']        = -1
+            self.emdat_task_features[aoi]['timetolastfixation']         = -1
+            self.emdat_task_features[aoi]['proportionnum']              = 0
+            self.emdat_task_features[aoi]['proportiontime']             = 0
+            self.emdat_task_features[aoi]['fixationrate']               = 0
+            self.emdat_task_features[aoi]['totaltimespent']             = 0
+            self.emdat_task_features[aoi]['meanpupilsize']              = -1
+            self.emdat_task_features[aoi]['stddevpupilsize']            = -1
+            self.emdat_task_features[aoi]['maxpupilsize']               = -1
+            self.emdat_task_features[aoi]['minpupilsize']               = -1
+            self.emdat_task_features[aoi]['startpupilsize']             = -1
+            self.emdat_task_features[aoi]['endpupilsize']               = -1
+            self.emdat_task_features[aoi]['meanpupilvelocity']          = -1
+            self.emdat_task_features[aoi]['stddevpupilvelocity']        = -1
+            self.emdat_task_features[aoi]['maxpupilvelocity']           = -1
+            self.emdat_task_features[aoi]['minpupilvelocity']           = -1
+            self.emdat_task_features[aoi]['numpupilsizes']              = 0
+            self.emdat_task_features[aoi]['numpupilvelocity']           = 0
+            self.emdat_task_features[aoi]['numdistancedata']            = 0
+            self.emdat_task_features[aoi]['numdistancedata']            = 0
+            self.emdat_task_features[aoi]['meandistance']               = -1
+            self.emdat_task_features[aoi]['stddevdistance']             = -1
+            self.emdat_task_features[aoi]['maxdistance']                = -1
+            self.emdat_task_features[aoi]['mindistance']                = -1
+            #self.emdat_interval_features[aoi]['startdistance']      = valid_distance_data[0]
+            #self.emdat_interval_features[aoi]['enddistance']        = valid_distance_data[-1]
+            self.emdat_task_features[aoi]['total_trans_from'] = 0
 
-    def merge_features(self, part_features, accumulator_features):
+            for cur_aoi in self.AOIS.keys():
+                self.emdat_task_features[aoi]['numtransfrom_%s'%(cur_aoi)] = 0
+                self.emdat_task_features[aoi]['proptransfrom_%s'%(cur_aoi)] = -1
+
+    def merge_features(self, part_features, accumulator_features, isTotal = False):
         if (params.USE_PUPIL_FEATURES):
-            self.merge_pupil_features(part_features, accumulator_features)
-            self.merge_aoi_pupil()
+            merge_pupil_features(part_features, accumulator_features)
+            if not isTotal:
+                for aoi in self.AOIS.keys():
+                    merge_aoi_pupil(part_features[aoi], accumulator_features[aoi])
         """ calculate distance from screen features"""
         if (params.USE_DISTANCE_FEATURES):
-            self.merge_distance_features(part_features, accumulator_features)
-            self.merge_aoi_distance()
+            merge_distance_features(part_features, accumulator_features)
+            if not isTotal:
+                for aoi in self.AOIS.keys():
+                    merge_aoi_distance(part_features[aoi], accumulator_features[aoi])
+
         """ calculate fixations, angles and path features"""
         if (params.USE_FIXATION_PATH_FEATURES):
-            self.merge_path_angle_features(part_features, accumulator_features)
-            self.merge_fixation_features(part_features, accumulator_features)
-            self.merge_aoi_fixations()
-
+            merge_path_angle_features(part_features, accumulator_features, self.length, self.length_invalid)
+            merge_fixation_features(part_features, accumulator_features, self.length, self.length_invalid)
+            if not isTotal:
+                for aoi in self.AOIS.keys():
+                    merge_aoi_fixations(part_features[aoi], accumulator_features[aoi], 1, 1)
 
     def calc_pupil_features(self):
         """ Calculates pupil features such as
@@ -291,9 +334,9 @@ class EMDATComponent(DetectionComponent):
             self.emdat_interval_features['sumfixationduration'] = sum(map(lambda x: x[2], fixation_data))
 
             self.emdat_interval_features['fixationrate'] = float(numfixations) / (self.length - self.length_invalid)
-            distances = self.calc_distances(fixation_data)
-            abs_angles = self.calc_abs_angles(fixation_data)
-            rel_angles = self.calc_rel_angles(fixation_data)
+            distances = calc_distances(fixation_data)
+            abs_angles = calc_abs_angles(fixation_data)
+            rel_angles = calc_rel_angles(fixation_data)
         else:
             #self.fixation_start = -1
             #self.fixation_end = -1
@@ -371,16 +414,22 @@ class EMDATComponent(DetectionComponent):
 
     def calc_aoi_features(self):
         #init features
-        x_y_coords                      = np.column_stack((np.array(self.tobii_controller.x), np.array(self.tobii_controller.y)))
-        pup_size_vals                   = np.array(self.tobii_controller.pupilsize)
-        pup_vel_vals                    = np.array(self.tobii_controller.pupilvelocity)
-        dist_vals                       = np.array(self.tobii_controller.head_distance)
-        fixation_vals                   = numpy.asarray(self.tobii_controller.EndFixations)
+
+        x_y_coords                      = np.column_stack((np.array(self.tobii_controller.x[self.x_y_idx:]), np.array(self.tobii_controller.y[self.x_y_idx:])))
+        pup_size_vals                   = np.array(self.tobii_controller.pupilsize[self.x_y_idx:])
+        pup_vel_vals                    = np.array(self.tobii_controller.pupilvelocity[self.x_y_idx:])
+        dist_vals                       = np.array(self.tobii_controller.head_distance[self.x_y_idx:])
+        fixation_vals                   = np.asarray(self.tobii_controller.EndFixations)
+        fixation_coords                 = np.column_stack((np.array(self.tobii_controller.EndFixations)[0,:], np.array(self.tobii_controller.EndFixations)[1,:]))
+        self.x_y_idx = len(self.tobii_controller.x)
+        #print(x_y_coords)
 
         for aoi in self.AOIS:
-             self.emdat_interval_features[aoi] = {}
+            self.emdat_interval_features[aoi] = {}
             ## Indices of x-y array where datapoints are inside the specified AOI
-            valid_indices              = np.where(_datapoint_inside_aoi(x_y_coords, self.aoi.polyin, self.aoi.polyout))
+            poly = ast.literal_eval(str(self.AOIS[aoi]))
+
+            valid_indices              = np.apply_along_axis(datapoint_inside_aoi, 1, x_y_coords, poly = poly)
 
             if params.USE_PUPIL_FEATURES:
                 ## Select valid pupil sizes inside the AOI
@@ -388,24 +437,26 @@ class EMDATComponent(DetectionComponent):
                 valid_pupil_sizes      = valid_pupil_sizes[np.where(valid_pupil_sizes > 0)]
                 ## Select valid velocities inside the AOI
                 valid_pupil_vel        = pup_vel_vals[valid_indices]
-                valid_pupil_vel        = valid_pipil_vel[np.where(valid_pupil_vel != -1)]
-                self.generate_aoi_pupil_features(aoi, this_aoi_features, valid_pipil_sizes, valid_pupil_vel, rest_pupil_size)
+                valid_pupil_vel        = valid_pupil_vel[np.where(valid_pupil_vel != -1)]
+                self.generate_aoi_pupil_features(aoi, valid_pupil_sizes, valid_pupil_vel) #rest_pupil_size)
 
             if params.USE_DISTANCE_FEATURES:
                 ## Select valid head distances inside the AOI
                 valid_dist_vals        = dist_vals[valid_indices]
-                self.generate_aoi_distance_features(aoi, this_aoi_features, valid_dist_vals)
+                self.generate_aoi_distance_features(aoi, valid_dist_vals)
 
             if (params.USE_FIXATION_PATH_FEATURES):
-                valid_fixation_indices = np.where(_fixation_inside_aoi(fixation_vals, aoi))
+                valid_fixation_indices = np.apply_along_axis(datapoint_inside_aoi, 1, fixation_vals[:, :2], poly = poly)
                 valid_fixation_vals    = fixation_vals[valid_fixation_indices]
-                fixation_indices       = self.generate_aoi_fixation_features(aoi, this_aoi_features, datapoints, valid_fixation_vals, self.length_invalid
-            if  (params.USE_TRANSITION_AOI_FEATURES):
-                #self.generate_transition_features(this_aoi_features, fixation_data, fixation_indices)
+                fixation_indices       = self.generate_aoi_fixation_features(aoi, valid_fixation_vals, self.length_invalid)
+            if (params.USE_TRANSITION_AOI_FEATURES):
+                fixation_indices = np.where(np.apply_along_axis(datapoint_inside_aoi, 1, fixation_vals[:, :2], poly = poly))
+                self.generate_transition_features(aoi, fixation_vals, fixation_indices[0])
 
-    def generate_aoi_pupil_features(self, aoi, valid_pupil_data, valid_pupil_velocity, rest_pupil_size): ##datapoints, rest_pupil_size, export_pupilinfo):
+
+
+    def generate_aoi_pupil_features(self, aoi, valid_pupil_data, valid_pupil_velocity): # rest_pupil_size): ##datapoints, rest_pupil_size, export_pupilinfo):
         #number of valid pupil sizes
-
         self.emdat_interval_features[aoi]['meanpupilsize']          = -1
         self.emdat_interval_features[aoi]['stddevpupilsize']        = -1
         self.emdat_interval_features[aoi]['maxpupilsize']           = -1
@@ -421,12 +472,12 @@ class EMDATComponent(DetectionComponent):
 
         if self.emdat_interval_features[aoi]['numpupilsizes'] > 0: #check if the current segment has pupil data available
 
-            if params.PUPIL_ADJUSTMENT == "rpscenter":
-                valid_pupil_data        = valid_pupil_data - rest_pupil_size
-            elif params.PUPIL_ADJUSTMENT == "PCPS":
-                adjvalidpupilsizes      = (valid_pupil_data - rest_pupil_size) / (1.0 * rest_pupil_size)
-            else:
-                adjvalidpupilsizes      = valid_pupil_data
+            #if params.PUPIL_ADJUSTMENT == "rpscenter":
+            #    valid_pupil_data        = valid_pupil_data - rest_pupil_size
+            #elif params.PUPIL_ADJUSTMENT == "PCPS":
+            #    adjvalidpupilsizes      = (valid_pupil_data - rest_pupil_size) / (1.0 * rest_pupil_size)
+            #else:
+            adjvalidpupilsizes      = valid_pupil_data
 
             self.emdat_interval_features[aoi]['meanpupilsize']              = np.mean(adjvalidpupilsizes)
             self.emdat_interval_features[aoi]['stddevpupilsize']            = np.std(adjvalidpupilsizes)
@@ -462,7 +513,6 @@ class EMDATComponent(DetectionComponent):
 
     def generate_aoi_fixation_features(self, aoi, fixation_data, sum_discarded):
 
-        self.emdat_interval_features[aoi]['numfixations']               = 0
         self.emdat_interval_features[aoi]['longestfixation']            = -1
         self.emdat_interval_features[aoi]['meanfixationduration']       = -1
         self.emdat_interval_features[aoi]['stddevfixationduration']     = -1
@@ -475,12 +525,8 @@ class EMDATComponent(DetectionComponent):
 
         numfixations                                                    = len(fixation_data)
         self.emdat_interval_features[aoi]['numfixations']               = numfixations
-        self.emdat_interval_features[aoi]['longestfixation']            = -1
-        self.emdat_interval_features[aoi]['timetofirstfixation']        = -1
-        self.emdat_interval_features[aoi]['timetolastfixation']         = -1
-        self.emdat_interval_features[aoi]['proportionnum']              =  0
         #TODO Check that
-        fixation_durations                                              = fixation_data[:, 4]
+        fixation_durations                                              = fixation_data[:, 2]
         totaltimespent                                                  = np.sum(fixation_durations)
         self.emdat_interval_features[aoi]['totaltimespent']             = totaltimespent
         #TODO Check that
@@ -488,152 +534,36 @@ class EMDATComponent(DetectionComponent):
         if numfixations > 0:
             self.emdat_interval_features[aoi]['longestfixation']        = np.max(fixation_durations)
             self.emdat_interval_features[aoi]['meanfixationduration']   = np.mean(fixation_durations)
-            self.emdat_interval_features[aoi]['stddevfixationduration'] = np.stddev(fixation_durations)
-            self.emdat_interval_features[aoi]['timetofirstfixation']    = fixation_data[0][3] - self.starttime
-            self.emdat_interval_features[aoi]['timetolastfixation']     = fixation_data[-1][3] - self.starttime
+            self.emdat_interval_features[aoi]['stddevfixationduration'] = np.std(fixation_durations)
+            #self.emdat_interval_features[aoi]['timetofirstfixation']    = fixation_data[0][3] - self.starttime
+            #self.emdat_interval_features[aoi]['timetolastfixation']     = fixation_data[-1][3] - self.starttime
             self.emdat_interval_features[aoi]['proportionnum']          = float(numfixations)/len(fixation_data)
             self.emdat_interval_features[aoi]['fixationrate']           = numfixations / float(totaltimespent)
 
     def generate_transition_features(self, cur_aoi, fixation_data, fixation_indices):
         for aoi in self.AOIS.keys():
             aid = aoi
-            self.emdat_interval_features[aoi]['numtransfrom_%s'%(aid)] = 0
+            self.emdat_interval_features[cur_aoi]['numtransfrom_%s'%(aid)] = 0
 
         sumtransfrom = 0
         for i in fixation_indices:
             if i > 0:
                 for aoi in self.AOIS:
-                    polyin = aoi.polyin
-                    polyout = aoi.polyout
+                    polyin =  ast.literal_eval(str(self.AOIS[aoi]))
+                    #polyout = aoi.polyout
                     key = 'numtransfrom_%s'%(aid)
                     # ADD POLYOUT
                     #TODO FIX THAT
-                    if _fixation_inside_aoi((fixation_data[i-1][0], fixation_data[i-1][1]), polyin):
+                    if datapoint_inside_aoi((fixation_data[i-1][0], fixation_data[i-1][1]), polyin):
                         self.emdat_interval_features[cur_aoi][key] += 1
                         sumtransfrom += 1
-        for aoi in AOIs.keys():
+        for aoi in self.AOIS.keys():
             if sumtransfrom > 0:
-                val = self.emdat_interval_features[aoi]['numtransfrom_%s'%(aoi)]
-                self.emdat_interval_features[aoi]['proptransfrom_%s'%(aoi)] = float(val) / sumtransfrom
+                val = self.emdat_interval_features[cur_aoi]['numtransfrom_%s'%(aoi)]
+                self.emdat_interval_features[cur_aoi]['proptransfrom_%s'%(aoi)] = float(val) / sumtransfrom
             else:
-                self.emdat_interval_features[aoi]['proptransfrom_%s'%(aoi)] = 0
-        self.emdat_interval_features[aoi]['total_trans_from']               = sumtransfrom
-
-    def merge_aoi_fixations(maois, new_AOI_Stat, total_time, total_numfixations, sc_start):
-        """ Merge fixation features such as
-                meanfixationduration:     mean duration of fixations
-                stddevfixationduration    standard deviation of duration of fixations
-                sumfixationduration:      sum of durations of fixations
-                fixationrate:             rate of fixation datapoints relative to all datapoints
-            Args:
-                main_AOI_Stat: AOI_Stat object of this Scene (must have been initialised)
-                new_AOI_Stat: a new AOI_Stat object
-                total_time: duration of the scene
-                total_numfixations: number of fixations in the scene
-                sc_start: start time (timestamp) of the scene
-        """
-        maois.features['numfixations']          += new_AOI_Stat.features['numfixations']
-        maois.features['longestfixation']       = max(maois.features['longestfixation'],new_AOI_Stat.features['longestfixation'])
-        maois.features['totaltimespent']        += new_AOI_Stat.features['totaltimespent']
-
-        maois.features['meanfixationduration']  = maois.features['totaltimespent'] / maois.features['numfixations'] if maois.features['numfixations'] != 0 else -1
-
-        maois.features['proportiontime']        = float(maois.features['totaltimespent'])/total_time
-        maois.features['proportionnum']         = float(maois.features['numfixations'])/total_numfixations
-        if maois.features['totaltimespent'] > 0:
-            maois.features['fixationrate']      = float(maois.features['numfixations']) / maois.features['totaltimespent']
-        else:
-            maois.features['fixationrate']      = -1
-
-        if new_AOI_Stat.features['timetofirstfixation'] != -1:
-            maois.features['timetofirstfixation']       = min(maois.features['timetofirstfixation'], deepcopy(new_AOI_Stat.features['timetofirstfixation']) + new_AOI_Stat.starttime - sc_start)
-        if new_AOI_Stat.features['timetolastfixation']  != -1:
-            maois.features['timetolastfixation']        = max(maois.features['timetolastfixation'], deepcopy(new_AOI_Stat.features['timetolastfixation']) + new_AOI_Stat.starttime - sc_start)
-
-    def merge_aoi_distance(maois, new_AOI_Stat):
-        """ Merge distance features such as
-                mean_distance:            mean of distances from the screen
-                stddev_distance:          standard deviation of distances from the screen
-                min_distance:             smallest distance from the screen
-                max_distance:             largest distance from the screen
-                start_distance:           distance from the screen in the beginning of this scene
-                end_distance:             distance from the screen in the end of this scene
-            Args:
-                maois: AOI_Stat object of this Scene (must have been initialised)
-                new_AOI_Stat: a new AOI_Stat object
-        """
-        if new_AOI_Stat.numdistancedata + maois.numdistancedata > 1 and new_AOI_Stat.numdistancedata > 0:
-            total_distances = maois.numdistancedata + new_AOI_Stat.numdistancedata
-            aggregate_mean_distance = maois.features['meandistance'] * float(maois.numdistancedata) / total_distances + new_AOI_Stat.features['meandistance'] * float(new_AOI_Stat.numdistancedata) / total_distances
-            maois.features['stddevdistance'] = pow(((maois.numdistancedata - 1) * pow(maois.features['stddevdistance'], 2) + \
-                                        (new_AOI_Stat.numdistancedata - 1) * pow(new_AOI_Stat.features['stddevdistance'], 2) + \
-                                        maois.numdistancedata * pow(maois.features['meandistance'] - aggregate_mean_distance , 2) \
-                                        + new_AOI_Stat.numdistancedata * pow(new_AOI_Stat.features['meandistance'] - aggregate_mean_distance, 2)) / (total_distances - 1), 0.5)
-            maois.features['maxdistance'] = max(maois.features['maxdistance'], new_AOI_Stat.features['maxdistance'])
-            maois.features['mindistance'] = min(maois.features['mindistance'], new_AOI_Stat.features['mindistance'])
-            maois.features['meandistance'] = aggregate_mean_distance
-            if maois.starttime > new_AOI_Stat.starttime:
-                maois.features['startdistance'] = new_AOI_Stat.features['startdistance']
-            if maois.endtime < new_AOI_Stat.endtime:
-                maois.features['enddistance'] = new_AOI_Stat.features['enddistance']
-            maois.numdistancedata += new_AOI_Stat.numdistancedata
-
-
-    def merge_aoi_pupil(maois, new_AOI_Stat):
-        """ Merge pupil features asuch as
-                mean_pupil_size:            mean of pupil sizes
-                stddev_pupil_size:          standard deviation of pupil sizes
-                min_pupil_size:             smallest pupil size
-                max_pupil_size:             largest pupil size
-                mean_pupil_velocity:        mean of pupil velocities
-                stddev_pupil_velocity:      standard deviation of pupil velocities
-                min_pupil_velocity:         smallest pupil velocity
-                max_pupil_velocity:         largest pupil velocity
-            Args:
-                maois: AOI_Stat object of this Scene (must have been initialised)
-                new_AOI_Stat: a new AOI_Stat object
-        """
-        if new_AOI_Stat.numpupilsizes + maois.numpupilsizes > 1 and new_AOI_Stat.numpupilsizes > 0:
-            total_numpupilsizes = maois.numpupilsizes + new_AOI_Stat.numpupilsizes
-            aggregate_mean_pupil =  maois.features['meanpupilsize'] * float(maois.numpupilsizes) / total_numpupilsizes + new_AOI_Stat.features['meanpupilsize'] * float(new_AOI_Stat.numpupilsizes) / total_numpupilsizes
-            maois.features['stddevpupilsize'] = pow(((maois.numpupilsizes - 1) * pow(maois.features['stddevpupilsize'], 2) \
-                                                + (new_AOI_Stat.numpupilsizes - 1) * pow(new_AOI_Stat.features['stddevpupilsize'], 2) + \
-                                                maois.numpupilsizes *  pow(maois.features['meanpupilsize'] - aggregate_mean_pupil, 2) + \
-                                                new_AOI_Stat.numpupilsizes * pow(new_AOI_Stat.features['meanpupilsize'] - aggregate_mean_pupil, 2)) \
-                                                / (total_numpupilsizes - 1), 0.5)
-            maois.features['maxpupilsize'] = max(maois.features['maxpupilsize'], new_AOI_Stat.features['maxpupilsize'])
-            maois.features['minpupilsize'] = min(maois.features['maxpupilsize'], new_AOI_Stat.features['maxpupilsize'])
-            maois.features['meanpupilsize'] = aggregate_mean_pupil
-            if maois.starttime > new_AOI_Stat.starttime:
-                maois.features['startpupilsize'] = new_AOI_Stat.features['startpupilsize']
-            if maois.endtime < new_AOI_Stat.endtime:
-                maois.features['endpupilsize'] = new_AOI_Stat.features['endpupilsize']
-
-            maois.numpupilsizes += new_AOI_Stat.numpupilsizes
-
-    def merge_aoi_transitions(self):
-        #calculating the transitions to and from this AOI and other active AOIs at the moment
-        new_AOI_Stat_transition_aois = filter(lambda x: x.startswith('numtransfrom_'), new_AOI_Stat.features.keys())
-        if params.DEBUG or params.VERBOSE == "VERBOSE":
-            print "Segment's transition_aois", new_AOI_Stat_transition_aois
-
-        maois.total_trans_from += new_AOI_Stat.total_trans_from   #updating the total number of transition from this AOI
-        for feat in new_AOI_Stat_transition_aois:
-            if feat in maois.features:
-                maois.features[feat] += new_AOI_Stat.features[feat]
-            else:
-                maois.features[feat] = new_AOI_Stat.features[feat]
-#               sumtransfrom += maois.features[feat]
-        # updating the proportion tansition features based on new transitions to and from this AOI
-        maois_transition_aois = filter(lambda x: x.startswith('numtransfrom_'),maois.features.keys()) #all the transition features for this AOI should be aupdated even if they are not active for this segment
-        for feat in maois_transition_aois:
-            aid = feat[len('numtransfrom_'):]
-            if maois.total_trans_from > 0:
-                maois.features['proptransfrom_%s'%(aid)] = float(maois.features[feat]) / maois.total_trans_from
-            else:
-                maois.features['proptransfrom_%s'%(aid)] = 0
-        ###endof transition calculation
-
+                self.emdat_interval_features[cur_aoi]['proptransfrom_%s'%(aoi)] = 0
+        self.emdat_interval_features[cur_aoi]['total_trans_from']               = sumtransfrom
 
     def get_length_invalid(self):
         """Returns the sum of the length of the invalid gaps > params.MAX_SEG_TIMEGAP
