@@ -319,7 +319,7 @@ class ApplicationStateController():
             polygon = aoi['polygon']
             mapping[event_name] = polygon
 
-        print mapping
+        #print mapping
         return mapping
 
 
@@ -344,7 +344,7 @@ class ApplicationStateController():
             value = int(query_results.fetchone()['result'])
         except:
             raise ValueError("Malformed SQL conditional check in gaze_event_rules.db")
-        print value
+        #print value
         return value
 
     def updateFixTable(self, table, id, time_start, time_end, duration):

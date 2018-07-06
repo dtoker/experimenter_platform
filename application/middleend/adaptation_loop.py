@@ -100,7 +100,7 @@ class AdaptationLoop():
         #TODO: Whether or not liveWebSocket should be an array
         if to_remove:
             to_remove = json.dumps({'remove': to_remove})
-            print to_remove
+            #print to_remove
             for ws in self.liveWebSocket:
                 ws.write_message(to_remove)
 
@@ -191,7 +191,7 @@ class AdaptationLoop():
         #TODO: whether or not liveWebSocket should be an array
         if to_deliver_rules:
             to_deliver_rules = json.dumps({'deliver': to_deliver_rules})
-            print to_deliver_rules
+            #print to_deliver_rules
             for ws in self.liveWebSocket:
                 ws.write_message(to_deliver_rules)
 
@@ -211,7 +211,6 @@ class AdaptationLoop():
         returns
         """
         #if the triggering event is not one of the active user states for this task, an error has occured
-        print("CHECKING RULES")
         if event_name not in self.app_state_controller.eventNames:
             raise ValueError("Event name received is not one of the user states active for this task")
         task = self.app_state_controller.currTask

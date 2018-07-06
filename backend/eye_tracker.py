@@ -339,30 +339,30 @@ class TobiiController:
 	    Returns:
 	        pupil size to generate pupil features with.
 	    '''
-	    if pupilleft is None and pupilright is None:
+	    if pupilleft == 0 and pupilright == 0:
 	        return -1
-	    if pupilleft is None:
+	    if pupilleft == 0:
 	        return pupilright
-	    if pupilright is None:
+	    if pupilright == 0:
 	        return pupilleft
 	    return (pupilleft + pupilright) / 2.0
 
 
 	def get_pupil_velocity(self, last_pupilleft, last_pupilright, pupilleft, pupilright, time):
-	    if (last_pupilleft is None or pupilleft is None) and (last_pupilright is None or pupilright is None):
+	    if (last_pupilleft == 0 or pupilleft == 0) and (last_pupilright == 0 or pupilright == 0):
 	        return -1
-	    if (last_pupilleft is None or pupilleft is None):
+	    if (last_pupilleft == 0 or pupilleft == 0):
 	        return abs(pupilright - last_pupilright) / time
-	    if (last_pupilright is None or pupilright is None):
+	    if (last_pupilright == 0 or pupilright == 0):
 	        return abs(pupilleft - last_pupilleft) / time
 	    return abs( (pupilleft + pupilright) / 2 - (last_pupilleft + last_pupilright) / 2 ) / time
 
 	def get_distance(self, distanceleft, distanceright):
-	    if distanceleft is None and distanceright is None:
+	    if distanceleft == 0 and distanceright == 0:
 	        return -1
-	    if distanceleft is None:
+	    if distanceleft == 0:
 	        return distanceright
-	    if distanceright is None:
+	    if distanceright == 0:
 	        return distanceleft
 	    return (distanceleft + distanceright) / 2.0
 

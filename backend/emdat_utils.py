@@ -46,32 +46,32 @@ def merge_path_angle_features(part_features, accumulator_features, length, lengt
     numrelangles               = sumfeat(part_features, accumulator_features, "['numrelangles']")
 
     if numfixdistances > 1:
-        meanpathdistance                = weightedmeanfeat(part_features, accumulator_features,"['numfixdistances']","['meanpathdistance']")
-        accumulator_features['sumpathdistance']     = sumfeat(part_features, accumulator_features, "['sumpathdistance']")
+        meanpathdistance                                = weightedmeanfeat(part_features, accumulator_features,"['numfixdistances']","['meanpathdistance']")
+        accumulator_features['sumpathdistance']         = sumfeat(part_features, accumulator_features, "['sumpathdistance']")
         accumulator_features['stddevpathdistance']      = aggregatestddevfeat(part_features, accumulator_features, "['numfixdistances']",
                                         "['stddevpathdistance']", "['meanpathdistance']", meanpathdistance)
         accumulator_features['eyemovementvelocity']     = accumulator_features['sumpathdistance']/(length - length_invalid)
-        accumulator_features['sumabspathangles']    = sumfeat(part_features, accumulator_features, "['sumabspathangles']")
-        meanabspathangles                   = weightedmeanfeat(part_features, accumulator_features,"['numabsangles']","['meanabspathangles']")
+        accumulator_features['sumabspathangles']        = sumfeat(part_features, accumulator_features, "['sumabspathangles']")
+        meanabspathangles                               = weightedmeanfeat(part_features, accumulator_features,"['numabsangles']","['meanabspathangles']")
         accumulator_features['abspathanglesrate']       = accumulator_features['sumabspathangles']/(length - length_invalid)
         accumulator_features['stddevabspathangles']     = aggregatestddevfeat(part_features, accumulator_features, "['numabsangles']",
                                 "['stddevabspathangles']", "['meanabspathangles']", meanabspathangles)
-        accumulator_features['sumrelpathangles']    = sumfeat(part_features, accumulator_features, "['sumrelpathangles']")
-        meanrelpathangles                   = weightedmeanfeat(part_features, accumulator_features,"['numrelangles']","['meanrelpathangles']")
+        accumulator_features['sumrelpathangles']        = sumfeat(part_features, accumulator_features, "['sumrelpathangles']")
+        meanrelpathangles                               = weightedmeanfeat(part_features, accumulator_features,"['numrelangles']","['meanrelpathangles']")
 
         accumulator_features['relpathanglesrate']       = accumulator_features['sumrelpathangles']/(length - length_invalid)
         accumulator_features['stddevrelpathangles']     = aggregatestddevfeat(part_features, accumulator_features, "['numrelangles']", "['stddevrelpathangles']",
                                 "['meanrelpathangles']", meanrelpathangles)
 
-        accumulator_features['meanpathdistance']    = meanpathdistance
+        accumulator_features['meanpathdistance']        = meanpathdistance
         accumulator_features['meanabspathangles']       = meanabspathangles
         accumulator_features['meanrelpathangles']       = meanrelpathangles
-        accumulator_features['numfixdistances']     = numfixdistances
-        accumulator_features['numabsangles']        = numabsangles
-        accumulator_features['numrelangles']        = numrelangles
+        accumulator_features['numfixdistances']         = numfixdistances
+        accumulator_features['numabsangles']            = numabsangles
+        accumulator_features['numrelangles']            = numrelangles
     else:
-        accumulator_features['meanpathdistance']    = -1
-        accumulator_features['sumpathdistance']     = -1
+        accumulator_features['meanpathdistance']        = -1
+        accumulator_features['sumpathdistance']         = -1
         accumulator_features['stddevpathdistance']      = -1
         accumulator_features['eyemovementvelocity']     = -1
         accumulator_features['sumabspathangles']    = -1
@@ -211,21 +211,28 @@ def merge_aoi_distance(new_AOI_Stat, maois):
             maois: AOI_Stat object of this Scene (must have been initialised)
             new_AOI_Stat: a new AOI_Stat object
     """
-    if new_AOI_Stat['numdistancedata'] + maois['numdistancedata'] > 1 and new_AOI_Stat['numdistancedata'] > 0:
-        total_distances = maois['numdistancedata'] + new_AOI_Stat['numdistancedata']
-        aggregate_mean_distance = maois['meandistance'] * float(maois['numdistancedata']) / total_distances + new_AOI_Stat['meandistance'] * float(new_AOI_Stat['numdistancedata']) / total_distances
-        maois['stddevdistance'] = pow(((maois['numdistancedata'] - 1) * pow(maois['stddevdistance'], 2) + \
-                                    (new_AOI_Stat['numdistancedata'] - 1) * pow(new_AOI_Stat['stddevdistance'], 2) + \
-                                    maois['numdistancedata'] * pow(maois['meandistance'] - aggregate_mean_distance , 2) \
-                                    + new_AOI_Stat['numdistancedata'] * pow(new_AOI_Stat['meandistance'] - aggregate_mean_distance, 2)) / (total_distances - 1), 0.5)
-        maois['maxdistance'] = max(maois['maxdistance'], new_AOI_Stat['maxdistance'])
-        maois['mindistance'] = min(maois['mindistance'], new_AOI_Stat['mindistance'])
-        maois['meandistance'] = aggregate_mean_distance
-        #if maois.starttime > new_AOI_Stat.starttime:
-        #    maois['startdistance'] = new_AOI_Stat['startdistance']
-    #    if maois.endtime < new_AOI_Stat.endtime:
-    #        maois['enddistance'] = new_AOI_Stat['enddistance']
-        maois['numdistancedata'] += new_AOI_Stat['numdistancedata']
+    if maois['numdistancedata'] == 0:
+        maois['numdistancedata'] = new_AOI_Stat['numdistancedata']
+        maois['meandistance'] = new_AOI_Stat['meandistance']
+        maois['stddevdistance'] = new_AOI_Stat['stddevdistance']
+        maois['maxdistance'] = new_AOI_Stat['maxdistance']
+        maois['mindistance'] = new_AOI_Stat['mindistance']
+    else:
+        if new_AOI_Stat['numdistancedata'] + maois['numdistancedata'] > 1 and new_AOI_Stat['numdistancedata'] > 0:
+            total_distances = maois['numdistancedata'] + new_AOI_Stat['numdistancedata']
+            aggregate_mean_distance = maois['meandistance'] * float(maois['numdistancedata']) / total_distances + new_AOI_Stat['meandistance'] * float(new_AOI_Stat['numdistancedata']) / total_distances
+            maois['stddevdistance'] = pow(((maois['numdistancedata'] - 1) * pow(maois['stddevdistance'], 2) + \
+                                        (new_AOI_Stat['numdistancedata'] - 1) * pow(new_AOI_Stat['stddevdistance'], 2) + \
+                                        maois['numdistancedata'] * pow(maois['meandistance'] - aggregate_mean_distance , 2) \
+                                        + new_AOI_Stat['numdistancedata'] * pow(new_AOI_Stat['meandistance'] - aggregate_mean_distance, 2)) / (total_distances - 1), 0.5)
+            maois['maxdistance'] = max(maois['maxdistance'], new_AOI_Stat['maxdistance'])
+            maois['mindistance'] = min(maois['mindistance'], new_AOI_Stat['mindistance'])
+            maois['meandistance'] = aggregate_mean_distance
+            #if maois.starttime > new_AOI_Stat.starttime:
+            #    maois['startdistance'] = new_AOI_Stat['startdistance']
+        #    if maois.endtime < new_AOI_Stat.endtime:
+        #        maois['enddistance'] = new_AOI_Stat['enddistance']
+            maois['numdistancedata'] += new_AOI_Stat['numdistancedata']
 
 
 def merge_aoi_pupil(new_AOI_Stat, maois):
@@ -242,29 +249,53 @@ def merge_aoi_pupil(new_AOI_Stat, maois):
             maois: AOI_Stat object of this Scene (must have been initialised)
             new_AOI_Stat: a new AOI_Stat object
         """
-    if new_AOI_Stat['numpupilsizes'] + maois['numpupilsizes'] > 1 and new_AOI_Stat['numpupilsizes'] > 0:
-        total_numpupilsizes = maois['numpupilsizes'] + new_AOI_Stat['numpupilsizes']
-        aggregate_mean_pupil =  maois['meanpupilsize'] * float(maois['numpupilsizes']) / total_numpupilsizes + new_AOI_Stat['meanpupilsize'] * float(new_AOI_Stat['numpupilsizes']) / total_numpupilsizes
-        maois['stddevpupilsize'] = pow(((maois['numpupilsizes'] - 1) * pow(maois['stddevpupilsize'], 2) \
-                                            + (new_AOI_Stat['numpupilsizes'] - 1) * pow(new_AOI_Stat['stddevpupilsize'], 2) + \
-                                            maois['numpupilsizes'] *  pow(maois['meanpupilsize'] - aggregate_mean_pupil, 2) + \
-                                            new_AOI_Stat['numpupilsizes'] * pow(new_AOI_Stat['meanpupilsize'] - aggregate_mean_pupil, 2)) \
-                                            / (total_numpupilsizes - 1), 0.5)
-        maois['maxpupilsize'] = max(maois['maxpupilsize'], new_AOI_Stat['maxpupilsize'])
-        maois['minpupilsize'] = min(maois['maxpupilsize'], new_AOI_Stat['maxpupilsize'])
-        maois['meanpupilsize'] = aggregate_mean_pupil
-        #if maois['starttime'] > new_AOI_Stat['starttime']:
-        #    maois['startpupilsize'] = new_AOI_Stat['startpupilsize']
-        #if maois['endtime'] < new_AOI_Stat['endtime']:
-        #    maois['endpupilsize'] = new_AOI_Stat['endpupilsize']
+    if maois['numpupilsizes'] == 0:
+        maois['numpupilsizes'] = new_AOI_Stat['numpupilsizes']
+        maois['meanpupilsize'] = new_AOI_Stat['meanpupilsize']
+        maois['stddevpupilsize'] = new_AOI_Stat['stddevpupilsize']
+        maois['maxpupilsize'] = new_AOI_Stat['maxpupilsize']
+        maois['minpupilsize'] = new_AOI_Stat['minpupilsize']
+        maois['numpupilsizes'] = new_AOI_Stat['numpupilsizes']
+        maois['meanpupilvelocity'] = new_AOI_Stat['meanpupilvelocity']
+        maois['stddevpupilvelocity'] = new_AOI_Stat['stddevpupilvelocity']
+        maois['maxpupilvelocity'] = new_AOI_Stat['maxpupilvelocity']
+        maois['minpupilvelocity'] = new_AOI_Stat['minpupilvelocity']
+    else:
+        if new_AOI_Stat['numpupilsizes'] > 0:
+            total_numpupilsizes = maois['numpupilsizes'] + new_AOI_Stat['numpupilsizes']
+            aggregate_mean_pupil =  maois['meanpupilsize'] * float(maois['numpupilsizes']) / total_numpupilsizes + new_AOI_Stat['meanpupilsize'] * float(new_AOI_Stat['numpupilsizes']) / total_numpupilsizes
+            maois['stddevpupilsize'] = pow(((maois['numpupilsizes'] - 1) * pow(maois['stddevpupilsize'], 2) \
+                                                + (new_AOI_Stat['numpupilsizes'] - 1) * pow(new_AOI_Stat['stddevpupilsize'], 2) + \
+                                                maois['numpupilsizes'] *  pow(maois['meanpupilsize'] - aggregate_mean_pupil, 2) + \
+                                                new_AOI_Stat['numpupilsizes'] * pow(new_AOI_Stat['meanpupilsize'] - aggregate_mean_pupil, 2)) \
+                                                / (total_numpupilsizes - 1), 0.5)
+            maois['maxpupilsize'] = max(maois['maxpupilsize'], new_AOI_Stat['maxpupilsize'])
+            maois['minpupilsize'] = min(maois['maxpupilsize'], new_AOI_Stat['maxpupilsize'])
+            maois['meanpupilsize'] = aggregate_mean_pupil
+            #if maois['starttime'] > new_AOI_Stat['starttime']:
+            #    maois['startpupilsize'] = new_AOI_Stat['startpupilsize']
+            #if maois['endtime'] < new_AOI_Stat['endtime']:
+            #    maois['endpupilsize'] = new_AOI_Stat['endpupilsize']
+            maois['numpupilsizes'] += new_AOI_Stat['numpupilsizes']
 
-        maois['numpupilsizes'] += new_AOI_Stat['numpupilsizes']
+        total_numpupilvelocity = maois['numpupilvelocity'] + new_AOI_Stat['numpupilvelocity']
+        if total_numpupilvelocity > 1 and new_AOI_Stat['numpupilvelocity'] > 0:
+            aggregate_mean_velocity =  maois['meanpupilvelocity'] * float(maois['numpupilvelocity']) / total_numpupilvelocity + new_AOI_Stat['meanpupilvelocity'] * float(new_AOI_Stat['numpupilvelocity']) / total_numpupilvelocity
+            maois['stddevpupilvelocity'] = pow(((maois['numpupilvelocity'] - 1) * pow(maois['stddevpupilvelocity'], 2) \
+                                                + (new_AOI_Stat['numpupilvelocity'] - 1) * pow(new_AOI_Stat['stddevpupilvelocity'], 2) + \
+                                                maois['numpupilvelocity'] *  pow(maois['meanpupilvelocity'] - aggregate_mean_velocity, 2) + \
+                                                new_AOI_Stat['numpupilvelocity'] * pow(new_AOI_Stat['meanpupilvelocity'] - aggregate_mean_velocity, 2)) \
+                                                / (total_numpupilvelocity - 1), 0.5)
+            maois['maxpupilvelocity'] = max(maois['maxpupilvelocity'], new_AOI_Stat['maxpupilvelocity'])
+            maois['minpupilvelocity'] = min(maois['minpupilvelocity'], new_AOI_Stat['minpupilvelocity'])
+            maois['meanpupilvelocity'] = aggregate_mean_velocity
+            maois['numpupilvelocity'] += new_AOI_Stat['numpupilvelocity']
 
 def merge_aoi_transitions(self):
         #calculating the transitions to and from this AOI and other active AOIs at the moment
     new_AOI_Stat_transition_aois = filter(lambda x: x.startswith('numtransfrom_'), new_AOI_Stat.features.keys())
-    if params.DEBUG or params.VERBOSE == "VERBOSE":
-        print "Segment's transition_aois", new_AOI_Stat_transition_aois
+    #if params.DEBUG or params.VERBOSE == "VERBOSE":
+    #    print "Segment's transition_aois", new_AOI_Stat_transition_aois
 
     maois.total_trans_from += new_AOI_Stat.total_trans_from   #updating the total number of transition from this AOI
     for feat in new_AOI_Stat_transition_aois:
