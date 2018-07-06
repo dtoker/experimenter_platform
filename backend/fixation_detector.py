@@ -132,12 +132,12 @@ class FixationDetector(DetectionComponent):
                     y_fixation /= points_in_fixation
 
                     self.tobii_controller.add_fixation(Efix[0][3], Efix[0][4], Efix[0][2])
-                    print("size of AOIs: %d" % len(self.AOIS))
+                    #print("size of AOIs: %d" % len(self.AOIS))
                     for ws in self.liveWebSocket:
                         for aoi in self.AOIS:
                             if (fixation_inside_aoi(x_fixation, y_fixation, self.AOIS[aoi])):
                                 ws.write_message('{"x":"%d", "y":"%d"}' % (x_fixation, y_fixation))
-                                print(Efix[0][3], Efix[0][4])
+                                #print(Efix[0][3], Efix[0][4])
                                 self.cur_fix_id += 1
                                 self.application_state_controller.updateFixTable(aoi, self.cur_fix_id, int(Sfix[0]), int(EfixEndTime), int(EfixEndTime - Sfix[0]))
                                 self.adaptation_loop.evaluateRules(aoi, EfixEndTime)

@@ -344,6 +344,10 @@ class ApplicationStateController():
             polygon = aoi['polygon']
             mapping[event_name] = polygon
 
+<<<<<<< HEAD
+=======
+        #print mapping
+>>>>>>> preliminary bug fixes
         return mapping
 
     def getEdmatFeatures(self):
@@ -392,7 +396,7 @@ class ApplicationStateController():
             value = int(query_results.fetchone()['result'])
         except:
             raise ValueError("Malformed SQL conditional check in gaze_event_rules.db")
-        print value
+        #print value
         return value
 
     def updateFixTable(self, table, id, time_start, time_end, duration):
