@@ -108,7 +108,11 @@ def merge_pupil_features(part_features, accumulator_features):
                                                                             "['numpupilsizes']", "['stddevpupilsize']",
                                                                             "['meanpupilsize']", mean_pupilsize)
         accumulator_features['maxpupilsize']       = maxfeat(part_features, accumulator_features, "['maxpupilsize']")
+
         accumulator_features['minpupilsize']       = minfeat(part_features, accumulator_features, "['minpupilsize']", -1)
+
+
+
         accumulator_features['meanpupilsize']      = mean_pupilsize
         accumulator_features['numpupilsizes']      = numpupilsizes
         #self.features['startpupilsize'] = self.firstseg.features['startpupilsize']
@@ -126,6 +130,7 @@ def merge_pupil_features(part_features, accumulator_features):
         mean_velocity                                           = weightedmeanfeat(part_features, accumulator_features, "['numpupilvelocity']", "['meanpupilvelocity']")
         accumulator_features['stddevpupilvelocity']             = aggregatestddevfeat(part_features, accumulator_features, "['numpupilvelocity']", "['stddevpupilvelocity']", "['meanpupilvelocity']", mean_velocity)
         accumulator_features['maxpupilvelocity']                = maxfeat(part_features, accumulator_features, "['maxpupilvelocity']")
+
         accumulator_features['minpupilvelocity']                = minfeat(part_features, accumulator_features, "['minpupilvelocity']", -1)
         accumulator_features['meanpupilvelocity']               = mean_velocity
         accumulator_features['numpupilvelocity']                = numpupilvelocity
@@ -168,6 +173,7 @@ def merge_distance_features(part_features, accumulator_features):
         mean_distance                                           = weightedmeanfeat(part_features, accumulator_features, "['numdistancedata']", "['meandistance']")
         accumulator_features['stddevdistance']                  = aggregatestddevfeat(part_features, accumulator_features, "['numdistancedata']", "['stddevdistance']", "['meandistance']", curr_mean_distance)
         accumulator_features['maxdistance']                     = maxfeat(part_features, accumulator_features, "['maxdistance']")
+
         accumulator_features['mindistance']                     = minfeat(part_features, accumulator_features, "['mindistance']", -1)
         accumulator_features['mean_distance']                   = mean_distance
         accumulator_features['numdistancedata']                 = numdistancedata
@@ -323,8 +329,8 @@ def merge_aoi_pupil(part_features, accumulator_features):
     print "stddevpupilsize %f" % accumulator_features['stddevpupilsize']
     print "maxpupilsize %f" % accumulator_features['maxpupilsize']
     print "minpupilsize %f" % accumulator_features['minpupilsize']
-    print "startpupilsize %f" % accumulator_features['startpupilsize']
-    print "endpupilsize %f" % accumulator_features['endpupilsize']
+    #print "startpupilsize %f" % accumulator_features['startpupilsize']
+    #print "endpupilsize %f" % accumulator_features['endpupilsize']
     print "meanpupilvelocity %f" % accumulator_features['meanpupilvelocity']
     print "stddevpupilvelocity %f" % accumulator_features['stddevpupilvelocity']
     print "maxpupilvelocity %f" % accumulator_features['maxpupilvelocity']
@@ -459,7 +465,14 @@ def minfeat(part_features, accumulator_features, feat, nonevalue = None):
     Returns:
         the min of the target feature over the given list of objects
     """
-    return min(eval('part_features'+feat), eval('accumulator_features'+feat))
+    part_feat = eval('part_features' + feat)
+    acc_feat =  eval('accumulator_features' + feat)
+    if (part_feat != nonevalue and acc_feat != nonevalue):
+        return min(eval('part_features'+feat), eval('accumulator_features'+feat))
+    elif (part_feat != nonevalue):
+        return part_feat
+    else:
+        return nonevalue
 
 def maxfeat(part_features, accumulator_features, feat):
     """a helper method that calculates the max of a target feature over a list of objects
