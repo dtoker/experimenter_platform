@@ -74,11 +74,11 @@ def merge_path_angle_features(part_features, accumulator_features, length, lengt
         accumulator_features['sumpathdistance']         = -1
         accumulator_features['stddevpathdistance']      = -1
         accumulator_features['eyemovementvelocity']     = -1
-        accumulator_features['sumabspathangles']    = -1
+        accumulator_features['sumabspathangles']        = -1
         accumulator_features['abspathanglesrate']       = -1
         accumulator_features['meanabspathangles']       = -1
         accumulator_features['stddevabspathangles']     = -1
-        accumulator_features['sumrelpathangles']    = -1
+        accumulator_features['sumrelpathangles']        = -1
         accumulator_features['relpathanglesrate']       = -1
         accumulator_features['meanrelpathangles']       = -1
         accumulator_features['stddevrelpathangles']     = -1
@@ -108,10 +108,7 @@ def merge_pupil_features(part_features, accumulator_features):
                                                                             "['numpupilsizes']", "['stddevpupilsize']",
                                                                             "['meanpupilsize']", mean_pupilsize)
         accumulator_features['maxpupilsize']       = maxfeat(part_features, accumulator_features, "['maxpupilsize']")
-
         accumulator_features['minpupilsize']       = minfeat(part_features, accumulator_features, "['minpupilsize']", -1)
-
-
 
         accumulator_features['meanpupilsize']      = mean_pupilsize
         accumulator_features['numpupilsizes']      = numpupilsizes
@@ -339,27 +336,24 @@ def merge_aoi_pupil(part_features, accumulator_features):
     print "numpupilvelocity %f" % accumulator_features['numpupilvelocity']
     print
 
-def merge_aoi_transitions(self):
+def merge_aoi_transitions(part_features, accumulator_features):
         #calculating the transitions to and from this AOI and other active AOIs at the moment
-    part_features_transition_aois = filter(lambda x: x.startswith('numtransfrom_'), part_features.features.keys())
-    #if params.DEBUG or params.VERBOSE == "VERBOSE":
-    #    print "Segment's transition_aois", part_features_transition_aois
+    part_features_transition_aois = filter(lambda x: x.startswith('numtransfrom_'), part_features.keys())
 
-    accumulator_features.total_trans_from += part_features.total_trans_from   #updating the total number of transition from this AOI
+    accumulator_features['total_trans_from'] += part_features['total_trans_from']   #updating the total number of transition from this AOI
     for feat in part_features_transition_aois:
-        if feat in accumulator_features.features:
-            accumulator_features.features[feat] += part_features.features[feat]
+        if feat in accumulator_features:
+            accumulator_features[feat] += part_features[feat]
         else:
-            accumulator_features.features[feat] = part_features.features[feat]
-#              sumtransfrom += accumulator_features.features[feat]
+            accumulator_features[feat] = part_features[feat]
     # updating the proportion tansition features based on new transitions to and from this AOI
-    accumulator_features_transition_aois = filter(lambda x: x.startswith('numtransfrom_'),accumulator_features.features.keys()) #all the transition features for this AOI should be aupdated even if they are not active for this segment
+    accumulator_features_transition_aois = filter(lambda x: x.startswith('numtransfrom_'), accumulator_features.keys()) #all the transition features for this AOI should be aupdated even if they are not active for this segment
     for feat in accumulator_features_transition_aois:
         aid = feat[len('numtransfrom_'):]
-        if accumulator_features.total_trans_from > 0:
-            accumulator_features.features['proptransfrom_%s'%(aid)] = float(accumulator_features.features[feat]) / accumulator_features.total_trans_from
+        if accumulator_features['total_trans_from'] > 0:
+            accumulator_features['proptransfrom_%s'%(aid)] = float(accumulator_features[feat]) / accumulator_features['total_trans_from']
         else:
-            accumulator_features.features['proptransfrom_%s'%(aid)] = 0
+            accumulator_features['proptransfrom_%s'%(aid)] = 0
     ###endof transition calculation
 
 def calc_distances(fixdata):
