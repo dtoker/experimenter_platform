@@ -148,8 +148,8 @@ class EMDATComponent(DetectionComponent):
             self.emdat_task_features[aoi]['stddevpupilsize']            = -1
             self.emdat_task_features[aoi]['maxpupilsize']               = -1
             self.emdat_task_features[aoi]['minpupilsize']               = -1
-            self.emdat_task_features[aoi]['startpupilsize']             = -1
-            self.emdat_task_features[aoi]['endpupilsize']               = -1
+            #self.emdat_task_features[aoi]['startpupilsize']             = -1
+            #self.emdat_task_features[aoi]['endpupilsize']               = -1
             self.emdat_task_features[aoi]['meanpupilvelocity']          = -1
             self.emdat_task_features[aoi]['stddevpupilvelocity']        = -1
             self.emdat_task_features[aoi]['maxpupilvelocity']           = -1
@@ -220,8 +220,8 @@ class EMDATComponent(DetectionComponent):
         self.emdat_interval_features['stddevpupilsize']     = -1
         self.emdat_interval_features['maxpupilsize']        = -1
         self.emdat_interval_features['minpupilsize']        = -1
-        self.emdat_interval_features['startpupilsize']      = -1
-        self.emdat_interval_features['endpupilsize']        = -1
+        #self.emdat_interval_features['startpupilsize']      = -1
+        #self.emdat_interval_features['endpupilsize']        = -1
         self.emdat_interval_features['meanpupilvelocity']   = -1
         self.emdat_interval_features['stddevpupilvelocity'] = -1
         self.emdat_interval_features['maxpupilvelocity']    = -1
@@ -241,8 +241,8 @@ class EMDATComponent(DetectionComponent):
             self.emdat_interval_features['stddevpupilsize']         = stddev(valid_pupil_data)
             self.emdat_interval_features['maxpupilsize']            = max(valid_pupil_data)
             self.emdat_interval_features['minpupilsize']            = min(valid_pupil_data)
-            self.emdat_interval_features['startpupilsize']          = valid_pupil_data[0]
-            self.emdat_interval_features['endpupilsize']            = valid_pupil_data[-1]
+            #self.emdat_interval_features['startpupilsize']          = valid_pupil_data[0]
+            #self.emdat_interval_features['endpupilsize']            = valid_pupil_data[-1]
 
             if len(valid_pupil_velocity) > 0:
                 self.emdat_interval_features['meanpupilvelocity']   = mean(valid_pupil_velocity)
@@ -401,7 +401,7 @@ class EMDATComponent(DetectionComponent):
         print "numfixdistances %f" %self.emdat_interval_features['numfixdistances']
         print "numabsangles %f" %self.emdat_interval_features['numabsangles']
         print "numrelangles %f" %self.emdat_interval_features['numrelangles']
-
+        print
 
     def calc_validity_gaps(self):
         """Calculates the largest gap of invalid samples in the "Datapoint"s for this Segment.
@@ -480,8 +480,8 @@ class EMDATComponent(DetectionComponent):
         self.emdat_interval_features[aoi]['stddevpupilsize']        = -1
         self.emdat_interval_features[aoi]['maxpupilsize']           = -1
         self.emdat_interval_features[aoi]['minpupilsize']           = -1
-        self.emdat_interval_features[aoi]['startpupilsize']         = -1
-        self.emdat_interval_features[aoi]['endpupilsize']           = -1
+        #self.emdat_interval_features[aoi]['startpupilsize']         = -1
+        #self.emdat_interval_features[aoi]['endpupilsize']           = -1
         self.emdat_interval_features[aoi]['meanpupilvelocity']      = -1
         self.emdat_interval_features[aoi]['stddevpupilvelocity']    = -1
         self.emdat_interval_features[aoi]['maxpupilvelocity']       = -1
@@ -502,8 +502,8 @@ class EMDATComponent(DetectionComponent):
             self.emdat_interval_features[aoi]['stddevpupilsize']            = np.std(adjvalidpupilsizes)
             self.emdat_interval_features[aoi]['maxpupilsize']               = np.max(adjvalidpupilsizes)
             self.emdat_interval_features[aoi]['minpupilsize']               = np.min(adjvalidpupilsizes)
-            self.emdat_interval_features[aoi]['startpupilsize']             = adjvalidpupilsizes[0]
-            self.emdat_interval_features[aoi]['endpupilsize']               = adjvalidpupilsizes[-1]
+            #self.emdat_interval_features[aoi]['startpupilsize']             = adjvalidpupilsizes[0]
+            #self.emdat_interval_features[aoi]['endpupilsize']               = adjvalidpupilsizes[-1]
 
             if self.emdat_interval_features[aoi]['numpupilvelocity'] > 0:
                 self.emdat_interval_features[aoi]['meanpupilvelocity']      = np.mean(valid_pupil_velocity)
@@ -515,8 +515,8 @@ class EMDATComponent(DetectionComponent):
         print "stddevpupilsize %f" % self.emdat_interval_features[aoi]['stddevpupilsize']
         print "maxpupilsize %f" % self.emdat_interval_features[aoi]['maxpupilsize']
         print "minpupilsize %f" % self.emdat_interval_features[aoi]['minpupilsize']
-        print "startpupilsize %f" % self.emdat_interval_features[aoi]['startpupilsize']
-        print "endpupilsize %f" % self.emdat_interval_features[aoi]['endpupilsize']
+        #print "startpupilsize %f" % self.emdat_interval_features[aoi]['startpupilsize']
+        #print "endpupilsize %f" % self.emdat_interval_features[aoi]['endpupilsize']
         print "meanpupilvelocity %f" % self.emdat_interval_features[aoi]['meanpupilvelocity']
         print "stddevpupilvelocity %f" % self.emdat_interval_features[aoi]['stddevpupilvelocity']
         print "maxpupilvelocity %f" % self.emdat_interval_features[aoi]['maxpupilvelocity']
