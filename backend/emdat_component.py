@@ -73,6 +73,7 @@ class EMDATComponent(DetectionComponent):
         """ calculate AOIs features """
         self.calc_aoi_features()# rest_pupil_size, export_pupilinfo)
         print("Calculating ALL AOI: --- %s seconds ---" % (time.time() - all_aoi_time))
+        all_merging_time = time.time()
         if (params.KEEP_TASK_FEATURES and params.KEEP_GLOBAL_FEATURES):
             self.merge_features(self.emdat_interval_features, self.emdat_task_features)
             self.merge_features(self.emdat_task_features, self.tobii_controller.emdat_global_features, isTotal = True)
@@ -80,6 +81,7 @@ class EMDATComponent(DetectionComponent):
             self.merge_features(self.emdat_interval_features, self.emdat_task_features)
         elif (params.KEEP_GLOBAL_FEATURES):
             self.merge_features(self.emdat_interval_features, self.tobii_controller.emdat_global_features, isTotal = True)
+        print("Merging ALL features: --- %s seconds ---" % (time.time() - all_merging_time))
         print("Complete EMDAT execution --- %s seconds ---" % (time.time() - start_time))
         print
         print
@@ -190,6 +192,7 @@ class EMDATComponent(DetectionComponent):
             if not isTotal:
                 for aoi in self.AOIS.keys():
                     merge_aoi_fixations(part_features[aoi], accumulator_features[aoi], 1, 1)
+                    merge_aoi_transitions(part_features[aoi], accumulator_features[aoi])
 
     def calc_pupil_features(self):
         """ Calculates pupil features such as
@@ -467,7 +470,6 @@ class EMDATComponent(DetectionComponent):
                 valid_fixation_indices = np.apply_along_axis(datapoint_inside_aoi, 1, fixation_vals[:, :2], poly = poly)
                 valid_fixation_vals    = fixation_vals[valid_fixation_indices]
             if (params.USE_FIXATION_PATH_FEATURES):
-
                 fixation_indices       = self.generate_aoi_fixation_features(aoi, valid_fixation_vals, self.length_invalid)
             if (params.USE_TRANSITION_AOI_FEATURES):
                 fixation_indices = np.where(np.apply_along_axis(datapoint_inside_aoi, 1, fixation_vals[:, :2], poly = poly))
@@ -590,8 +592,6 @@ class EMDATComponent(DetectionComponent):
         print "proportiontime %f" % self.emdat_interval_features[aoi]['proportiontime']
         print "fixationrate %f" % self.emdat_interval_features[aoi]['fixationrate']
         print "totaltimespent %f" % self.emdat_interval_features[aoi]['totaltimespent']
-        print
-
 
     def generate_transition_features(self, cur_aoi, fixation_data, fixation_indices):
         for aoi in self.AOIS.keys():
