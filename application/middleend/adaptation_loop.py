@@ -95,6 +95,7 @@ class AdaptationLoop():
                 if self.app_state_controller.evaluateConditional(removal_condition):
                     self.app_state_controller.setInterventionInactive(intervention_name)
                     to_remove.append(intervention_name)
+                    print("removing: " + intervention_name)
 
         #dispatch a call to remove all the interventions from the UI
         #TODO: Whether or not liveWebSocket should be an array
@@ -187,6 +188,7 @@ class AdaptationLoop():
                         intervention_params = results.fetchone()
                         to_deliver_rules.append(intervention_params)
                         self.app_state_controller.setInterventionActive(intervention_name, rule_name, time_stamp)
+                        #print("triggered: " + rule_name + " deliverying: " + intervention_name)
 
         #TODO: whether or not liveWebSocket should be an array
         if to_deliver_rules:
@@ -225,16 +227,31 @@ class AdaptationLoop():
     def test(self):
         # for testing purposes:
         table = "text_fix"
-        self.app_state_controller.updateFixTable(table, 1, 700, 1200, 200)
-        self.app_state_controller.updateFixTable(table, 2, 700, 1200, 200)
-        self.app_state_controller.setInterventionInactive("intervention_1")
-        self.app_state_controller.setInterventionActive("intervention_1", "rule_1", 2000)
-        self.app_state_controller.setInterventionActive("intervention_1", "rule_2", 3000)
-        self.app_state_controller.setInterventionInactive("intervention_1")
+        self.app_state_controller.updateFixTable(table, 1, long(700), long(1200), 200)
+        self.app_state_controller.updateFixTable(table, 2, long(700), long(1200), 200)
+        #self.app_state_controller.setInterventionInactive("intervention_1")
+        #self.app_state_controller.setInterventionActive("intervention_1", "rule_1", 2000)
+        #self.app_state_controller.setInterventionActive("intervention_1", "rule_2", 3000)
+        #self.app_state_controller.setInterventionInactive("intervention_1")
+
+        print self.app_state_controller.getFixAoiMapping()
+        print self.app_state_controller.getEmdatAoiMapping()
+        print self.app_state_controller.getEdmatFeatures()
+        print("new fix")
         self.evaluateRules('text_fix', 3000)
-        self.evaluateRules('vis_fix', 4000)
-        self.evaluateRules('vis_fix', 5000)
+        #self.evaluateRules('vis_fix', 4000)
+        #self.evaluateRules('vis_fix', 5000)
+        print("new fix")
         self.evaluateRules('text_fix', 6000)
+        print("new fix")
+        self.evaluateRules('text_fix', 6000)
+        print("new fix")
+        self.evaluateRules('text_fix', 3000)
+        print("new fix")
+        #self.evaluateRules('vis_fix', 4000)
+        #self.evaluateRules('vis_fix', 5000)
+        self.evaluateRules('text_fix', 6000)
+        print("new fix")
         self.evaluateRules('text_fix', 6000)
         self.app_state_controller.resetApplication()
 

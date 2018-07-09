@@ -171,7 +171,7 @@ class ApplicationStateController():
             if user['type'] == 'fix':
                 self.conn.execute("CREATE TABLE {} ( `id` INTEGER, `time_start` INTEGER, `time_end` INTEGER, `duration` INTEGER, PRIMARY KEY(`id`) )".format(table_name))
             elif user['type'] == 'emdat':
-                self.conn.execute("CREATE TABLE {} ( `id` INTEGER, `value` INTEGER, PRIMARY KEY(`id`) )".format(table_name))
+                self.conn.execute("CREATE TABLE {} ( `id` INTEGER, `interval_value` INTEGER, `task_value` TEXT, `runtime_value` TEXT, PRIMARY KEY(`id`) )".format(table_name))
             elif user['type'] == 'ml':
                 self.conn.execute("CREATE TABLE {} ( `id` INTEGER, `time_stamp` INTEGER, `raw_prediction` REAL, `value` TEXT, PRIMARY KEY(`id`) )".format(table_name))
             else:
@@ -296,9 +296,59 @@ class ApplicationStateController():
         self.__writeDBToDisk__()
 
 
-    def getAoiMapping(self):
+    def getFixAoiMapping(self):
 
-        """ Returns a mapping of the user states to aoi's
+        """ Returns a mapping of the fixation user states (event name) to aoi's
+
+        arguments
+        None
+
+        keyword arguments
+        None
+
+        returns
+        Dict    -- contains a mapping of the fixation user state as keys
+                to the polygon coordinates of their respective aoi's
+        """
+        mapping = {}
+        query_results = self.conn.execute("SELECT user_state.event_name, polygon FROM aoi, user_state, user_state_task WHERE user_state.aoi = aoi.name AND aoi.task = ? AND user_state.event_name = user_state_task.event_name AND user_state_task.task = ? AND type = 'fix'", (str(self.currTask), str(self.currTask)))
+        aoi_results = query_results.fetchall()
+        for aoi in aoi_results:
+            event_name = aoi['event_name']
+
+            polygon = aoi['polygon']
+            mapping[event_name] = polygon
+
+        return mapping
+
+    def getEmdatAoiMapping(self):
+
+        """ Returns a mapping of the emdat user states (event name) to aoi's
+
+        arguments
+        None
+
+        keyword arguments
+        None
+
+        returns
+        Dict    -- contains a mapping of the edmat user state as keys
+                to the polygon coordinates of their respective aoi's
+        """
+        mapping = {}
+        query_results = self.conn.execute("SELECT user_state.event_name, polygon FROM aoi, user_state, user_state_task WHERE user_state.aoi = aoi.name AND aoi.task = ? AND user_state.event_name = user_state_task.event_name AND user_state_task.task = ? AND type = 'emdat'", (str(self.currTask), str(self.currTask)))
+        aoi_results = query_results.fetchall()
+        for aoi in aoi_results:
+            event_name = aoi['event_name']
+
+            polygon = aoi['polygon']
+            mapping[event_name] = polygon
+
+        return mapping
+
+    def getEdmatFeatures(self):
+
+        """ Returns a mapping of the emdat user states (event names) to its associated emdat feature
 
         arguments
         None
@@ -308,20 +358,18 @@ class ApplicationStateController():
 
         returns
         Dict    -- contains a mapping of the user state as keys
-                to the polygon coordinates of their respective aoi's
+                to their respective emdat features
         """
         mapping = {}
-        query_results = self.conn.execute("SELECT user_state.event_name, polygon FROM aoi, user_state, user_state_task WHERE user_state.aoi = aoi.name AND aoi.task = ? AND user_state.event_name = user_state_task.event_name AND user_state_task.task = ?", (str(self.currTask), str(self.currTask)))
-        aoi_results = query_results.fetchall()
-        for aoi in aoi_results:
-            event_name = aoi['event_name']
+        query_results = self.conn.execute("SELECT user_state.event_name, feature FROM user_state, user_state_task WHERE user_state.event_name = user_state_task.event_name AND user_state_task.task = ? AND type = 'emdat'", (str(self.currTask),))
+        feature_results = query_results.fetchall()
+        for feature in feature_results:
+            event_name = feature['event_name']
 
-            polygon = aoi['polygon']
-            mapping[event_name] = polygon
+            feature_value = feature['feature']
+            mapping[event_name] = feature_value
 
-        print mapping
         return mapping
-
 
     def evaluateConditional(self, query):
 
@@ -370,16 +418,14 @@ class ApplicationStateController():
         self.conn.execute("INSERT INTO {} VALUES (?,?,?,?)".format(table), (id, time_start, time_end, duration))
         self.conn.commit()
 
-    def updateEmdatTable(self, table, id, value):
+    def updateEmdatTable(self, id, edmat_features):
 
         """ Insert a new row into an emdat table
 
         arguments
-        table       -- String, name of an existing emdat table
-                    (ie. one of the user states)
 
-        id          -- int, id associated with the emdat event
-        value       -- float, value associated with the emdat feature
+        id                   -- int, id associated with the emdat event
+        edmat_features       -- dict, event_names as keys, mapped to a tuple (interval_value, task_value, runtime_value)
 
         keyword arguments
         None
@@ -389,7 +435,8 @@ class ApplicationStateController():
         """
 
         #TODO: type checking
-        self.conn.execute("INSERT INTO {} VALUES (?,?,?,?)".format(table), (id, value))
+        for event_name in emdat_features:
+            self.conn.execute("INSERT INTO {} VALUES (?,?,?,?)".format(event_name), (id,) + interval_features[event_name])
         self.conn.commit()
 
     def updateMlTable(self, table, id, time_stamp, raw_prediction, value):
