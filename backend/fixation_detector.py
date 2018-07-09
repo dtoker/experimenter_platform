@@ -11,6 +11,7 @@ class FixationDetector(DetectionComponent):
         FixationDetector.controller_num += 1
         self.runOnlineFix = True
         self.cur_fix_id = 0
+        self.AOIS = self.application_state_controller.getFixAoiMapping()
 
     #def notify_app_state_controller(self, x, y):
     #    for aoi in self.AOIs:

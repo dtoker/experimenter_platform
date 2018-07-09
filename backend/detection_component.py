@@ -12,7 +12,6 @@ class DetectionComponent():
         self.callback_time = callback_time
         self.liveWebSocket = liveWebSocket
         print("querying db")
-        self.AOIS = self.application_state_controller.getAoiMapping()
         print("queried db")
 
     @abstractmethod

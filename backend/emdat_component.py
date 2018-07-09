@@ -9,7 +9,6 @@ import numpy as np
 from emdat_utils import *
 import ast
 
-# TODO figure out length_valid and length_invalid things
 class EMDATComponent(DetectionComponent):
 
     def  __init__(self, tobii_controller, adaptation_loop, callback_time):
@@ -20,7 +19,10 @@ class EMDATComponent(DetectionComponent):
         self.dist_idx   = 0
         self.fix_idx    = 0
         self.x_y_idx    = 0
-        self.feature_select = {}
+        self.id = 1
+        self.AOIS = self.application_state_controller.getEmdatAoiMapping()
+        self.tobii_controller.update_aoi_storage(self.AOIS)
+        self.feature_select = self.application_state_controller.getEdmatFeatures()
 
     def notify_app_state_controller(self):
         self.merge_features()
@@ -30,13 +32,18 @@ class EMDATComponent(DetectionComponent):
         self.app_state_controller.send_global_features(self.select_features(self.tobii_controller.emdat_global_features))
         '''
 
-    def select_features(self, feature_source):
+    def select_features(self):
         features_to_send = {}
-        for key, value in self.feature_select:
-            if value.AOI == []:
-                features_to_send[key] = feature_source[value.feature]
+        for event_name, feature_name in self.feature_select.iteritems():
+            print("adding feature for event: " + event_name)
+            if self.AOIS[event_name] == []:
+                features_to_send[event_name] = (self.emdat_interval_features[feature_name],
+                                                self.emdat_task_features[feature_name],
+                                                self.tobii_controller.emdat_global_features[feature_name])
             else:
-                features_to_send[key] = feature_source[key][value.feature]
+                features_to_send[event_name] = (self.emdat_interval_features[event_name][feature_name],
+                                                self.emdat_task_features[event_name][feature_name],
+                                                self.tobii_controller.emdat_global_features[event_name][feature_name])
         return features_to_send
 
     @gen.coroutine
@@ -82,11 +89,12 @@ class EMDATComponent(DetectionComponent):
         elif (params.KEEP_GLOBAL_FEATURES):
             self.merge_features(self.emdat_interval_features, self.tobii_controller.emdat_global_features, isTotal = True)
         print("Merging ALL features: --- %s seconds ---" % (time.time() - all_merging_time))
-        print("Complete EMDAT execution --- %s seconds ---" % (time.time() - start_time))
+        print("Complete EMDAT execution --- %s seconds --- \n\n\n" % (time.time() - start_time))
         print
         print
         print
-        #self.adaptation_loop.evaluateRules(aoi, EfixEndTime)
+        self.id += 1
+        self.application_state_controller.updateEmdatTable(self.id, self.select_features())
 
     def init_emdat_task_features(self):
         self.emdat_task_features = {}
@@ -192,6 +200,7 @@ class EMDATComponent(DetectionComponent):
             if not isTotal:
                 for aoi in self.AOIS.keys():
                     merge_aoi_fixations(part_features[aoi], accumulator_features[aoi], 1, 1)
+                    print('merging transitions for %s aoi' % aoi)
                     merge_aoi_transitions(part_features[aoi], accumulator_features[aoi])
 
     def calc_pupil_features(self):
@@ -418,9 +427,9 @@ class EMDATComponent(DetectionComponent):
         time = self.tobii_controller.time
         fixations = self.tobii_controller.EndFixations
         validity = self.tobii_controller.validity
+        self.time_gaps = []
         if len(fixations) == 0:
             return time[-1] - time[self.pups_idx]
-        self.time_gaps = []
         dindex = self.pups_idx
         datalen = len(validity)
         while dindex < datalen:
@@ -594,6 +603,7 @@ class EMDATComponent(DetectionComponent):
         print "totaltimespent %f" % self.emdat_interval_features[aoi]['totaltimespent']
 
     def generate_transition_features(self, cur_aoi, fixation_data, fixation_indices):
+        print "GENERATING TRANSITION FEATURES FOR %s AOI" % cur_aoi
         for aoi in self.AOIS.keys():
             aid = aoi
             self.emdat_interval_features[cur_aoi]['numtransfrom_%s'%(aid)] = 0
@@ -601,11 +611,11 @@ class EMDATComponent(DetectionComponent):
         sumtransfrom = 0
         for i in fixation_indices:
             if i > 0:
+                # Find the number
                 for aoi in self.AOIS:
                     polyin =  ast.literal_eval(str(self.AOIS[aoi]))
                     #polyout = aoi.polyout
                     key = 'numtransfrom_%s'%(aid)
-                    #TODO ADD POLYOUT
                     #TODO FIX THAT
                     if datapoint_inside_aoi((fixation_data[i-1][0], fixation_data[i-1][1]), polyin):
                         self.emdat_interval_features[cur_aoi][key] += 1
@@ -616,7 +626,9 @@ class EMDATComponent(DetectionComponent):
                 self.emdat_interval_features[cur_aoi]['proptransfrom_%s'%(aoi)] = float(val) / sumtransfrom
             else:
                 self.emdat_interval_features[cur_aoi]['proptransfrom_%s'%(aoi)] = 0
+            print "Proptransform from %s to %s is %f" % (aoi, cur_aoi, self.emdat_interval_features[cur_aoi]['proptransfrom_%s'%(aoi)])
         self.emdat_interval_features[cur_aoi]['total_trans_from']               = sumtransfrom
+        print("Total transitions %d" % sumtransfrom)
 
     def get_length_invalid(self):
         """Returns the sum of the length of the invalid gaps > params.MAX_SEG_TIMEGAP

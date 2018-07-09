@@ -366,6 +366,45 @@ class TobiiController:
 	        return distanceleft
 	    return (distanceleft + distanceright) / 2.0
 
+	def update_aoi_storage(self, AOIS):
+		for event_name in AOIS.keys():
+			if event_name not in self.emdat_global_features:
+				self.emdat_global_features[event_name] = {}
+				self.emdat_global_features[event_name]['longestfixation']			= -1
+				self.emdat_global_features[event_name]['meanfixationduration']      = -1
+				self.emdat_global_features[event_name]['stddevfixationduration']    = -1
+				self.emdat_global_features[event_name]['timetofirstfixation']       = -1
+				self.emdat_global_features[event_name]['timetolastfixation']        = -1
+				self.emdat_global_features[event_name]['proportionnum']			  	= 0
+				self.emdat_global_features[event_name]['proportiontime']			= 0
+				self.emdat_global_features[event_name]['fixationrate']			   	= 0
+				self.emdat_global_features[event_name]['totaltimespent']			= 0
+				self.emdat_global_features[event_name]['meanpupilsize']          	= -1
+				self.emdat_global_features[event_name]['stddevpupilsize']        	= -1
+				self.emdat_global_features[event_name]['maxpupilsize']           	= -1
+				self.emdat_global_features[event_name]['minpupilsize']           	= -1
+				self.emdat_global_features[event_name]['startpupilsize']         	= -1
+				self.emdat_global_features[event_name]['endpupilsize']           	= -1
+				self.emdat_global_features[event_name]['meanpupilvelocity']      	= -1
+				self.emdat_global_features[event_name]['stddevpupilvelocity']    	= -1
+				self.emdat_global_features[event_name]['maxpupilvelocity']       	= -1
+				self.emdat_global_features[event_name]['minpupilvelocity']       	= -1
+				self.emdat_global_features[event_name]['numpupilsizes']          	= 0
+				self.emdat_global_features[event_name]['numpupilvelocity']       	= 0
+				self.emdat_global_features[event_name]['numdistancedata']        	= 0
+				self.emdat_global_features[event_name]['numdistancedata'] 			= 0
+				self.emdat_global_features[event_name]['meandistance']       		= -1
+				self.emdat_global_features[event_name]['stddevdistance']     		= -1
+				self.emdat_global_features[event_name]['maxdistance']        		= -1
+				self.emdat_global_features[event_name]['mindistance']        		= -1
+				#self.emdat_interval_features[event_name]['startdistance']      	= valid_distance_data[0]
+				#self.emdat_interval_features[event_name]['enddistance']        	= valid_distance_data[-1]
+				self.emdat_global_features[event_name]['total_trans_from'] = 0
+				for cur_aoi in AOIS.keys():
+				    self.emdat_global_features[event_name]['numtransfrom_%s'%(cur_aoi)] = 0
+				    self.emdat_global_features[event_name]['proptransfrom_%s'%(cur_aoi)] = -1
+
+
 	def init_emdat_global_features(self):
 		self.emdat_global_features = {}
 		# Pupil features
@@ -412,42 +451,6 @@ class TobiiController:
 		self.emdat_global_features['stddevfixationduration'] 	= -1
 		self.emdat_global_features['sumfixationduration'] 		= -1
 		self.emdat_global_features['fixationrate'] 			= -1
-		self.AOIS = {}
-		for aoi in self.AOIS.keys():
-			self.emdat_global_features[aoi] = {}
-			self.emdat_global_features[aoi]['longestfixation']			= -1
-			self.emdat_global_features[aoi]['meanfixationduration']       = -1
-			self.emdat_global_features[aoi]['stddevfixationduration']     = -1
-			self.emdat_global_features[aoi]['timetofirstfixation']        = -1
-			self.emdat_global_features[aoi]['timetolastfixation']         = -1
-			self.emdat_global_features[aoi]['proportionnum']			  = 0
-			self.emdat_global_features[aoi]['proportiontime']			 = 0
-			self.emdat_global_features[aoi]['fixationrate']			   = 0
-			self.emdat_global_features[aoi]['totaltimespent']			 = 0
-			self.emdat_global_features[aoi]['meanpupilsize']          = -1
-			self.emdat_global_features[aoi]['stddevpupilsize']        = -1
-			self.emdat_global_features[aoi]['maxpupilsize']           = -1
-			self.emdat_global_features[aoi]['minpupilsize']           = -1
-			self.emdat_global_features[aoi]['startpupilsize']         = -1
-			self.emdat_global_features[aoi]['endpupilsize']           = -1
-			self.emdat_global_features[aoi]['meanpupilvelocity']      = -1
-			self.emdat_global_features[aoi]['stddevpupilvelocity']    = -1
-			self.emdat_global_features[aoi]['maxpupilvelocity']       = -1
-			self.emdat_global_features[aoi]['minpupilvelocity']       = -1
-			self.emdat_global_features[aoi]['numpupilsizes']          = 0
-			self.emdat_global_features[aoi]['numpupilvelocity']       = 0
-			self.emdat_global_features[aoi]['numdistancedata']        = len(valid_distance_data)
-			self.emdat_global_features[aoi]['numdistancedata'] = 0
-			self.emdat_global_features[aoi]['meandistance']       = -1
-			self.emdat_global_features[aoi]['stddevdistance']     = -1
-			self.emdat_global_features[aoi]['maxdistance']        = -1
-			self.emdat_global_features[aoi]['mindistance']        = -1
-			#self.emdat_interval_features[aoi]['startdistance']      = valid_distance_data[0]
-			#self.emdat_interval_features[aoi]['enddistance']        = valid_distance_data[-1]
-			self.emdat_global_features[aoi]['total_trans_from'] = 0
-			for cur_aoi in self.AOIS.keys():
-			    self.emdat_global_features[aoi]['numtransfrom_%s'%(cur_aoi)] = 0
-			    self.emdat_global_features[aoi]['proptransfrom_%s'%(cur_aoi)] = -1
 
 	def flush(self):
 		self.x = []

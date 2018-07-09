@@ -344,10 +344,7 @@ class ApplicationStateController():
             polygon = aoi['polygon']
             mapping[event_name] = polygon
 
-<<<<<<< HEAD
-=======
         #print mapping
->>>>>>> preliminary bug fixes
         return mapping
 
     def getEdmatFeatures(self):

@@ -341,6 +341,8 @@ def merge_aoi_transitions(part_features, accumulator_features):
     part_features_transition_aois = filter(lambda x: x.startswith('numtransfrom_'), part_features.keys())
 
     accumulator_features['total_trans_from'] += part_features['total_trans_from']   #updating the total number of transition from this AOI
+    print("Total transitions %d" % accumulator_features['total_trans_from'])
+
     for feat in part_features_transition_aois:
         if feat in accumulator_features:
             accumulator_features[feat] += part_features[feat]
@@ -354,6 +356,8 @@ def merge_aoi_transitions(part_features, accumulator_features):
             accumulator_features['proptransfrom_%s'%(aid)] = float(accumulator_features[feat]) / accumulator_features['total_trans_from']
         else:
             accumulator_features['proptransfrom_%s'%(aid)] = 0
+        print "Proptransform from %s is %f" % (aid, accumulator_features['proptransfrom_%s'%(aid)])
+    print
     ###endof transition calculation
 
 def calc_distances(fixdata):
