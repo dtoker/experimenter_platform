@@ -280,6 +280,9 @@ def merge_aoi_pupil(part_features, accumulator_features):
             accumulator_features: AOI_Stat object of this Scene (must have been initialised)
             part_features: a new AOI_Stat object
         """
+    print('NUMBER OF PUPILS IN ACCUMULATOR: %d' % accumulator_features['numpupilsizes'])
+    print('NUMBER OF PUPILS IN PART: %d' % part_features['numpupilsizes'])
+
     if accumulator_features['numpupilsizes'] == 0:
         accumulator_features['numpupilsizes'] = part_features['numpupilsizes']
         accumulator_features['meanpupilsize'] = part_features['meanpupilsize']

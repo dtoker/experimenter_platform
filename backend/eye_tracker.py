@@ -20,6 +20,8 @@ import csv
 import numpy as np
 from tornado import gen
 from dummy_controller import DummyController
+import emdat_utils
+import ast
 
 class TobiiController:
 
@@ -57,6 +59,8 @@ class TobiiController:
 		self.mainloop_thread = tobii.eye_tracking_io.mainloop.MainloopThread()
 		self.browser = tobii.eye_tracking_io.browsing.EyetrackerBrowser(self.mainloop_thread, lambda t, n, i: self.on_eyetracker_browser_event(t, n, i))
 		self.mainloop_thread.start()
+		self.aoi_ids = {}
+		self.dpt_id = 0
 
 		# for computing pupil velocity
 		self.last_pupil_left = -1
@@ -264,6 +268,8 @@ class TobiiController:
 		self.pupilsize = []
 		self.pupilvelocity = []
 		self.head_distance = []
+		self.aoi_ids = {}
+		self.dpt_id = 0
 
 	def on_gazedata(self,error,gaze):
 
@@ -310,14 +316,15 @@ class TobiiController:
 		else:
 			self.x.append(-1 * 1280)
 			self.y.append(-1 * 1024)
-		# Pupil size feature
+		for aoi, polygon in self.AOIs.iteritems():
+			if emdat_utils.datapoint_inside_aoi((self.x[-1], self.y[-1]), polygon):
+				self.aoi_ids[aoi].append(self.dpt_id)
+		# Pupil size features
 		self.pupilsize.append(self.get_pupil_size(gaze.LeftPupil, gaze.RightPupil))
 		if (self.last_pupil_right != -1):
 			self.pupilvelocity.append(self.get_pupil_velocity(self.last_pupil_left, self.last_pupil_right, gaze.LeftPupil, gaze.RightPupil, gaze.Timestamp - self.LastTimestamp))
 		else:
 			self.pupilvelocity.append(-1)
-		#Future work: Validity Checking
-		#if ((gaze.LeftValidity != 0) & (gaze.RightValidity != 0)):
 		self.time.append(gaze.Timestamp)
 		self.head_distance.append(self.get_distance(gaze.LeftEyePosition3D.z, gaze.RightEyePosition3D.z))
 		self.validity.append(gaze.LeftValidity == 0 or gaze.RightValidity == 0)
@@ -325,6 +332,7 @@ class TobiiController:
 		self.last_pupil_left = gaze.LeftPupil
 		self.last_pupil_right = gaze.LeftPupil
 		self.LastTimestamp = gaze.Timestamp
+		self.dpt_id += 1
 
 	def add_fixation(self, x, y, duration):
 		self.EndFixations.append((x, y, duration))
@@ -367,9 +375,12 @@ class TobiiController:
 	    return (distanceleft + distanceright) / 2.0
 
 	def update_aoi_storage(self, AOIS):
+		self.AOIs = AOIS
 		for event_name in AOIS.keys():
+			self.aoi_ids[event_name] = []
 			if event_name not in self.emdat_global_features:
 				self.emdat_global_features[event_name] = {}
+				self.emdat_global_features[event_name]['numfixations'] 				= 0
 				self.emdat_global_features[event_name]['longestfixation']			= -1
 				self.emdat_global_features[event_name]['meanfixationduration']      = -1
 				self.emdat_global_features[event_name]['stddevfixationduration']    = -1
@@ -408,18 +419,18 @@ class TobiiController:
 	def init_emdat_global_features(self):
 		self.emdat_global_features = {}
 		# Pupil features
-		self.emdat_global_features['numpupilsizes']		= 0
-		self.emdat_global_features['numpupilvelocity']  = 0
+		self.emdat_global_features['numpupilsizes']				= 0
+		self.emdat_global_features['numpupilvelocity']  		= 0
 		self.emdat_global_features['meanpupilsize'] 			= -1
 		self.emdat_global_features['stddevpupilsize'] 			= -1
-		self.emdat_global_features['maxpupilsize'] 			= -1
-		self.emdat_global_features['minpupilsize'] 			= -1
+		self.emdat_global_features['maxpupilsize'] 				= -1
+		self.emdat_global_features['minpupilsize'] 				= -1
 		#self.emdat_global_features['startpupilsize'] 			= -1
 		#self.emdat_global_features['endpupilsize'] 			= -1
 		self.emdat_global_features['meanpupilvelocity'] 		= -1
 		self.emdat_global_features['stddevpupilvelocity'] 		= -1
-		self.emdat_global_features['maxpupilvelocity'] 		= -1
-		self.emdat_global_features['minpupilvelocity'] 		= -1
+		self.emdat_global_features['maxpupilvelocity'] 			= -1
+		self.emdat_global_features['minpupilvelocity'] 			= -1
 		# Distance features
 		self.emdat_global_features['numdistancedata']							= 0
 		self.emdat_global_features['meandistance'] 			= -1
@@ -445,12 +456,12 @@ class TobiiController:
 		self.emdat_global_features['meanrelpathangles']		= -1
 		self.emdat_global_features['stddevrelpathangles'] 		= -1
 		# Fixation features
-		self.emdat_global_features['numfixations'] 			= 0
-		self.emdat_global_features['fixationrate'] 			= -1
-		self.emdat_global_features['meanfixationduration'] 	= -1
+		self.emdat_global_features['numfixations'] 				= 0
+		self.emdat_global_features['fixationrate'] 				= -1
+		self.emdat_global_features['meanfixationduration'] 		= -1
 		self.emdat_global_features['stddevfixationduration'] 	= -1
 		self.emdat_global_features['sumfixationduration'] 		= -1
-		self.emdat_global_features['fixationrate'] 			= -1
+		self.emdat_global_features['fixationrate'] 				= -1
 
 	def flush(self):
 		self.x = []
