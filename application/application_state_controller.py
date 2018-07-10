@@ -320,6 +320,7 @@ class ApplicationStateController():
             polygon = aoi['polygon']
             mapping[event_name] = ast.literal_eval(polygon)
 
+        #print mapping
         return mapping
 
     def getEmdatAoiMapping(self):
