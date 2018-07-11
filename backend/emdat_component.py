@@ -62,8 +62,8 @@ class EMDATComponent(DetectionComponent):
         self.calc_validity_gaps()
         self.emdat_interval_features = {}
         self.length_invalid = self.get_length_invalid()
-        self.emdat_interval_features['length'] = length
-        self.emdat_interval_features['length_invalid'] = length_invalid
+        self.emdat_interval_features['length'] = self.length
+        self.emdat_interval_features['length_invalid'] = self.length_invalid
 
         """ calculate pupil dilation features """
         pupil_start_time = time.time()
@@ -482,7 +482,7 @@ class EMDATComponent(DetectionComponent):
                 valid_dist_vals        = dist_vals[valid_indices]
                 self.generate_aoi_distance_features(aoi, valid_dist_vals)
             if (params.USE_FIXATION_PATH_FEATURES or params.USE_TRANSITION_AOI_FEATURES):
-                valid_fixation_indices = np.apply_along_axis(datapoint_inside_aoi, 1, fixation_vals[:, :2], poly = self.AOIS[aoi])
+                valid_fixation_indices = np.where(np.apply_along_axis(datapoint_inside_aoi, 1, fixation_vals[:, :2], poly = self.AOIS[aoi]))
                 valid_fixation_vals    = fixation_vals[valid_fixation_indices]
             if (params.USE_FIXATION_PATH_FEATURES):
                 fixation_indices       = self.generate_aoi_fixation_features(aoi, valid_fixation_vals, self.length_invalid)
@@ -615,7 +615,7 @@ class EMDATComponent(DetectionComponent):
                 # Find the number
                 for aoi in self.AOIS:
                     #polyout = aoi.polyout
-                    key = 'numtransfrom_%s'%(aid)
+                    key = 'numtransfrom_%s'%(aoi)
                     #TODO FIX THAT
                     if datapoint_inside_aoi((fixation_data[i-1][0], fixation_data[i-1][1]), self.AOIS[aoi]):
                         self.emdat_interval_features[cur_aoi][key] += 1
@@ -637,7 +637,7 @@ class EMDATComponent(DetectionComponent):
         """
         time = self.tobii_controller.time
         length = 0
-        if isinstance(var, list):
+        if isinstance(self.time_gaps, list):
             for gap in self.time_gaps:
                 length += gap[1] - gap[0]
         else:
