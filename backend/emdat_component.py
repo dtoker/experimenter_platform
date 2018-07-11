@@ -398,23 +398,23 @@ class EMDATComponent(DetectionComponent):
             self.emdat_interval_features['numrelangles'] = 0
         print("PATH DISTANCE FEATURES WHOLE SCENE")
         print "mean fixatiom duration %f" % self.emdat_interval_features['meanfixationduration']
-        print "stddevfixationduration %f" %self.emdat_interval_features['stddevfixationduration']
-        print "sumfixationduration %f" %self.emdat_interval_features['sumfixationduration']
-        print "fixationrate %f" %self.emdat_interval_features['fixationrate']
-        print "numfixations %f" %self.emdat_interval_features['numfixations']
-        print "meanpathdistance %f" %self.emdat_interval_features['meanpathdistance']
-        print "sumpathdistance %f" %self.emdat_interval_features['sumpathdistance']
-        print "stddevpathdistance %f" %self.emdat_interval_features['stddevpathdistance']
-        print "eyemovementvelocity %f" %self.emdat_interval_features['eyemovementvelocity']
-        print "sumabspathangles %f" %self.emdat_interval_features['sumabspathangles']
-        print "abspathanglesrate %f" %self.emdat_interval_features['abspathanglesrate']
-        print "meanabspathangles %f" %self.emdat_interval_features['meanabspathangles']
-        print "stddevabspathangles %f" %self.emdat_interval_features['stddevabspathangles']
-        print "sumrelpathangles %f" %self.emdat_interval_features['sumrelpathangles']
-        print "relpathanglesrate %f" %self.emdat_interval_features['relpathanglesrate']
-        print "meanrelpathangles %f" %self.emdat_interval_features['meanrelpathangles']
-        print "stddevrelpathangles %f" %self.emdat_interval_features['stddevrelpathangles']
-        print "numfixdistances %f" %self.emdat_interval_features['numfixdistances']
+        print "stddevfixationduration %f" % self.emdat_interval_features['stddevfixationduration']
+        print "sumfixationduration %f" % self.emdat_interval_features['sumfixationduration']
+        print "fixationrate %f" % self.emdat_interval_features['fixationrate']
+        print "numfixations %f" % self.emdat_interval_features['numfixations']
+        print "meanpathdistance %f" % self.emdat_interval_features['meanpathdistance']
+        print "sumpathdistance %f" % self.emdat_interval_features['sumpathdistance']
+        print "stddevpathdistance %f" % self.emdat_interval_features['stddevpathdistance']
+        print "eyemovementvelocity %f" % self.emdat_interval_features['eyemovementvelocity']
+        print "sumabspathangles %f" % self.emdat_interval_features['sumabspathangles']
+        print "abspathanglesrate %f" % self.emdat_interval_features['abspathanglesrate']
+        print "meanabspathangles %f" % self.emdat_interval_features['meanabspathangles']
+        print "stddevabspathangles %f" % self.emdat_interval_features['stddevabspathangles']
+        print "sumrelpathangles %f" % self.emdat_interval_features['sumrelpathangles']
+        print "relpathanglesrate %f" % self.emdat_interval_features['relpathanglesrate']
+        print "meanrelpathangles %f" % self.emdat_interval_features['meanrelpathangles']
+        print "stddevrelpathangles %f" % self.emdat_interval_features['stddevrelpathangles']
+        print "numfixdistances %f" % self.emdat_interval_features['numfixdistances']
         print "numabsangles %f" %self.emdat_interval_features['numabsangles']
         print "numrelangles %f" %self.emdat_interval_features['numrelangles']
         print
@@ -552,8 +552,8 @@ class EMDATComponent(DetectionComponent):
         if self.emdat_interval_features[aoi]['numdistancedata'] > 0:
             self.emdat_interval_features[aoi]['meandistance']       = np.mean(valid_distance_data)
             self.emdat_interval_features[aoi]['stddevdistance']     = np.std(valid_distance_data)
-            self.emdat_interval_features[aoi]['maxdistance']        = np.amax(valid_distance_data)
-            self.emdat_interval_features[aoi]['mindistance']        = np.amin(valid_distance_data)
+            self.emdat_interval_features[aoi]['maxdistance']        = np.max(valid_distance_data)
+            self.emdat_interval_features[aoi]['mindistance']        = np.min(valid_distance_data)
             self.emdat_interval_features[aoi]['startdistance']      = valid_distance_data[0]
             self.emdat_interval_features[aoi]['enddistance']        = valid_distance_data[-1]
         else:
@@ -563,6 +563,7 @@ class EMDATComponent(DetectionComponent):
             self.emdat_interval_features[aoi]['mindistance']        = -1
             self.emdat_interval_features[aoi]['startdistance']      = -1
             self.emdat_interval_features[aoi]['enddistance']        = -1
+            
         print "GENERATING %s AOI DISTANCE FEATURES" % aoi
         print "numdistancedata %f" % self.emdat_interval_features[aoi]['numdistancedata']
         print "meandistance %f" % self.emdat_interval_features[aoi]['meandistance']
