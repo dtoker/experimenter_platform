@@ -280,12 +280,9 @@ def merge_aoi_pupil(part_features, accumulator_features):
             accumulator_features: AOI_Stat object of this Scene (must have been initialised)
             part_features: a new AOI_Stat object
         """
-<<<<<<< HEAD
     print('NUMBER OF PUPILS IN ACCUMULATOR: %d' % accumulator_features['numpupilsizes'])
     print('NUMBER OF PUPILS IN PART: %d' % part_features['numpupilsizes'])
 
-=======
->>>>>>> b923f9ab4983aeb917dac9009ce2cb973922eb26
     if accumulator_features['numpupilsizes'] == 0:
         accumulator_features['numpupilsizes'] = part_features['numpupilsizes']
         accumulator_features['meanpupilsize'] = part_features['meanpupilsize']
@@ -347,11 +344,8 @@ def merge_aoi_transitions(part_features, accumulator_features):
     part_features_transition_aois = filter(lambda x: x.startswith('numtransfrom_'), part_features.keys())
 
     accumulator_features['total_trans_from'] += part_features['total_trans_from']   #updating the total number of transition from this AOI
-<<<<<<< HEAD
     print("Total transitions %d" % accumulator_features['total_trans_from'])
 
-=======
->>>>>>> b923f9ab4983aeb917dac9009ce2cb973922eb26
     for feat in part_features_transition_aois:
         if feat in accumulator_features:
             accumulator_features[feat] += part_features[feat]
@@ -365,11 +359,8 @@ def merge_aoi_transitions(part_features, accumulator_features):
             accumulator_features['proptransfrom_%s'%(aid)] = float(accumulator_features[feat]) / accumulator_features['total_trans_from']
         else:
             accumulator_features['proptransfrom_%s'%(aid)] = 0
-<<<<<<< HEAD
         print "Proptransform from %s is %f" % (aid, accumulator_features['proptransfrom_%s'%(aid)])
     print
-=======
->>>>>>> b923f9ab4983aeb917dac9009ce2cb973922eb26
     ###endof transition calculation
 
 def calc_distances(fixdata):

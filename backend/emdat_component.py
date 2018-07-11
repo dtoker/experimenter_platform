@@ -19,15 +19,11 @@ class EMDATComponent(DetectionComponent):
         self.dist_idx   = 0
         self.fix_idx    = 0
         self.x_y_idx    = 0
-<<<<<<< HEAD
         self.id = 1
         self.AOIS = self.application_state_controller.getEmdatAoiMapping()
         self.init_emdat_task_features()
         self.tobii_controller.update_aoi_storage(self.AOIS)
         self.feature_select = self.application_state_controller.getEdmatFeatures()
-=======
-        self.feature_select = {}
->>>>>>> b923f9ab4983aeb917dac9009ce2cb973922eb26
 
     def notify_app_state_controller(self):
         self.merge_features()
@@ -92,16 +88,11 @@ class EMDATComponent(DetectionComponent):
         all_merging_time = time.time()
         if (params.KEEP_TASK_FEATURES and params.KEEP_GLOBAL_FEATURES):
             self.merge_features(self.emdat_interval_features, self.emdat_task_features)
-<<<<<<< HEAD
             self.merge_features(self.emdat_interval_features, self.tobii_controller.emdat_global_features)
-=======
-            self.merge_features(self.emdat_task_features, self.tobii_controller.emdat_global_features, isTotal = True)
->>>>>>> b923f9ab4983aeb917dac9009ce2cb973922eb26
         elif (params.KEEP_TASK_FEATURES):
             self.merge_features(self.emdat_interval_features, self.emdat_task_features)
 
         elif (params.KEEP_GLOBAL_FEATURES):
-<<<<<<< HEAD
             self.merge_features(self.emdat_interval_features, self.tobii_controller.emdat_global_features)
         print("Merging ALL features: --- %s seconds ---" % (time.time() - all_merging_time))
         print("Complete EMDAT execution --- %s seconds --- \n\n\n" % (time.time() - start_time))
@@ -110,15 +101,6 @@ class EMDATComponent(DetectionComponent):
         print
         self.id += 1
         self.application_state_controller.updateEmdatTable(self.id, self.select_features())
-=======
-            self.merge_features(self.emdat_interval_features, self.tobii_controller.emdat_global_features, isTotal = True)
-        print("Merging ALL features: --- %s seconds ---" % (time.time() - all_merging_time))
-        print("Complete EMDAT execution --- %s seconds ---" % (time.time() - start_time))
-        print
-        print
-        print
-        #self.adaptation_loop.evaluateRules(aoi, EfixEndTime)
->>>>>>> b923f9ab4983aeb917dac9009ce2cb973922eb26
 
     def init_emdat_task_features(self):
         self.emdat_task_features = {}
@@ -204,7 +186,6 @@ class EMDATComponent(DetectionComponent):
                 self.emdat_task_features[aoi]['numtransfrom_%s'%(cur_aoi)] = 0
                 self.emdat_task_features[aoi]['proptransfrom_%s'%(cur_aoi)] = -1
 
-<<<<<<< HEAD
     def merge_features(self, part_features, accumulator_features):
         if (params.USE_PUPIL_FEATURES):
             merge_pupil_features(part_features, accumulator_features)
@@ -215,36 +196,16 @@ class EMDATComponent(DetectionComponent):
             merge_distance_features(part_features, accumulator_features)
             for aoi in self.AOIS.keys():
                 merge_aoi_distance(part_features[aoi], accumulator_features[aoi])
-=======
-    def merge_features(self, part_features, accumulator_features, isTotal = False):
-        if (params.USE_PUPIL_FEATURES):
-            merge_pupil_features(part_features, accumulator_features)
-            if not isTotal:
-                for aoi in self.AOIS.keys():
-                    merge_aoi_pupil(part_features[aoi], accumulator_features[aoi])
-        """ calculate distance from screen features"""
-        if (params.USE_DISTANCE_FEATURES):
-            merge_distance_features(part_features, accumulator_features)
-            if not isTotal:
-                for aoi in self.AOIS.keys():
-                    merge_aoi_distance(part_features[aoi], accumulator_features[aoi])
->>>>>>> b923f9ab4983aeb917dac9009ce2cb973922eb26
 
         """ calculate fixations, angles and path features"""
         if (params.USE_FIXATION_PATH_FEATURES):
             merge_path_angle_features(part_features, accumulator_features, self.length, self.length_invalid)
             merge_fixation_features(part_features, accumulator_features, self.length, self.length_invalid)
-<<<<<<< HEAD
             for aoi in self.AOIS.keys():
                 merge_aoi_fixations(part_features[aoi], accumulator_features[aoi], 1, 1)
                 print('merging transitions for %s aoi' % aoi)
-                merge_aoi_transitions(part_features[aoi], accumulator_features[aoi])
-=======
-            if not isTotal:
-                for aoi in self.AOIS.keys():
-                    merge_aoi_fixations(part_features[aoi], accumulator_features[aoi], 1, 1)
+                if (params.USE_TRANSITION_AOI_FEATURES):
                     merge_aoi_transitions(part_features[aoi], accumulator_features[aoi])
->>>>>>> b923f9ab4983aeb917dac9009ce2cb973922eb26
 
     def calc_pupil_features(self):
         """ Calculates pupil features such as
