@@ -418,6 +418,8 @@ class TobiiController:
 
 	def init_emdat_global_features(self):
 		self.emdat_global_features = {}
+        self.emdat_global_features['length'] = 0
+        self.emdat_global_features['length_invalid'] = 0
 		# Pupil features
 		self.emdat_global_features['numpupilsizes']				= 0
 		self.emdat_global_features['numpupilvelocity']  		= 0
