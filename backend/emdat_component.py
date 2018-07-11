@@ -368,7 +368,7 @@ class EMDATComponent(DetectionComponent):
             self.emdat_interval_features['meanpathdistance'] = mean(distances)
             self.emdat_interval_features['sumpathdistance'] = sum(distances)
             self.emdat_interval_features['stddevpathdistance'] = stddev(distances)
-            self.emdat_interval_features['eyemovementvelocity'] = self.emdat_interval_features['sumpathdistance']/ (self.length - self.length_invalid)
+            self.emdat_interval_features['eyemovementvelocity'] = self.emdat_interval_features['sumpathdistance'] / (self.length - self.length_invalid)
             self.emdat_interval_features['sumabspathangles'] = sum(abs_angles)
             self.emdat_interval_features['abspathanglesrate'] = sum(abs_angles)/(self.length - self.length_invalid)
             self.emdat_interval_features['meanabspathangles'] = mean(abs_angles)
@@ -467,18 +467,15 @@ class EMDATComponent(DetectionComponent):
             ## Indices of x-y array where datapoints are inside the specified AOI
             aoi_dpt_indices = np.array(self.tobii_controller.aoi_ids[aoi])
             aoi_dpt_indices = aoi_dpt_indices[aoi_dpt_indices > self.x_y_idx]
-
             valid_indices = aoi_dpt_indices - self.x_y_idx
 
-            print(valid_indices)
-            print('nothing?')
             if params.USE_PUPIL_FEATURES:
                 ## Select valid pupil sizes inside the AOI
                 valid_pupil_sizes      = pup_size_vals[valid_indices]
-                valid_pupil_sizes      = valid_pupil_sizes[np.where(valid_pupil_sizes > 0)]
+                valid_pupil_sizes      = valid_pupil_sizes[valid_pupil_sizes > 0]
                 ## Select valid velocities inside the AOI
                 valid_pupil_vel        = pup_vel_vals[valid_indices]
-                valid_pupil_vel        = valid_pupil_vel[np.where(valid_pupil_vel != -1)]
+                valid_pupil_vel        = valid_pupil_vel[valid_pupil_vel != -1]
                 self.generate_aoi_pupil_features(aoi, valid_pupil_sizes, valid_pupil_vel) #rest_pupil_size)
             if params.USE_DISTANCE_FEATURES:
                 ## Select valid head distances inside the AOI
@@ -490,17 +487,12 @@ class EMDATComponent(DetectionComponent):
             if (params.USE_FIXATION_PATH_FEATURES):
                 fixation_indices       = self.generate_aoi_fixation_features(aoi, valid_fixation_vals, self.length_invalid)
             if (params.USE_TRANSITION_AOI_FEATURES):
-                fixation_indices = np.where(np.apply_along_axis(datapoint_inside_aoi, 1, fixation_vals[:, :2], poly = self.AOIS[aoi]))
-                self.generate_transition_features(aoi, fixation_vals, fixation_indices[0])
+                self.generate_transition_features(aoi, fixation_vals, valid_fixation_indices[0])
             print("Computing features for %s AOI --- %s seconds ---" % (aoi, time.time() - start_constructing_numpy))
         self.x_y_idx = len(self.tobii_controller.x)
 
     def generate_aoi_pupil_features(self, aoi, valid_pupil_data, valid_pupil_velocity): # rest_pupil_size): ##datapoints, rest_pupil_size, export_pupilinfo):
         #number of valid pupil sizes
-        self.emdat_interval_features[aoi]['meanpupilsize']          = -1
-        self.emdat_interval_features[aoi]['stddevpupilsize']        = -1
-        self.emdat_interval_features[aoi]['maxpupilsize']           = -1
-        self.emdat_interval_features[aoi]['minpupilsize']           = -1
         #self.emdat_interval_features[aoi]['startpupilsize']         = -1
         #self.emdat_interval_features[aoi]['endpupilsize']           = -1
         self.emdat_interval_features[aoi]['meanpupilvelocity']      = -1
@@ -563,7 +555,7 @@ class EMDATComponent(DetectionComponent):
             self.emdat_interval_features[aoi]['mindistance']        = -1
             self.emdat_interval_features[aoi]['startdistance']      = -1
             self.emdat_interval_features[aoi]['enddistance']        = -1
-            
+
         print "GENERATING %s AOI DISTANCE FEATURES" % aoi
         print "numdistancedata %f" % self.emdat_interval_features[aoi]['numdistancedata']
         print "meandistance %f" % self.emdat_interval_features[aoi]['meandistance']
@@ -590,9 +582,9 @@ class EMDATComponent(DetectionComponent):
         self.emdat_interval_features[aoi]['numfixations']               = numfixations
         #TODO Check that
         fixation_durations                                              = fixation_data[:, 2]
+        print(fixation_durations)
         totaltimespent                                                  = np.sum(fixation_durations)
         self.emdat_interval_features[aoi]['totaltimespent']             = totaltimespent
-        #TODO Check that
         self.emdat_interval_features[aoi]['proportiontime']             = float(totaltimespent)/(self.length - self.length_invalid)
         if numfixations > 0:
             self.emdat_interval_features[aoi]['longestfixation']        = np.max(fixation_durations)
@@ -611,20 +603,17 @@ class EMDATComponent(DetectionComponent):
         print "proportionnum %f" % self.emdat_interval_features[aoi]['proportionnum']
         print "proportiontime %f" % self.emdat_interval_features[aoi]['proportiontime']
         print "fixationrate %f" % self.emdat_interval_features[aoi]['fixationrate']
-        print "totaltimespent %f" % self.emdat_interval_features[aoi]['totaltimespent']
 
     def generate_transition_features(self, cur_aoi, fixation_data, fixation_indices):
         print "GENERATING TRANSITION FEATURES FOR %s AOI" % cur_aoi
         for aoi in self.AOIS.keys():
-            aid = aoi
-            self.emdat_interval_features[cur_aoi]['numtransfrom_%s'%(aid)] = 0
+            self.emdat_interval_features[cur_aoi]['numtransfrom_%s'%(aoi)] = 0
 
         sumtransfrom = 0
         for i in fixation_indices:
             if i > 0:
                 # Find the number
                 for aoi in self.AOIS:
-                    #polyin =  ast.literal_eval(str(self.AOIS[aoi]))
                     #polyout = aoi.polyout
                     key = 'numtransfrom_%s'%(aid)
                     #TODO FIX THAT
