@@ -50,16 +50,16 @@ def merge_path_angle_features(part_features, accumulator_features, length, lengt
         accumulator_features['sumpathdistance']         = sumfeat(part_features, accumulator_features, "['sumpathdistance']")
         accumulator_features['stddevpathdistance']      = aggregatestddevfeat(part_features, accumulator_features, "['numfixdistances']",
                                         "['stddevpathdistance']", "['meanpathdistance']", meanpathdistance)
-        accumulator_features['eyemovementvelocity']     = accumulator_features['sumpathdistance']/(length - length_invalid)
+        accumulator_features['eyemovementvelocity']     = accumulator_features['sumpathdistance']/(accumulator_features['length'] - accumulator_features['length_invalid'])
         accumulator_features['sumabspathangles']        = sumfeat(part_features, accumulator_features, "['sumabspathangles']")
         meanabspathangles                               = weightedmeanfeat(part_features, accumulator_features,"['numabsangles']","['meanabspathangles']")
-        accumulator_features['abspathanglesrate']       = accumulator_features['sumabspathangles']/(length - length_invalid)
+        accumulator_features['abspathanglesrate']       = accumulator_features['sumabspathangles']/(accumulator_features['length'] - accumulator_features['length_invalid'])
         accumulator_features['stddevabspathangles']     = aggregatestddevfeat(part_features, accumulator_features, "['numabsangles']",
                                 "['stddevabspathangles']", "['meanabspathangles']", meanabspathangles)
         accumulator_features['sumrelpathangles']        = sumfeat(part_features, accumulator_features, "['sumrelpathangles']")
         meanrelpathangles                               = weightedmeanfeat(part_features, accumulator_features,"['numrelangles']","['meanrelpathangles']")
 
-        accumulator_features['relpathanglesrate']       = accumulator_features['sumrelpathangles']/(length - length_invalid)
+        accumulator_features['relpathanglesrate']       = accumulator_features['sumrelpathangles']/(accumulator_features['length'] - accumulator_features['length_invalid'])
         accumulator_features['stddevrelpathangles']     = aggregatestddevfeat(part_features, accumulator_features, "['numrelangles']", "['stddevrelpathangles']",
                                 "['meanrelpathangles']", meanrelpathangles)
 
@@ -184,7 +184,7 @@ def merge_distance_features(part_features, accumulator_features):
         #self.features['startdistance'] = -1
         #self.features['enddistance'] = -1
 
-def merge_aoi_fixations(part_features, accumulator_features, total_time, total_numfixations):
+def merge_aoi_fixations(part_features, accumulator_features):
     """ Merge fixation features such as
             meanfixationduration:     mean duration of fixations
             stddevfixationduration    standard deviation of duration of fixations
@@ -193,7 +193,6 @@ def merge_aoi_fixations(part_features, accumulator_features, total_time, total_n
         Args:
             main_AOI_Stat: AOI_Stat object of this Scene (must have been initialised)
             part_features: a new AOI_Stat object
-            total_time: duration of the scene
             total_numfixations: number of fixations in the scene
             sc_start: start time (timestamp) of the scene
     """
@@ -218,7 +217,7 @@ def merge_aoi_fixations(part_features, accumulator_features, total_time, total_n
                                                                  part_features['numfixations'] * pow(part_features['meanfixationduration'] - aggregate_meanfixationduration, 2)) / (total_numfixations - 1), 0.5)
             accumulator_features['numfixations']          = total_numfixations
             accumulator_features['meanfixationduration']  = aggregate_meanfixationduration
-            accumulator_features['proportiontime']        = float(accumulator_features['totaltimespent']) / total_time
+            accumulator_features['proportiontime']        = float(accumulator_features['totaltimespent']) / accumulator_features['length']
             accumulator_features['proportionnum']         = float(accumulator_features['numfixations']) / total_numfixations
 
             if accumulator_features['totaltimespent'] > 0:
