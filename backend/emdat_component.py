@@ -203,10 +203,10 @@ class EMDATComponent(DetectionComponent):
 
         """ calculate fixations, angles and path features"""
         if (params.USE_FIXATION_PATH_FEATURES):
-            merge_path_angle_features(part_features, accumulator_features, self.length, self.length_invalid)
-            merge_fixation_features(part_features, accumulator_features, self.length, self.length_invalid)
+            merge_path_angle_features(part_features, accumulator_features)
+            merge_fixation_features(part_features, accumulator_features)
             for aoi in self.AOIS.keys():
-                merge_aoi_fixations(part_features[aoi], accumulator_features[aoi], 1, 1)
+                merge_aoi_fixations(part_features[aoi], accumulator_features[aoi])
                 print('merging transitions for %s aoi' % aoi)
                 if (params.USE_TRANSITION_AOI_FEATURES):
                     merge_aoi_transitions(part_features[aoi], accumulator_features[aoi])

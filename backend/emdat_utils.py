@@ -2,7 +2,7 @@ import math
 import geometry
 import ast
 
-def merge_fixation_features(part_features, accumulator_features, length, length_invalid):
+def merge_fixation_features(part_features, accumulator_features):
     """ Merge fixation features such as
     meanfixationduration:     mean duration of fixations
     stddevfixationduration    standard deviation of duration of fixations
@@ -27,7 +27,7 @@ def merge_fixation_features(part_features, accumulator_features, length, length_
         accumulator_features['fixationrate']            = -1
     accumulator_features['numfixations']            = numfixations
 
-def merge_path_angle_features(part_features, accumulator_features, length, length_invalid):
+def merge_path_angle_features(part_features, accumulator_features):
     """ Merge path and angle features such as
         meanpathdistance:     mean of path distances
         sumpathdistance:      sum of path distances
