@@ -9,6 +9,7 @@ import numpy as np
 from emdat_utils import *
 import ast
 
+
 class EMDATComponent(DetectionComponent):
 
     def  __init__(self, tobii_controller, adaptation_loop, callback_time):
@@ -187,6 +188,9 @@ class EMDATComponent(DetectionComponent):
                 self.emdat_task_features[aoi]['proptransfrom_%s'%(cur_aoi)] = -1
 
     def merge_features(self, part_features, accumulator_features):
+        accumulator_features['length'] = sumfeat(part_features, accumulator_features, "['length']")
+        accumulator_features['length_invalid'] = sumfeat(part_features, accumulator_features, "['length_invalid']")
+
         if (params.USE_PUPIL_FEATURES):
             merge_pupil_features(part_features, accumulator_features)
             for aoi in self.AOIS.keys():
@@ -483,9 +487,9 @@ class EMDATComponent(DetectionComponent):
                 self.generate_aoi_distance_features(aoi, valid_dist_vals)
             if (params.USE_FIXATION_PATH_FEATURES or params.USE_TRANSITION_AOI_FEATURES):
                 valid_fixation_indices = np.where(np.apply_along_axis(datapoint_inside_aoi, 1, fixation_vals[:, :2], poly = self.AOIS[aoi]))
-                valid_fixation_vals    = fixation_vals[valid_fixation_indices]
             if (params.USE_FIXATION_PATH_FEATURES):
-                fixation_indices       = self.generate_aoi_fixation_features(aoi, valid_fixation_vals, self.length_invalid)
+                valid_fixation_vals    = fixation_vals[valid_fixation_indices]
+                self.generate_aoi_fixation_features(aoi, valid_fixation_vals, self.length_invalid)
             if (params.USE_TRANSITION_AOI_FEATURES):
                 self.generate_transition_features(aoi, fixation_vals, valid_fixation_indices[0])
             print("Computing features for %s AOI --- %s seconds ---" % (aoi, time.time() - start_constructing_numpy))
@@ -614,9 +618,9 @@ class EMDATComponent(DetectionComponent):
             if i > 0:
                 # Find the number
                 for aoi in self.AOIS:
+                    # TODO: Add  polyout
                     #polyout = aoi.polyout
                     key = 'numtransfrom_%s'%(aoi)
-                    #TODO FIX THAT
                     if datapoint_inside_aoi((fixation_data[i-1][0], fixation_data[i-1][1]), self.AOIS[aoi]):
                         self.emdat_interval_features[cur_aoi][key] += 1
                         sumtransfrom += 1

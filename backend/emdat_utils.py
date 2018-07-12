@@ -12,20 +12,20 @@ def merge_fixation_features(part_features, accumulator_features, length, length_
     segments: The list of Segments for this Scene with pre-calculated features
     """
     numfixations = sumfeat(part_features, accumulator_features, "['numfixations']")
-    accumulator_features['fixationrate']                = float(numfixations) / (length - length_invalid)
+
+    accumulator_features['fixationrate']                = float(numfixations) / (accumulator_features['length'] - accumulator_features['length_invalid'])
     if numfixations > 0:
         meanfixationduration                            = weightedmeanfeat(part_features, accumulator_features, "['numfixations']","['meanfixationduration']")
         accumulator_features['stddevfixationduration']  = aggregatestddevfeat(part_features, accumulator_features,
                       "['numfixations']", "['stddevfixationduration']", "['meanfixationduration']", meanfixationduration)
         accumulator_features['sumfixationduration']     = sumfeat(part_features, accumulator_features, "['sumfixationduration']")
-        accumulator_features['fixationrate']            = float(numfixations)/(length - length_invalid)
         accumulator_features['meanfixationduration']    = meanfixationduration
     else:
         accumulator_features['meanfixationduration']    = -1
         accumulator_features['stddevfixationduration']  = -1
         accumulator_features['sumfixationduration']     = -1
         accumulator_features['fixationrate']            = -1
-        accumulator_features['numfixations']            = numfixations
+    accumulator_features['numfixations']            = numfixations
 
 def merge_path_angle_features(part_features, accumulator_features, length, length_invalid):
     """ Merge path and angle features such as
