@@ -184,7 +184,7 @@ def merge_distance_features(part_features, accumulator_features):
         #self.features['startdistance'] = -1
         #self.features['enddistance'] = -1
 
-def merge_aoi_fixations(part_features, accumulator_features):
+def merge_aoi_fixations(part_features, accumulator_features, length):
     """ Merge fixation features such as
             meanfixationduration:     mean duration of fixations
             stddevfixationduration    standard deviation of duration of fixations
@@ -217,7 +217,7 @@ def merge_aoi_fixations(part_features, accumulator_features):
                                                                  part_features['numfixations'] * pow(part_features['meanfixationduration'] - aggregate_meanfixationduration, 2)) / (total_numfixations - 1), 0.5)
             accumulator_features['numfixations']          = total_numfixations
             accumulator_features['meanfixationduration']  = aggregate_meanfixationduration
-            accumulator_features['proportiontime']        = float(accumulator_features['totaltimespent']) / accumulator_features['length']
+            accumulator_features['proportiontime']        = float(accumulator_features['totaltimespent']) / length
             accumulator_features['proportionnum']         = float(accumulator_features['numfixations']) / total_numfixations
 
             if accumulator_features['totaltimespent'] > 0:
