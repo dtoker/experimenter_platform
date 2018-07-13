@@ -5,6 +5,7 @@ import shutil
 from tornado import gen
 from tornado.ioloop import IOLoop
 from StringIO import StringIO
+import ast
 
 class ApplicationStateController():
 
@@ -317,8 +318,9 @@ class ApplicationStateController():
             event_name = aoi['event_name']
 
             polygon = aoi['polygon']
-            mapping[event_name] = polygon
+            mapping[event_name] = ast.literal_eval(polygon)
 
+        #print mapping
         return mapping
 
     def getEmdatAoiMapping(self):
@@ -342,8 +344,9 @@ class ApplicationStateController():
             event_name = aoi['event_name']
 
             polygon = aoi['polygon']
-            mapping[event_name] = polygon
+            mapping[event_name] = ast.literal_eval(polygon)
 
+        #print mapping
         return mapping
 
     def getEdmatFeatures(self):
@@ -392,7 +395,7 @@ class ApplicationStateController():
             value = int(query_results.fetchone()['result'])
         except:
             raise ValueError("Malformed SQL conditional check in gaze_event_rules.db")
-        print value
+        #print value
         return value
 
     def updateFixTable(self, table, id, time_start, time_end, duration):
@@ -418,7 +421,7 @@ class ApplicationStateController():
         self.conn.execute("INSERT INTO {} VALUES (?,?,?,?)".format(table), (id, time_start, time_end, duration))
         self.conn.commit()
 
-    def updateEmdatTable(self, id, edmat_features):
+    def updateEmdatTable(self, id, emdat_features):
 
         """ Insert a new row into an emdat table
 
@@ -436,7 +439,7 @@ class ApplicationStateController():
 
         #TODO: type checking
         for event_name in emdat_features:
-            self.conn.execute("INSERT INTO {} VALUES (?,?,?,?)".format(event_name), (id,) + interval_features[event_name])
+            self.conn.execute("INSERT INTO {} VALUES (?,?,?,?)".format(event_name), (id,) + emdat_features[event_name])
         self.conn.commit()
 
     def updateMlTable(self, table, id, time_stamp, raw_prediction, value):
