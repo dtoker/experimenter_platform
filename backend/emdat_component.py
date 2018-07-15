@@ -350,7 +350,6 @@ class EMDATComponent(DetectionComponent):
         """
         fixation_data = self.tobii_controller.EndFixations[self.fix_idx:]
         numfixations = len(fixation_data)
-        self.fix_idx = len(self.tobii_controller.EndFixations)
         distances = []
         abs_angles = []
         rel_angles = []
@@ -468,7 +467,7 @@ class EMDATComponent(DetectionComponent):
         pup_size_vals                   = np.array(self.tobii_controller.pupilsize[self.x_y_idx:])
         pup_vel_vals                    = np.array(self.tobii_controller.pupilvelocity[self.x_y_idx:])
         dist_vals                       = np.array(self.tobii_controller.head_distance[self.x_y_idx:])
-        fixation_vals                   = np.asarray(self.tobii_controller.EndFixations)
+        fixation_vals                   = np.asarray(self.tobii_controller.EndFixations[self.fix_idx:])
         print("Constructing numpy arrays for AOIS --- %s seconds ---" % (time.time() - start_constructing_numpy))
 
         for aoi in self.AOIS:
@@ -501,6 +500,7 @@ class EMDATComponent(DetectionComponent):
                 self.generate_transition_features(aoi, fixation_vals, valid_fixation_indices[0])
             print("Computing features for %s AOI --- %s seconds ---" % (aoi, time.time() - start_constructing_numpy))
         self.x_y_idx = len(self.tobii_controller.x)
+        self.fix_idx = len(self.tobii_controller.EndFixations)
 
     def generate_aoi_pupil_features(self, aoi, valid_pupil_data, valid_pupil_velocity): # rest_pupil_size): ##datapoints, rest_pupil_size, export_pupilinfo):
         #number of valid pupil sizes
@@ -531,7 +531,7 @@ class EMDATComponent(DetectionComponent):
             #else:
             adjvalidpupilsizes      = valid_pupil_data
             self.emdat_interval_features[aoi]['meanpupilsize']              = np.mean(adjvalidpupilsizes)
-            self.emdat_interval_features[aoi]['stddevpupilsize']            = np.std(adjvalidpupilsizes, ddof = 1)
+            self.emdat_interval_features[aoi]['stddevpupilsize']            = calc_aoi_std_feature(adjvalidpupilsizes)
             self.emdat_interval_features[aoi]['maxpupilsize']               = np.max(adjvalidpupilsizes)
             self.emdat_interval_features[aoi]['minpupilsize']               = np.min(adjvalidpupilsizes)
             #self.emdat_interval_features[aoi]['startpupilsize']             = adjvalidpupilsizes[0]
@@ -539,7 +539,7 @@ class EMDATComponent(DetectionComponent):
 
             if self.emdat_interval_features[aoi]['numpupilvelocity'] > 0:
                 self.emdat_interval_features[aoi]['meanpupilvelocity']      = np.mean(valid_pupil_velocity)
-                self.emdat_interval_features[aoi]['stddevpupilvelocity']    = np.std(valid_pupil_velocity, ddof = 1)
+                self.emdat_interval_features[aoi]['stddevpupilvelocity']    = calc_aoi_std_feature(valid_pupil_velocity)
                 self.emdat_interval_features[aoi]['maxpupilvelocity']       = np.max(valid_pupil_velocity)
                 self.emdat_interval_features[aoi]['minpupilvelocity']       = np.min(valid_pupil_velocity)
 
@@ -564,7 +564,7 @@ class EMDATComponent(DetectionComponent):
         self.emdat_interval_features[aoi]['numdistancedata']        = len(valid_distance_data)
         if self.emdat_interval_features[aoi]['numdistancedata'] > 0:
             self.emdat_interval_features[aoi]['meandistance']       = np.mean(valid_distance_data)
-            self.emdat_interval_features[aoi]['stddevdistance']     = np.std(valid_distance_data, ddof = 1)
+            self.emdat_interval_features[aoi]['stddevdistance']     = calc_aoi_std_feature(valid_distance_data)
             self.emdat_interval_features[aoi]['maxdistance']        = np.max(valid_distance_data)
             self.emdat_interval_features[aoi]['mindistance']        = np.min(valid_distance_data)
             self.emdat_interval_features[aoi]['startdistance']      = valid_distance_data[0]
@@ -608,7 +608,7 @@ class EMDATComponent(DetectionComponent):
         if numfixations > 0:
             self.emdat_interval_features[aoi]['longestfixation']        = np.max(fixation_durations)
             self.emdat_interval_features[aoi]['meanfixationduration']   = np.mean(fixation_durations)
-            self.emdat_interval_features[aoi]['stddevfixationduration'] = np.std(fixation_durations, ddof = 1)
+            self.emdat_interval_features[aoi]['stddevfixationduration'] = calc_aoi_std_feature(fixation_durations)
             #self.emdat_interval_features[aoi]['timetofirstfixation']    = fixation_data[0][3] - self.starttime
             #self.emdat_interval_features[aoi]['timetolastfixation']     = fixation_data[-1][3] - self.starttime
             self.emdat_interval_features[aoi]['proportionnum']          = float(numfixations)/num_all_fixations
@@ -664,6 +664,12 @@ class EMDATComponent(DetectionComponent):
         else:
             length = time[-1] - time[self.pups_idx]
         return length
+
+def calc_aoi_std_feature(data):
+    if (len(data) > 1):
+        return np.std(data, ddof = 1)
+    else:
+        return -1
 
 # TODO: Do we need this?
 def mergevalues(obj_list, field):
