@@ -11,3 +11,6 @@ KEEP_GLOBAL_FEATURES = True
 #Frequency of ML/EMDAT calls:
 EMDAT_CALL_PERIOD = 7000
 ML_CALL_PERIOD = 6000000
+
+# Some parameter from EMDAT, ask later
+MAX_SEG_TIMEGAP= 10

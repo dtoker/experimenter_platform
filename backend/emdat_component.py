@@ -458,7 +458,8 @@ class EMDATComponent(DetectionComponent):
                 while d is not True and (dindex < datalen - 1):
                     dindex += 1
                     d = validity[dindex]
-                self.time_gaps.append((gap_start, time[dindex]))
+                if time[dindex] - gap_start > params.MAX_SEG_TIMEGAP:
+                    self.time_gaps.append((gap_start, time[dindex]))
             dindex += 1
 
     def calc_aoi_features(self):
@@ -468,7 +469,6 @@ class EMDATComponent(DetectionComponent):
         pup_vel_vals                    = np.array(self.tobii_controller.pupilvelocity[self.x_y_idx:])
         dist_vals                       = np.array(self.tobii_controller.head_distance[self.x_y_idx:])
         fixation_vals                   = np.asarray(self.tobii_controller.EndFixations)
-        fixation_coords                 = np.column_stack((np.array(self.tobii_controller.EndFixations)[0,:], np.array(self.tobii_controller.EndFixations)[1,:]))
         print("Constructing numpy arrays for AOIS --- %s seconds ---" % (time.time() - start_constructing_numpy))
 
         for aoi in self.AOIS:
@@ -621,6 +621,8 @@ class EMDATComponent(DetectionComponent):
         #print "timetolastfixation %f" % self.emdat_interval_features[aoi]['timetolastfixation']
         print "proportionnum %f" % self.emdat_interval_features[aoi]['proportionnum']
         print "proportiontime %f" % self.emdat_interval_features[aoi]['proportiontime']
+        print "totaltimespent %d" % self.emdat_interval_features[aoi]['totaltimespent']
+
         print "fixationrate %f" % self.emdat_interval_features[aoi]['fixationrate']
 
     def generate_transition_features(self, cur_aoi, fixation_data, fixation_indices):
