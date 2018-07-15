@@ -288,11 +288,12 @@ def merge_aoi_pupil(part_features, accumulator_features):
         accumulator_features['stddevpupilsize'] = part_features['stddevpupilsize']
         accumulator_features['maxpupilsize'] = part_features['maxpupilsize']
         accumulator_features['minpupilsize'] = part_features['minpupilsize']
-        accumulator_features['numpupilsizes'] = part_features['numpupilsizes']
+        accumulator_features['numpupilvelocity'] = part_features['numpupilvelocity']        
         accumulator_features['meanpupilvelocity'] = part_features['meanpupilvelocity']
         accumulator_features['stddevpupilvelocity'] = part_features['stddevpupilvelocity']
         accumulator_features['maxpupilvelocity'] = part_features['maxpupilvelocity']
         accumulator_features['minpupilvelocity'] = part_features['minpupilvelocity']
+
     else:
         if part_features['numpupilsizes'] > 0:
             total_numpupilsizes = accumulator_features['numpupilsizes'] + part_features['numpupilsizes']
@@ -303,7 +304,7 @@ def merge_aoi_pupil(part_features, accumulator_features):
                                                 part_features['numpupilsizes'] * pow(part_features['meanpupilsize'] - aggregate_mean_pupil, 2)) \
                                                 / (total_numpupilsizes - 1), 0.5)
             accumulator_features['maxpupilsize'] = max(accumulator_features['maxpupilsize'], part_features['maxpupilsize'])
-            accumulator_features['minpupilsize'] = min(accumulator_features['maxpupilsize'], part_features['maxpupilsize'])
+            accumulator_features['minpupilsize'] = min(accumulator_features['minpupilsize'], part_features['minpupilsize'])
             accumulator_features['meanpupilsize'] = aggregate_mean_pupil
             #if accumulator_features['starttime'] > part_features['starttime']:
             #    accumulator_features['startpupilsize'] = part_features['startpupilsize']
