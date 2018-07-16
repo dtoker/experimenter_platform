@@ -24,6 +24,16 @@ function setAllInterventionsFalse(){
     isArrowsIntervention = false;
 }
 
+function executeFunctionByName(functionName, context /*, args */) {
+  var args = Array.prototype.slice.call(arguments, 2);
+  var namespaces = functionName.split(".");
+  var func = namespaces.pop();
+  for(var i = 0; i < namespaces.length; i++) {
+    context = context[namespaces[i]];
+  }
+  return context[func].apply(context, args);
+}
+
 (function() {
 
 var AppCtrl = function($scope, $http, $location) {
@@ -87,10 +97,21 @@ var AppCtrl = function($scope, $http, $location) {
   //var source = new EventSource('/socket');
   //source.addEventListener('message', handleCallback, false);
 
-  var ws = new WebSocket("ws://localhost:8888/socket");
+  var ws = new WebSocket("ws://localhost:8888/websocket");
   ws.onmessage = function (evt){
     var obj = JSON.parse(evt.data);
     console.log(evt.data);
+    if (obj.remove != null) {
+      console.log("Received a remove call");
+      removeAllInterventions($scopeGlobal.selectedReference);
+
+    } else if (obj.deliver != null) {
+      console.log("Received a deliver call");
+      var func = obj.deliver[0].function;
+      //highlightVisOnly($scopeGlobal.selectedReference);
+      eval(func)($scopeGlobal.selectedReference);
+
+    }
   }
 
   //ends here
@@ -905,6 +926,7 @@ function clone(obj) {
         //}
 
         removeAllInterventions(referenceID);
+        $scopeGlobal.lastSelectedReference = referenceID;
 
         setTimeout(function () {
           console.log(overlappedReferences);
@@ -975,7 +997,7 @@ function clone(obj) {
 
 
     setTimeout(function () {
-        var ws = new WebSocket("ws://localhost:8888/websocket");
+        var ws = new WebSocket("ws://localhost:8888/socket"); //TODO: change the url handler back to socket
 
         ws.onmessage = function (evt) {
             var obj = JSON.parse(evt.data);

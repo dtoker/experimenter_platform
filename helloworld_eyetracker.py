@@ -67,6 +67,9 @@ class FixationHandler(tornado.web.RequestHandler):
 class EchoWebSocketHandler(tornado.websocket.WebSocketHandler):
 
     def open(self):
+        self.websocket_ping_interval = 0
+        self.websocket_ping_timeout = float("inf")
+
         self.app_state_control = ApplicationStateController(1)
         self.adaptation_loop = AdaptationLoop(self.app_state_control)
         self.adaptation_loop.liveWebSocket.append(self)
