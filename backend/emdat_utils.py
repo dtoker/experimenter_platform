@@ -605,8 +605,6 @@ def sumfeat(part_features, accumulator_features, feat):
     """
     sum = 0
     sum += eval('part_features'+feat)
-    if (eval('accumulator_features'+feat) == -1):
-        sum += 0
-    else:
+    if (eval('accumulator_features'+feat) != -1):
         sum += eval('accumulator_features'+feat)
     return sum
