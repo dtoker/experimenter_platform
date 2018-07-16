@@ -202,22 +202,28 @@ class EMDATComponent(DetectionComponent):
         if (params.USE_PUPIL_FEATURES):
             merge_pupil_features(part_features, accumulator_features)
             for aoi in self.AOIS.keys():
-                merge_aoi_pupil(part_features[aoi], accumulator_features[aoi])
+                if (len(self.tobii_controller.aoi_ids[aoi]) > 0):
+                    print('merging pupils for %s aoi' % aoi)
+                    merge_aoi_pupil(part_features[aoi], accumulator_features[aoi])
         """ calculate distance from screen features"""
         if (params.USE_DISTANCE_FEATURES):
             merge_distance_features(part_features, accumulator_features)
             for aoi in self.AOIS.keys():
-                merge_aoi_distance(part_features[aoi], accumulator_features[aoi])
+                if (len(self.tobii_controller.aoi_ids[aoi]) > 0):
+                    print('merging distances for %s aoi' % aoi)
+                    merge_aoi_distance(part_features[aoi], accumulator_features[aoi])
 
         """ calculate fixations, angles and path features"""
         if (params.USE_FIXATION_PATH_FEATURES):
             merge_path_angle_features(part_features, accumulator_features)
             merge_fixation_features(part_features, accumulator_features)
             for aoi in self.AOIS.keys():
-                merge_aoi_fixations(part_features[aoi], accumulator_features[aoi], accumulator_features['length'])
-                print('merging transitions for %s aoi' % aoi)
-                if (params.USE_TRANSITION_AOI_FEATURES):
-                    merge_aoi_transitions(part_features[aoi], accumulator_features[aoi])
+                if (len(self.tobii_controller.aoi_ids[aoi]) > 0):
+                    merge_aoi_fixations(part_features[aoi], accumulator_features[aoi], accumulator_features['length'])
+                    print('merging transitions for %s aoi' % aoi)
+                    if (params.USE_TRANSITION_AOI_FEATURES):
+                        if (len(self.tobii_controller.aoi_ids[aoi]) > 0):
+                            merge_aoi_transitions(part_features[aoi], accumulator_features[aoi])
 
     def calc_pupil_features(self):
         """ Calculates pupil features such as
@@ -478,7 +484,9 @@ class EMDATComponent(DetectionComponent):
             aoi_dpt_indices = np.array(self.tobii_controller.aoi_ids[aoi])
             aoi_dpt_indices = aoi_dpt_indices[aoi_dpt_indices >= self.x_y_idx]
             valid_indices = aoi_dpt_indices - self.x_y_idx
-
+            print('NUMBER OF VALID INDICES: %d' % len(valid_indices))
+            if (len(valid_indices) == 0):
+                continue
             if params.USE_PUPIL_FEATURES:
                 ## Select valid pupil sizes inside the AOI
                 valid_pupil_sizes      = pup_size_vals[valid_indices]
