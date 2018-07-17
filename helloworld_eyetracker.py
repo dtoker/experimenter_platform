@@ -70,7 +70,7 @@ class EchoWebSocketHandler(tornado.websocket.WebSocketHandler):
         self.websocket_ping_interval = 0
         self.websocket_ping_timeout = float("inf")
 
-        self.app_state_control = ApplicationStateController(1)
+        self.app_state_control = ApplicationStateController(4)
         self.adaptation_loop = AdaptationLoop(self.app_state_control)
         self.adaptation_loop.liveWebSocket.append(self)
 
@@ -85,6 +85,7 @@ class EchoWebSocketHandler(tornado.websocket.WebSocketHandler):
         if (message == "close"):
             print("destroying")
             #DummyController.receiveFixations = False
+            self.emdat_component.execfile.close()
             self.fixation_component.stop()
             #self.emdat_component.stop()
 
