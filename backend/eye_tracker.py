@@ -25,8 +25,10 @@ import ast
 
 class TobiiController:
 
-	"""Class to handle communication to Tobii eye trackers, as well as some
-	display operations"""
+	"""	The singleton class used to communicate with Tobii eye tracker API: it initializes the eye tracker,
+	stores the raw gaze data, so the detection components can compute the features
+	they are responsible for, and it stores the EMDAT features computed over the whole execution of the platform.
+	"""
 
 	def __init__(self):
 
