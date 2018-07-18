@@ -494,14 +494,15 @@ class EMDATComponent(DetectionComponent):
             aoi_dpt_indices = aoi_dpt_indices[aoi_dpt_indices >= self.x_y_idx]
             valid_indices = aoi_dpt_indices - self.x_y_idx
             #print('NUMBER OF VALID INDICES: %d' % len(valid_indices))
-            if (len(valid_indices) == 0):
+            new_dpts_available = (len(valid_indices) == 0)
+            if (not new_dpts_available):
                 self.set_empty_values(aoi)
                 continue
             if params.USE_PUPIL_FEATURES:
                 ## Select valid pupil sizes inside the AOI
                 valid_pupil_sizes      = pup_size_vals[valid_indices]
                 valid_pupil_sizes      = valid_pupil_sizes[valid_pupil_sizes > 0]
-                ## Select valid velocities inside the AOI
+                    ## Select valid velocities inside the AOI
                 valid_pupil_vel        = pup_vel_vals[valid_indices]
                 valid_pupil_vel        = valid_pupil_vel[valid_pupil_vel != -1]
                 self.generate_aoi_pupil_features(aoi, valid_pupil_sizes, valid_pupil_vel) #rest_pupil_size)
@@ -510,6 +511,7 @@ class EMDATComponent(DetectionComponent):
                 valid_dist_vals        = dist_vals[valid_indices]
                 self.generate_aoi_distance_features(aoi, valid_dist_vals)
             if (len(fixation_vals) == 0):
+                self.set_empty_values(aoi, fixations_only = True)
                 continue
             if (params.USE_FIXATION_PATH_FEATURES or params.USE_TRANSITION_AOI_FEATURES):
                 valid_fixation_indices = np.where(np.apply_along_axis(datapoint_inside_aoi, 1, fixation_vals[:, :2], poly = self.AOIS[aoi]))
@@ -522,26 +524,27 @@ class EMDATComponent(DetectionComponent):
         self.x_y_idx = len(self.tobii_controller.x)
         self.fix_idx = len(self.tobii_controller.EndFixations)
 
-    def set_empty_values(self, aoi):
-        self.emdat_interval_features[aoi]['meanpupilsize']           = -1
-        self.emdat_interval_features[aoi]['stddevpupilsize']         = -1
-        self.emdat_interval_features[aoi]['maxpupilsize']            = -1
-        self.emdat_interval_features[aoi]['minpupilsize']            = -1
-        self.emdat_interval_features[aoi]['numpupilsizes']          = 0
-        self.emdat_interval_features[aoi]['numpupilvelocity']       = 0
-        self.emdat_interval_features[aoi]['numdistancedata']        = 0
-        self.emdat_interval_features[aoi]['numfixations']               = 0
+    def set_empty_values(self, aoi, fixations_only = False):
 
-        self.emdat_interval_features[aoi]['meanpupilvelocity']      = -1
-        self.emdat_interval_features[aoi]['stddevpupilvelocity']    = -1
-        self.emdat_interval_features[aoi]['maxpupilvelocity']       = -1
-        self.emdat_interval_features[aoi]['minpupilvelocity']       = -1
-        self.emdat_interval_features[aoi]['meandistance']       = -1
-        self.emdat_interval_features[aoi]['stddevdistance']     = -1
-        self.emdat_interval_features[aoi]['maxdistance']        = -1
-        self.emdat_interval_features[aoi]['mindistance']        = -1
-        self.emdat_interval_features[aoi]['startdistance']      = -1
-        self.emdat_interval_features[aoi]['enddistance']        = -1
+        if not fixations_only:
+            self.emdat_interval_features[aoi]['meanpupilsize']           = -1
+            self.emdat_interval_features[aoi]['stddevpupilsize']         = -1
+            self.emdat_interval_features[aoi]['maxpupilsize']            = -1
+            self.emdat_interval_features[aoi]['minpupilsize']            = -1
+            self.emdat_interval_features[aoi]['numpupilsizes']          = 0
+            self.emdat_interval_features[aoi]['numpupilvelocity']       = 0
+            self.emdat_interval_features[aoi]['numdistancedata']        = 0
+            self.emdat_interval_features[aoi]['numfixations']               = 0
+            self.emdat_interval_features[aoi]['meanpupilvelocity']      = -1
+            self.emdat_interval_features[aoi]['stddevpupilvelocity']    = -1
+            self.emdat_interval_features[aoi]['maxpupilvelocity']       = -1
+            self.emdat_interval_features[aoi]['minpupilvelocity']       = -1
+            self.emdat_interval_features[aoi]['meandistance']           = -1
+            self.emdat_interval_features[aoi]['stddevdistance']         = -1
+            self.emdat_interval_features[aoi]['maxdistance']            = -1
+            self.emdat_interval_features[aoi]['mindistance']            = -1
+            self.emdat_interval_features[aoi]['startdistance']          = -1
+            self.emdat_interval_features[aoi]['enddistance']            = -1
         self.emdat_interval_features[aoi]['longestfixation']            = -1
         self.emdat_interval_features[aoi]['meanfixationduration']       = -1
         self.emdat_interval_features[aoi]['stddevfixationduration']     = -1
