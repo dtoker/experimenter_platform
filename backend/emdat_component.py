@@ -26,12 +26,7 @@ class EMDATComponent(DetectionComponent):
         self.feature_select = self.application_state_controller.getEdmatFeatures()
 
     def notify_app_state_controller(self):
-        self.merge_features()
-        '''
-        self.app_state_controller.send_interval_features(self.select_features(self.emdat_interval_features))
-        self.app_state_controller.send_task_features(self.select_features(self.emdat_task_features))
-        self.app_state_controller.send_global_features(self.select_features(self.tobii_controller.emdat_global_features))
-        '''
+        self.application_state_controller.updateEmdatTable(self.id, self.select_features())
 
     def select_features(self):
         features_to_send = {}
@@ -107,7 +102,7 @@ class EMDATComponent(DetectionComponent):
         print("Complete EMDAT execution --- %s seconds --- \n\n\n" % (time.time() - start_time))
         print
         self.id += 1
-        self.application_state_controller.updateEmdatTable(self.id, self.select_features())
+        self.notify_app_state_controller()
 
     def init_emdat_task_features(self):
         self.emdat_task_features = {}
@@ -678,17 +673,3 @@ def calc_aoi_std_feature(data):
         return np.std(data, ddof = 1)
     else:
         return -1
-
-# TODO: Do we need this?
-def mergevalues(obj_list, field):
-    """a helper method that merges lists of values stored in field
-    Args:
-        obj_list: a list of objects
-        field: name of a field that contains a list of values (string)
-    Returns:
-        a list formed by merging corresponding lists from collection of subjects
-    """
-    mergedlist = []
-    for obj in obj_list:
-        mergedlist.extend(eval('obj.'+ field))
-    return mergedlist

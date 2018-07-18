@@ -4,9 +4,14 @@ from tornado import gen
 import ast
 
 class FixationDetector(DetectionComponent):
-    controller_num = 0
-
+    """
+        Implementation of DetectionComponent used to detect fixations from raw gaze data
+        stored in TobiiController. Once called, runs indefinitely.
+    """
     def __init__(self, tobii_controller, adaptation_loop, liveWebSocket):
+        """
+            See __init__ in DetectionComponent
+        """
         DetectionComponent.__init__(self, tobii_controller, adaptation_loop, liveWebSocket = liveWebSocket)
         FixationDetector.controller_num += 1
         self.runOnlineFix = True
@@ -26,15 +31,15 @@ class FixationDetector(DetectionComponent):
     @gen.coroutine
     def run(self):
         """
-        Concurrently detects fixations, defined as consecutive samples with an inter-sample
-        distance of less than a set amount of pixels (disregarding missing data)
+            Concurrently detects fixations, defined as consecutive samples with an inter-sample
+            distance of less than a set amount of pixels (disregarding missing data)
 
-        # TODO:
-        keyword arguments
-        maxdist	-	maximal inter sample distance in pixels (default = 25)
-        mindur	-	minimal duration of a fixation in milliseconds; detected
-                    fixation candidates will be disregarded if they are below
-                    this duration (default = 100)
+            # TODO:
+            keyword arguments
+            maxdist	-	maximal inter sample distance in pixels (default = 25)
+            mindur	-	minimal duration of a fixation in milliseconds; detected
+                        fixation candidates will be disregarded if they are below
+                        this duration (default = 100)
         """
         #list of lists, each containing [starttime, endtime, duration, endx, endy]
         self.EndFixations = []
@@ -151,6 +156,12 @@ class FixationDetector(DetectionComponent):
 
     @gen.coroutine
     def wait_for_new_data(self, array_index, array_iterator):
+        """
+    	   Coroutine which yields the control when there are no new datapoints available from Tobii. Called   from run()
+           Args:
+                Array_index - The position of first unused datapoint in raw data arrays so far
+                Array_iterator - The number of new datapoints needed to run fixation_detection() method
+        """
         while(1):
             if(len(self.tobii_controller.x) > array_index + array_iterator):
                 break
@@ -158,6 +169,9 @@ class FixationDetector(DetectionComponent):
                 yield
 
     def get_data_batch(self, array_index, array_iterator):
+        """
+            Returns array_iterator number of points from data arrays starting at the index array_index. Used by run() method.
+        """
         return (self.tobii_controller.x[array_index : (array_index + array_iterator)],
                 self.tobii_controller.y[array_index : (array_index + array_iterator)],
                 self.tobii_controller.time[array_index : (array_index + array_iterator)],
@@ -268,6 +282,10 @@ class FixationDetector(DetectionComponent):
         return Sfix, Efix
 
     def find_new_start(self, x, y, maxdist, i, si):
+        """
+        Helper method for fixation_detection(): when it was detected that fixation is too short,
+        it finds another starting point for the next fixation.
+        """
         j = si + 1
         while(j < i):
             dist_i_j = ((x[i] - x[j])**2 + (y[i] - y[j])**2)**0.5
