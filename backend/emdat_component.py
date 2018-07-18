@@ -494,8 +494,8 @@ class EMDATComponent(DetectionComponent):
             aoi_dpt_indices = aoi_dpt_indices[aoi_dpt_indices >= self.x_y_idx]
             valid_indices = aoi_dpt_indices - self.x_y_idx
             #print('NUMBER OF VALID INDICES: %d' % len(valid_indices))
-            new_dpts_available = (len(valid_indices) == 0)
-            if (not new_dpts_available):
+            no_dpts_available = (len(valid_indices) == 0)
+            if no_dpts_available:
                 self.set_empty_values(aoi)
                 continue
             if params.USE_PUPIL_FEATURES:
