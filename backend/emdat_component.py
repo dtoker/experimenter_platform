@@ -22,7 +22,8 @@ class EMDATComponent(DetectionComponent):
         self.AOIS = self.application_state_controller.getEmdatAoiMapping()
         print(self.AOIS)
         print("NUMBER OF AOIS %d" % len(self.AOIS))
-        self.init_emdat_task_features()
+        self.emdat_task_features = {}
+        self.init_emdat_features(self.emdat_task_features)
         self.tobii_controller.update_aoi_storage(self.AOIS)
         self.feature_select = self.application_state_controller.getEdmatFeatures()
         self.execfile = open('newfile.txt', 'w')
@@ -61,6 +62,8 @@ class EMDATComponent(DetectionComponent):
         self.length = self.end - self.start
         self.calc_validity_gaps()
         self.emdat_interval_features = {}
+        self.init_emdat_features(self.emdat_interval_features)
+)
         self.length_invalid = self.get_length_invalid()
         self.emdat_interval_features['length'] = self.length
         self.emdat_interval_features['length_invalid'] = self.length_invalid
@@ -109,91 +112,90 @@ class EMDATComponent(DetectionComponent):
         self.id += 1
         self.notify_app_state_controller()
 
-    def init_emdat_task_features(self):
-        self.emdat_task_features = {}
-        self.emdat_task_features['length'] = 0
-        self.emdat_task_features['length_invalid'] = 0
+    def init_emdat_features(features_dictionary):
+        features_dictionary['length'] = 0
+        features_dictionary['length_invalid'] = 0
 		# Pupil features
-        self.emdat_task_features['numpupilsizes']    	    = 0
-        self.emdat_task_features['numpupilvelocity']		= 0
-        self.emdat_task_features['meanpupilsize'] 			= -1
-        self.emdat_task_features['stddevpupilsize'] 		= -1
-        self.emdat_task_features['maxpupilsize'] 			= -1
-        self.emdat_task_features['minpupilsize'] 			= -1
-		#self.emdat_task_features['startpupilsize'] 			= -1
-		#self.emdat_task_features['endpupilsize'] 			= -1
-        self.emdat_task_features['meanpupilvelocity'] 		= -1
-        self.emdat_task_features['stddevpupilvelocity'] 	= -1
-        self.emdat_task_features['maxpupilvelocity'] 		= -1
-        self.emdat_task_features['minpupilvelocity'] 		= -1
+        features_dictionary['numpupilsizes']    	    = 0
+        features_dictionary['numpupilvelocity']		= 0
+        features_dictionary['meanpupilsize'] 			= -1
+        features_dictionary['stddevpupilsize'] 		= -1
+        features_dictionary['maxpupilsize'] 			= -1
+        features_dictionary['minpupilsize'] 			= -1
+		#features_dictionary['startpupilsize'] 			= -1
+		#features_dictionary['endpupilsize'] 			= -1
+        features_dictionary['meanpupilvelocity'] 		= -1
+        features_dictionary['stddevpupilvelocity'] 	= -1
+        features_dictionary['maxpupilvelocity'] 		= -1
+        features_dictionary['minpupilvelocity'] 		= -1
 		# Distance features
-        self.emdat_task_features['numdistancedata']			= 0
-        self.emdat_task_features['meandistance'] 			= -1
-        self.emdat_task_features['stddevdistance'] 			= -1
-        self.emdat_task_features['maxdistance'] 			= -1
-        self.emdat_task_features['mindistance'] 			= -1
-		#self.emdat_task_features['startdistance'] 			= -1
-		#self.emdat_task_features['enddistance'] 				= -1
+        features_dictionary['numdistancedata']			= 0
+        features_dictionary['meandistance'] 			= -1
+        features_dictionary['stddevdistance'] 			= -1
+        features_dictionary['maxdistance'] 			= -1
+        features_dictionary['mindistance'] 			= -1
+		#features_dictionary['startdistance'] 			= -1
+		#features_dictionary['enddistance'] 				= -1
 		# Path features
-        self.emdat_task_features['numfixdistances'] 		= 0
-        self.emdat_task_features['numabsangles'] 			= 0
-        self.emdat_task_features['numrelangles'] 			= 0
-        self.emdat_task_features['meanpathdistance'] 		= -1
-        self.emdat_task_features['sumpathdistance'] 		= -1
-        self.emdat_task_features['stddevpathdistance'] 		= -1
-        self.emdat_task_features['eyemovementvelocity'] 	= -1
-        self.emdat_task_features['sumabspathangles'] 		= -1
-        self.emdat_task_features['abspathanglesrate'] 		= -1
-        self.emdat_task_features['meanabspathangles']		= -1
-        self.emdat_task_features['stddevabspathangles']		= -1
-        self.emdat_task_features['sumrelpathangles'] 		= -1
-        self.emdat_task_features['relpathanglesrate'] 		= -1
-        self.emdat_task_features['meanrelpathangles']		= -1
-        self.emdat_task_features['stddevrelpathangles']     = -1
+        features_dictionary['numfixdistances'] 		= 0
+        features_dictionary['numabsangles'] 			= 0
+        features_dictionary['numrelangles'] 			= 0
+        features_dictionary['meanpathdistance'] 		= -1
+        features_dictionary['sumpathdistance'] 		= -1
+        features_dictionary['stddevpathdistance'] 		= -1
+        features_dictionary['eyemovementvelocity'] 	= -1
+        features_dictionary['sumabspathangles'] 		= -1
+        features_dictionary['abspathanglesrate'] 		= -1
+        features_dictionary['meanabspathangles']		= -1
+        features_dictionary['stddevabspathangles']		= -1
+        features_dictionary['sumrelpathangles'] 		= -1
+        features_dictionary['relpathanglesrate'] 		= -1
+        features_dictionary['meanrelpathangles']		= -1
+        features_dictionary['stddevrelpathangles']     = -1
 		# Fixation features
-        self.emdat_task_features['numfixations'] 			= 0
-        self.emdat_task_features['fixationrate'] 			= -1
-        self.emdat_task_features['meanfixationduration'] 	= -1
-        self.emdat_task_features['stddevfixationduration'] 	= -1
-        self.emdat_task_features['sumfixationduration'] 	= -1
-        self.emdat_task_features['fixationrate'] 			= -1
+        features_dictionary['numfixations'] 			= 0
+        features_dictionary['fixationrate'] 			= -1
+        features_dictionary['meanfixationduration'] 	= -1
+        features_dictionary['stddevfixationduration'] 	= -1
+        features_dictionary['sumfixationduration'] 	= -1
+        features_dictionary['fixationrate'] 			= -1
         for aoi in self.AOIS.keys():
-            self.emdat_task_features[aoi] = {}
-            self.emdat_task_features[aoi]['numfixations'] 			    = 0
-            self.emdat_task_features[aoi]['longestfixation']            = -1
-            self.emdat_task_features[aoi]['meanfixationduration']       = -1
-            self.emdat_task_features[aoi]['stddevfixationduration']     = -1
-            self.emdat_task_features[aoi]['timetofirstfixation']        = -1
-            self.emdat_task_features[aoi]['timetolastfixation']         = -1
-            self.emdat_task_features[aoi]['proportionnum']              = 0
-            self.emdat_task_features[aoi]['proportiontime']             = 0
-            self.emdat_task_features[aoi]['fixationrate']               = 0
-            self.emdat_task_features[aoi]['totaltimespent']             = 0
-            self.emdat_task_features[aoi]['meanpupilsize']              = -1
-            self.emdat_task_features[aoi]['stddevpupilsize']            = -1
-            self.emdat_task_features[aoi]['maxpupilsize']               = -1
-            self.emdat_task_features[aoi]['minpupilsize']               = -1
-            #self.emdat_task_features[aoi]['startpupilsize']             = -1
-            #self.emdat_task_features[aoi]['endpupilsize']               = -1
-            self.emdat_task_features[aoi]['meanpupilvelocity']          = -1
-            self.emdat_task_features[aoi]['stddevpupilvelocity']        = -1
-            self.emdat_task_features[aoi]['maxpupilvelocity']           = -1
-            self.emdat_task_features[aoi]['minpupilvelocity']           = -1
-            self.emdat_task_features[aoi]['numpupilsizes']              = 0
-            self.emdat_task_features[aoi]['numpupilvelocity']           = 0
-            self.emdat_task_features[aoi]['numdistancedata']            = 0
-            self.emdat_task_features[aoi]['numdistancedata']            = 0
-            self.emdat_task_features[aoi]['meandistance']               = -1
-            self.emdat_task_features[aoi]['stddevdistance']             = -1
-            self.emdat_task_features[aoi]['maxdistance']                = -1
-            self.emdat_task_features[aoi]['mindistance']                = -1
+            features_dictionary[aoi] = {}
+            features_dictionary[aoi]['numfixations'] 			    = 0
+            features_dictionary[aoi]['longestfixation']            = -1
+            features_dictionary[aoi]['meanfixationduration']       = -1
+            features_dictionary[aoi]['stddevfixationduration']     = -1
+            features_dictionary[aoi]['timetofirstfixation']        = -1
+            features_dictionary[aoi]['timetolastfixation']         = -1
+            features_dictionary[aoi]['proportionnum']              = 0
+            features_dictionary[aoi]['proportiontime']             = 0
+            features_dictionary[aoi]['fixationrate']               = 0
+            features_dictionary[aoi]['totaltimespent']             = 0
+            features_dictionary[aoi]['meanpupilsize']              = -1
+            features_dictionary[aoi]['stddevpupilsize']            = -1
+            features_dictionary[aoi]['maxpupilsize']               = -1
+            features_dictionary[aoi]['minpupilsize']               = -1
+            #features_dictionary[aoi]['startpupilsize']             = -1
+            #features_dictionary[aoi]['endpupilsize']               = -1
+            features_dictionary[aoi]['meanpupilvelocity']          = -1
+            features_dictionary[aoi]['stddevpupilvelocity']        = -1
+            features_dictionary[aoi]['maxpupilvelocity']           = -1
+            features_dictionary[aoi]['minpupilvelocity']           = -1
+            features_dictionary[aoi]['numpupilsizes']              = 0
+            features_dictionary[aoi]['numpupilvelocity']           = 0
+            features_dictionary[aoi]['numdistancedata']            = 0
+            features_dictionary[aoi]['numdistancedata']            = 0
+            features_dictionary[aoi]['meandistance']               = -1
+            features_dictionary[aoi]['stddevdistance']             = -1
+            features_dictionary[aoi]['maxdistance']                = -1
+            features_dictionary[aoi]['mindistance']                = -1
             #self.emdat_interval_features[aoi]['startdistance']      = valid_distance_data[0]
             #self.emdat_interval_features[aoi]['enddistance']        = valid_distance_data[-1]
-            self.emdat_task_features[aoi]['total_trans_from'] = 0
+            features_dictionary[aoi]['total_trans_from'] = 0
 
             for cur_aoi in self.AOIS.keys():
-                self.emdat_task_features[aoi]['numtransfrom_%s'%(cur_aoi)] = 0
-                self.emdat_task_features[aoi]['proptransfrom_%s'%(cur_aoi)] = -1
+                features_dictionary[aoi]['numtransfrom_%s'%(cur_aoi)] = 0
+                features_dictionary[aoi]['proptransfrom_%s'%(cur_aoi)] = -1
 
     def merge_features(self, part_features, accumulator_features):
         accumulator_features['length'] = sumfeat(part_features, accumulator_features, "['length']")
