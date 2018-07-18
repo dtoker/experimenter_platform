@@ -40,7 +40,7 @@ class DetectionComponent():
 
     def start(self):
         '''
-        Method for scheduling a run() call in Tornado’s IOLoop.
+        Method for scheduling a run() call in Tornado's IOLoop.
         Depending on how DetectionComponent was initialized, run()
         gets scheduled to run either periodically or once.
         '''

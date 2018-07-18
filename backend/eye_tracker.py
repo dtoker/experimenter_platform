@@ -379,13 +379,13 @@ class TobiiController:
 			time - timestamp difference between current and last gaze object
 
 		'''
-	    if (last_pupilleft == 0 or pupilleft == 0) and (last_pupilright == 0 or pupilright == 0):
-	        return -1
-	    if (last_pupilleft == 0 or pupilleft == 0):
-	        return abs(pupilright - last_pupilright) / time
-	    if (last_pupilright == 0 or pupilright == 0):
-	        return abs(pupilleft - last_pupilleft) / time
-	    return abs( (pupilleft + pupilright) / 2 - (last_pupilleft + last_pupilright) / 2 ) / time
+		if (last_pupilleft == 0 or pupilleft == 0) and (last_pupilright == 0 or pupilright == 0):
+ 			return -1
+		if (last_pupilleft == 0 or pupilleft == 0):
+			return abs(pupilright - last_pupilright) / time
+		if (last_pupilright == 0 or pupilright == 0):
+			return abs(pupilleft - last_pupilleft) / time
+		return abs( (pupilleft + pupilright) / 2 - (last_pupilleft + last_pupilright) / 2 ) / time
 
 	def get_distance(self, distanceleft, distanceright):
 	    '''
