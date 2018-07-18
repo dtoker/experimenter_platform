@@ -136,7 +136,7 @@ def merge_pupil_features(part_features, accumulator_features):
         accumulator_features['stddevpupilvelocity']             = -1
         accumulator_features['maxpupilvelocity']                = -1
         accumulator_features['minpupilvelocity']                = -1
-
+    """
     print "MERGED INTERVAL AND TASK WHOLE PUPIL FEATURES"
     print "meanpupilsize %f" % accumulator_features['meanpupilsize']
     print "stddevpupilsize %f" % accumulator_features['stddevpupilsize']
@@ -151,7 +151,7 @@ def merge_pupil_features(part_features, accumulator_features):
     print "numpupilsizes %f" % accumulator_features['numpupilsizes']
     print "numpupilvelocity %f" % accumulator_features['numpupilvelocity']
     print
-
+    """
 def merge_distance_features(part_features, accumulator_features):
     """ Merge distance features such as
             mean_distance:            mean of distances from the screen
@@ -182,12 +182,13 @@ def merge_distance_features(part_features, accumulator_features):
         accumulator_features['mindistance']                     = -1
         #self.features['startdistance'] = -1
         #self.features['enddistance'] = -1
+    """
     print "MERGED INTERVAL AND TASK WHOLE DISTANCE FEATURES"
     print "meandistance %f" % accumulator_features['meandistance']
     print "stddevdistance %f" % accumulator_features['stddevdistance']
     print "maxdistance %f" % accumulator_features['maxdistance']
     print "mindistance %f\n" % accumulator_features['mindistance']
-
+    """
 def merge_aoi_fixations(part_features, accumulator_features, length):
     """ Merge fixation features such as
             meanfixationduration:     mean duration of fixations
@@ -267,12 +268,13 @@ def merge_aoi_distance(part_features, accumulator_features):
         #    if accumulator_features.endtime < part_features.endtime:
         #        accumulator_features['enddistance'] = part_features['enddistance']
             accumulator_features['numdistancedata'] += part_features['numdistancedata']
+    """
     print "MERGED INTERVAL AND TASK WHOLE DISTANCE FEATURES"
     print "meandistance %f" % accumulator_features['meandistance']
     print "stddevdistance %f" % accumulator_features['stddevdistance']
     print "maxdistance %f" % accumulator_features['maxdistance']
     print "mindistance %f\n" % accumulator_features['mindistance']
-
+    """
 
 def merge_aoi_pupil(part_features, accumulator_features):
     """ Merge pupil features asuch as
@@ -288,8 +290,8 @@ def merge_aoi_pupil(part_features, accumulator_features):
             accumulator_features: AOI_Stat object of this Scene (must have been initialised)
             part_features: a new AOI_Stat object
         """
-    print('NUMBER OF PUPILS IN ACCUMULATOR: %d' % accumulator_features['numpupilsizes'])
-    print('NUMBER OF PUPILS IN PART: %d' % part_features['numpupilsizes'])
+    #print('NUMBER OF PUPILS IN ACCUMULATOR: %d' % accumulator_features['numpupilsizes'])
+    #print('NUMBER OF PUPILS IN PART: %d' % part_features['numpupilsizes'])
 
     if accumulator_features['numpupilsizes'] == 0:
         accumulator_features['numpupilsizes'] = part_features['numpupilsizes']
@@ -333,6 +335,7 @@ def merge_aoi_pupil(part_features, accumulator_features):
             accumulator_features['minpupilvelocity'] = min(accumulator_features['minpupilvelocity'], part_features['minpupilvelocity'])
             accumulator_features['meanpupilvelocity'] = aggregate_mean_velocity
             accumulator_features['numpupilvelocity'] += part_features['numpupilvelocity']
+    """
     print "MERGED INTERVAL AND TASK AOI PUPIL FEATURES"
     print "meanpupilsize %f" % accumulator_features['meanpupilsize']
     print "stddevpupilsize %f" % accumulator_features['stddevpupilsize']
@@ -347,13 +350,13 @@ def merge_aoi_pupil(part_features, accumulator_features):
     print "numpupilsizes %f" % accumulator_features['numpupilsizes']
     print "numpupilvelocity %f" % accumulator_features['numpupilvelocity']
     print
-
+    """
 def merge_aoi_transitions(part_features, accumulator_features):
         #calculating the transitions to and from this AOI and other active AOIs at the moment
     part_features_transition_aois = filter(lambda x: x.startswith('numtransfrom_'), part_features.keys())
 
     accumulator_features['total_trans_from'] += part_features['total_trans_from']   #updating the total number of transition from this AOI
-    print("Total transitions %d" % accumulator_features['total_trans_from'])
+    #print("Total transitions %d" % accumulator_features['total_trans_from'])
 
     for feat in part_features_transition_aois:
         if feat in accumulator_features:
@@ -368,8 +371,8 @@ def merge_aoi_transitions(part_features, accumulator_features):
             accumulator_features['proptransfrom_%s'%(aid)] = float(accumulator_features[feat]) / accumulator_features['total_trans_from']
         else:
             accumulator_features['proptransfrom_%s'%(aid)] = 0
-        print "Proptransform from %s is %f" % (aid, accumulator_features['proptransfrom_%s'%(aid)])
-    print
+        #print "Proptransform from %s is %f" % (aid, accumulator_features['proptransfrom_%s'%(aid)])
+    #print
     ###endof transition calculation
 
 def calc_distances(fixdata):
