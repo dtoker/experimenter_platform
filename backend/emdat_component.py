@@ -63,7 +63,7 @@ class EMDATComponent(DetectionComponent):
         self.calc_validity_gaps()
         self.emdat_interval_features = {}
         self.init_emdat_features(self.emdat_interval_features)
-)
+
         self.length_invalid = self.get_length_invalid()
         self.emdat_interval_features['length'] = self.length
         self.emdat_interval_features['length_invalid'] = self.length_invalid
@@ -204,16 +204,18 @@ class EMDATComponent(DetectionComponent):
         if (params.USE_PUPIL_FEATURES):
             merge_pupil_features(part_features, accumulator_features)
             for aoi in self.AOIS.keys():
+                print aoi
                 if (len(self.tobii_controller.aoi_ids[aoi]) > 0):
                     #print('merging pupils for %s aoi' % aoi)
-                    merge_aoi_pupil(part_features[aoi], accumulator_features[aoi])
+                    merge_pupil_features(part_features[aoi], accumulator_features[aoi], aoi = aoi)
         """ calculate distance from screen features"""
         if (params.USE_DISTANCE_FEATURES):
             merge_distance_features(part_features, accumulator_features)
             for aoi in self.AOIS.keys():
+                print aoi
                 if (len(self.tobii_controller.aoi_ids[aoi]) > 0):
                     #print('merging distances for %s aoi' % aoi)
-                    merge_aoi_distance(part_features[aoi], accumulator_features[aoi])
+                    merge_distance_features(part_features[aoi], accumulator_features[aoi], aoi = aoi)
 
         """ calculate fixations, angles and path features"""
         if (params.USE_FIXATION_PATH_FEATURES):

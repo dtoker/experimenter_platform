@@ -234,123 +234,7 @@ def merge_aoi_fixations(part_features, accumulator_features, length):
     #if part_features['timetolastfixation']  != -1:
     #    accumulator_features['timetolastfixation']        = max(accumulator_features['timetolastfixation'], deepcopy(part_features['timetolastfixation']) + part_features['starttime'] - sc_start)
 
-def merge_aoi_distance(part_features, accumulator_features):
-    """ Merge distance features such as
-            mean_distance:            mean of distances from the screen
-            stddev_distance:          standard deviation of distances from the screen
-            min_distance:             smallest distance from the screen
-            max_distance:             largest distance from the screen
-            start_distance:           distance from the screen in the beginning of this scene
-            end_distance:             distance from the screen in the end of this scene
-        Args:
-            accumulator_features: AOI_Stat object of this Scene (must have been initialised)
-            part_features: a new AOI_Stat object
-    """
-    if accumulator_features['numdistancedata'] == 0:
-        accumulator_features['numdistancedata'] = part_features['numdistancedata']
-        accumulator_features['meandistance'] = part_features['meandistance']
-        accumulator_features['stddevdistance'] = part_features['stddevdistance']
-        accumulator_features['maxdistance'] = part_features['maxdistance']
-        accumulator_features['mindistance'] = part_features['mindistance']
-    else:
-        if part_features['numdistancedata'] + accumulator_features['numdistancedata'] > 1 and part_features['numdistancedata'] > 0:
-            total_distances = accumulator_features['numdistancedata'] + part_features['numdistancedata']
-            aggregate_mean_distance = accumulator_features['meandistance'] * float(accumulator_features['numdistancedata']) / total_distances + part_features['meandistance'] * float(part_features['numdistancedata']) / total_distances
-            accumulator_features['stddevdistance'] = pow(((accumulator_features['numdistancedata'] - 1) * pow(accumulator_features['stddevdistance'], 2) + \
-                                        (part_features['numdistancedata'] - 1) * pow(part_features['stddevdistance'], 2) + \
-                                        accumulator_features['numdistancedata'] * pow(accumulator_features['meandistance'] - aggregate_mean_distance , 2) \
-                                        + part_features['numdistancedata'] * pow(part_features['meandistance'] - aggregate_mean_distance, 2)) / (total_distances - 1), 0.5)
-            accumulator_features['maxdistance'] = max(accumulator_features['maxdistance'], part_features['maxdistance'])
-            accumulator_features['mindistance'] = min(accumulator_features['mindistance'], part_features['mindistance'])
-            accumulator_features['meandistance'] = aggregate_mean_distance
-            #if accumulator_features.starttime > part_features.starttime:
-            #    accumulator_features['startdistance'] = part_features['startdistance']
-        #    if accumulator_features.endtime < part_features.endtime:
-        #        accumulator_features['enddistance'] = part_features['enddistance']
-            accumulator_features['numdistancedata'] += part_features['numdistancedata']
-    """
-    print "MERGED INTERVAL AND TASK WHOLE DISTANCE FEATURES"
-    print "meandistance %f" % accumulator_features['meandistance']
-    print "stddevdistance %f" % accumulator_features['stddevdistance']
-    print "maxdistance %f" % accumulator_features['maxdistance']
-    print "mindistance %f\n" % accumulator_features['mindistance']
-    """
 
-def merge_aoi_pupil(part_features, accumulator_features):
-    """ Merge pupil features asuch as
-            mean_pupil_size:            mean of pupil sizes
-            stddev_pupil_size:          standard deviation of pupil sizes
-            min_pupil_size:             smallest pupil size
-            max_pupil_size:             largest pupil size
-            mean_pupil_velocity:        mean of pupil velocities
-            stddev_pupil_velocity:      standard deviation of pupil velocities
-            min_pupil_velocity:         smallest pupil velocity
-            max_pupil_velocity:         largest pupil velocity
-        Args:
-            accumulator_features: AOI_Stat object of this Scene (must have been initialised)
-            part_features: a new AOI_Stat object
-        """
-    #print('NUMBER OF PUPILS IN ACCUMULATOR: %d' % accumulator_features['numpupilsizes'])
-    #print('NUMBER OF PUPILS IN PART: %d' % part_features['numpupilsizes'])
-
-    if accumulator_features['numpupilsizes'] == 0:
-        accumulator_features['numpupilsizes'] = part_features['numpupilsizes']
-        accumulator_features['meanpupilsize'] = part_features['meanpupilsize']
-        accumulator_features['stddevpupilsize'] = part_features['stddevpupilsize']
-        accumulator_features['maxpupilsize'] = part_features['maxpupilsize']
-        accumulator_features['minpupilsize'] = part_features['minpupilsize']
-        accumulator_features['numpupilvelocity'] = part_features['numpupilvelocity']
-        accumulator_features['meanpupilvelocity'] = part_features['meanpupilvelocity']
-        accumulator_features['stddevpupilvelocity'] = part_features['stddevpupilvelocity']
-        accumulator_features['maxpupilvelocity'] = part_features['maxpupilvelocity']
-        accumulator_features['minpupilvelocity'] = part_features['minpupilvelocity']
-
-    else:
-        if part_features['numpupilsizes'] > 0:
-            total_numpupilsizes = accumulator_features['numpupilsizes'] + part_features['numpupilsizes']
-            aggregate_mean_pupil =  accumulator_features['meanpupilsize'] * float(accumulator_features['numpupilsizes']) / total_numpupilsizes + part_features['meanpupilsize'] * float(part_features['numpupilsizes']) / total_numpupilsizes
-            accumulator_features['stddevpupilsize'] = pow(((accumulator_features['numpupilsizes'] - 1) * pow(accumulator_features['stddevpupilsize'], 2) \
-                                                + (part_features['numpupilsizes'] - 1) * pow(part_features['stddevpupilsize'], 2) + \
-                                                accumulator_features['numpupilsizes'] *  pow(accumulator_features['meanpupilsize'] - aggregate_mean_pupil, 2) + \
-                                                part_features['numpupilsizes'] * pow(part_features['meanpupilsize'] - aggregate_mean_pupil, 2)) \
-                                                / (total_numpupilsizes - 1), 0.5)
-            accumulator_features['maxpupilsize'] = max(accumulator_features['maxpupilsize'], part_features['maxpupilsize'])
-            accumulator_features['minpupilsize'] = min(accumulator_features['minpupilsize'], part_features['minpupilsize'])
-            accumulator_features['meanpupilsize'] = aggregate_mean_pupil
-            #if accumulator_features['starttime'] > part_features['starttime']:
-            #    accumulator_features['startpupilsize'] = part_features['startpupilsize']
-            #if accumulator_features['endtime'] < part_features['endtime']:
-            #    accumulator_features['endpupilsize'] = part_features['endpupilsize']
-            accumulator_features['numpupilsizes'] += part_features['numpupilsizes']
-
-        total_numpupilvelocity = accumulator_features['numpupilvelocity'] + part_features['numpupilvelocity']
-        if total_numpupilvelocity > 1 and part_features['numpupilvelocity'] > 0:
-            aggregate_mean_velocity =  accumulator_features['meanpupilvelocity'] * float(accumulator_features['numpupilvelocity']) / total_numpupilvelocity + part_features['meanpupilvelocity'] * float(part_features['numpupilvelocity']) / total_numpupilvelocity
-            accumulator_features['stddevpupilvelocity'] = pow(((accumulator_features['numpupilvelocity'] - 1) * pow(accumulator_features['stddevpupilvelocity'], 2) \
-                                                + (part_features['numpupilvelocity'] - 1) * pow(part_features['stddevpupilvelocity'], 2) + \
-                                                accumulator_features['numpupilvelocity'] *  pow(accumulator_features['meanpupilvelocity'] - aggregate_mean_velocity, 2) + \
-                                                part_features['numpupilvelocity'] * pow(part_features['meanpupilvelocity'] - aggregate_mean_velocity, 2)) \
-                                                / (total_numpupilvelocity - 1), 0.5)
-            accumulator_features['maxpupilvelocity'] = max(accumulator_features['maxpupilvelocity'], part_features['maxpupilvelocity'])
-            accumulator_features['minpupilvelocity'] = min(accumulator_features['minpupilvelocity'], part_features['minpupilvelocity'])
-            accumulator_features['meanpupilvelocity'] = aggregate_mean_velocity
-            accumulator_features['numpupilvelocity'] += part_features['numpupilvelocity']
-    """
-    print "MERGED INTERVAL AND TASK AOI PUPIL FEATURES"
-    print "meanpupilsize %f" % accumulator_features['meanpupilsize']
-    print "stddevpupilsize %f" % accumulator_features['stddevpupilsize']
-    print "maxpupilsize %f" % accumulator_features['maxpupilsize']
-    print "minpupilsize %f" % accumulator_features['minpupilsize']
-    #print "startpupilsize %f" % accumulator_features['startpupilsize']
-    #print "endpupilsize %f" % accumulator_features['endpupilsize']
-    print "meanpupilvelocity %f" % accumulator_features['meanpupilvelocity']
-    print "stddevpupilvelocity %f" % accumulator_features['stddevpupilvelocity']
-    print "maxpupilvelocity %f" % accumulator_features['maxpupilvelocity']
-    print "minpupilvelocity %f" % accumulator_features['minpupilvelocity']
-    print "numpupilsizes %f" % accumulator_features['numpupilsizes']
-    print "numpupilvelocity %f" % accumulator_features['numpupilvelocity']
-    print
-    """
 def merge_aoi_transitions(part_features, accumulator_features):
         #calculating the transitions to and from this AOI and other active AOIs at the moment
     part_features_transition_aois = filter(lambda x: x.startswith('numtransfrom_'), part_features.keys())
@@ -465,7 +349,7 @@ def calc_rel_angles(fixdata):
     return rel_angles
 
 def minfeat(part_features, accumulator_features, feat, nonevalue = None):
-    """a helper method that calculates the min of a target feature over a list of objects
+    """a helper method that calculates the min of a target feature over two feature dictionaries
 
     Args:
 
