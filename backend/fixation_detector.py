@@ -133,17 +133,14 @@ class FixationDetector(DetectionComponent):
                         Sfix = []
                         break
 
-                    #print(Efix[0][3], Efix[0][4])
                     x_fixation /= points_in_fixation
                     y_fixation /= points_in_fixation
 
                     self.tobii_controller.add_fixation(Efix[0][3], Efix[0][4], Efix[0][2])
-                    #print("size of AOIs: %d" % len(self.AOIS))
                     for ws in self.liveWebSocket:
                         for aoi in self.AOIS:
                             if (fixation_inside_aoi(x_fixation, y_fixation, self.AOIS[aoi])):
                                 ws.write_message('{"x":"%d", "y":"%d"}' % (x_fixation, y_fixation))
-                                #print(Efix[0][3], Efix[0][4])
                                 self.cur_fix_id += 1
                                 self.application_state_controller.updateFixTable(aoi, self.cur_fix_id, int(Sfix[0]), int(EfixEndTime), int(EfixEndTime - Sfix[0]))
                                 self.adaptation_loop.evaluateRules(aoi, EfixEndTime)
@@ -215,9 +212,6 @@ class FixationDetector(DetectionComponent):
                     continue
                 # start a new fixation
                 fixstart = True
-                #print(validity[si])
-                #print(i)
-                #print(si)
                 Sfix.append(time[si])
                 # Currently last valid point
                 last_valid = i
@@ -236,7 +230,6 @@ class FixationDetector(DetectionComponent):
                     else:
                     	duration = time[last_valid] - Sfix[-1]
                     	if duration >= mindur:
-                            #print('9 invalid')
                             Efix.append((Sfix[-1], time[last_valid], time[last_valid] - Sfix[-1], x[last_valid], y[last_valid]))
                             break
                     	else:
@@ -247,7 +240,6 @@ class FixationDetector(DetectionComponent):
                 elif not validity[i-1]:
                     duration = time[last_valid] - Sfix[-1]
                     if duration >= mindur:
-                        #print('prev invalid')
                     	Efix.append((Sfix[-1], time[last_valid], time[last_valid] - Sfix[-1], x[last_valid], y[last_valid]))
                     	break
                     else:
@@ -258,7 +250,6 @@ class FixationDetector(DetectionComponent):
                     	continue
                 # only store the fixation if the duration is ok
                 if time[i-1] - Sfix[-1] >= mindur:
-                    #print('chill')
                     Efix.append((Sfix[-1], time[i - 1], time[i - 1] - Sfix[-1], x[i - 1], y[i - 1]))
                     break
                 # delete the last fixation start if it was too short
@@ -266,7 +257,6 @@ class FixationDetector(DetectionComponent):
                 si = self.find_new_start(x, y, maxdist, i, si)
                 if (si != i):
                     fixstart = True
-                    #print(validity[si])
                     Sfix.append(time[si])
                 last_valid = i
                 invalid_count = 0
