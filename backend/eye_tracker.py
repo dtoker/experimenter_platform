@@ -19,7 +19,6 @@ import tobii.eye_tracking_io.time.sync
 import csv
 import numpy as np
 from tornado import gen
-from dummy_controller import DummyController
 import emdat_utils
 import ast
 
@@ -72,7 +71,7 @@ class TobiiController:
 
 	def waitForFindEyeTracker(self):
 
-		"""Keeps running until an eyetracker is found
+		"""Blocks the current thread until Tobii API detects an eye tracker in the system.
 
 		arguments
 		None
@@ -275,7 +274,9 @@ class TobiiController:
 
 	def on_gazedata(self,error,gaze):
 
-		"""Adds new data point to the data collection (self.gazeData)
+		"""AAdds new data point to the raw data arrays. If x, y coordinate data is not available,
+		stores the coordinates for this datapoint as (-1280, -1024). Any other feature,
+		if not available, is stored as -1.
 
 		arguments
 		error		--	some Tobii error message, isn't used in function
@@ -404,6 +405,10 @@ class TobiiController:
 	    return (distanceleft + distanceright) / 2.0
 
 	def update_aoi_storage(self, AOIS):
+		"""
+			Add new aois to global EMDAT feature storage dictionary.
+			Called during a task switch by EMDATComponent.
+		"""
 
 		self.AOIs = AOIS
 		for event_name in AOIS.keys():

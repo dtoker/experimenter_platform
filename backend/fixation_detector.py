@@ -1,7 +1,7 @@
 from detection_component import DetectionComponent
-from dummy_controller import DummyController
 from tornado import gen
 import ast
+import params
 
 class FixationDetector(DetectionComponent):
     """
@@ -32,14 +32,9 @@ class FixationDetector(DetectionComponent):
     def run(self):
         """
             Concurrently detects fixations, defined as consecutive samples with an inter-sample
-            distance of less than a set amount of pixels (disregarding missing data)
-
-            # TODO:
-            keyword arguments
-            maxdist	-	maximal inter sample distance in pixels (default = 25)
-            mindur	-	minimal duration of a fixation in milliseconds; detected
-                        fixation candidates will be disregarded if they are below
-                        this duration (default = 100)
+            distance of less than a set amount of pixels (disregarding missing data). Uses params.MAXDIST
+            and params.MINDUR for respectively the distance and the smallest possible time length of a fixation.
+            The method is a coroutine, which means that it can pause its execution and give control to other components of the platform.
         """
         #list of lists, each containing [starttime, endtime, duration, endx, endy]
         self.EndFixations = []
@@ -109,7 +104,7 @@ class FixationDetector(DetectionComponent):
                     newY.extend(nextY)
                     newTime.extend(nextTime)
                     newValid.extend(nextValid)
-                    Sfix, Efix = self.fixation_detection(newX, newY, newTime, newValid)
+                    Sfix, Efix = self.fixation_detection(newX, newY, newTime, newValid, params.MAXDIST, params.MINDUR)
                 #a genuine end fixation has been found!
                 else:
                     #Add the newly found end fixation to our collection of end fixations
