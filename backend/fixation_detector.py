@@ -131,7 +131,7 @@ class FixationDetector(DetectionComponent):
                     y_fixation /= points_in_fixation
                     #print("FIXATION")
                     #print x_fixation, y_fixation
-                    self.tobii_controller.add_fixation(Efix[0][3], Efix[0][4], Efix[0][2])
+                    self.tobii_controller.add_fixation(Efix[0][3], Efix[0][4], Efix[0][2], Sfix[0])
                     for ws in self.liveWebSocket:
                         for aoi in self.AOIS:
                             #print aoi
@@ -177,6 +177,7 @@ class FixationDetector(DetectionComponent):
                 self.tobii_controller.validity[array_index : (array_index + array_iterator)])
 
     def fixation_detection(self, x, y, time, validity, maxdist=35, mindur=100000):
+        """
         #Detects fixations, defined as consecutive samples with an inter-sample
         #distance of less than a set amount of pixels (disregarding missing data)
 
@@ -194,6 +195,7 @@ class FixationDetector(DetectionComponent):
         #Sfix, Efix
                     #Sfix	-	list of lists, each containing [starttime]
                     #Efix	-	list of lists, each containing [starttime, endtime, duration, endx, endy]
+        """
         # empty list to contain data
         Sfix = []
         Efix = []

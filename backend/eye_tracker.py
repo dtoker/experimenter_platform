@@ -339,7 +339,7 @@ class TobiiController:
 		self.LastTimestamp = gaze.Timestamp
 		self.dpt_id += 1
 
-	def add_fixation(self, x, y, duration):
+	def add_fixation(self, x, y, duration, start_time):
 		'''
 		Called by FixationDetector when a new fixation is detected.
 		Adds a new fixation to data array to be used for EMDAT features calculation.
@@ -348,7 +348,7 @@ class TobiiController:
 			y 			- coordinate of fixation on the screen
 			duration 	- duration of fixation in microseconds
 		'''
-		self.EndFixations.append((x, y, duration))
+		self.EndFixations.append((x, y, duration, start_time))
 
 	def get_pupil_size(self, pupilleft, pupilright):
 	    '''

@@ -84,16 +84,17 @@ def merge_pupil_features(part_features, accumulator_features):
         accumulator_features['minpupilsize']       = minfeat(part_features, accumulator_features, "['minpupilsize']", -1)
         accumulator_features['meanpupilsize']      = mean_pupilsize
         accumulator_features['numpupilsizes']      = numpupilsizes
-        #self.features['startpupilsize'] = self.firstseg.features['startpupilsize']
-        #self.features['endpupilsize'] = self.endseg.features['endpupilsize']
+        if (accumulator_features['startpupilsize'] == -1):
+            accumulator_features['startpupilsize'] = part_features['startpupilsize']
+        if (part_features['endpupilsize'] != -1):
+            accumulator_features['endpupilsize'] = part_features['endpupilsize']
     else:
-        #self.pupilinfo_for_export = []
         accumulator_features['meanpupilsize']                  = -1
         accumulator_features['stddevpupilsize']                = -1
         accumulator_features['maxpupilsize']                   = -1
         accumulator_features['minpupilsize']                   = -1
-        #self.features['startpupilsize'] = -1
-        #self.features['endpupilsize'] = -1
+        accumulator_features['startpupilsize'] = -1
+        accumulator_features['endpupilsize'] = -1
 
     if numpupilvelocity > 0: # check if scene has any pupil velocity data
         mean_velocity                                           = weightedmeanfeat(part_features, accumulator_features, "['numpupilvelocity']", "['meanpupilvelocity']")
@@ -113,8 +114,8 @@ def merge_distance_features(part_features, accumulator_features):
     """
         Merges distance features (for whole screen and AOIs) from part_features into accumulator_features
     """
-    numdistancedata = sumfeat(part_features, accumulator_features,"['numdistancedata']") #Distance
-    if numdistancedata > 0: # check if scene has any pupil data
+    numdistancedata = sumfeat(part_features, accumulator_features,"['numdistancedata']")
+    if numdistancedata > 0:
         mean_distance                                           = weightedmeanfeat(part_features, accumulator_features, "['numdistancedata']", "['meandistance']")
         accumulator_features['stddevdistance']                  = aggregatestddevfeat(part_features, accumulator_features, "['numdistancedata']", "['stddevdistance']", "['meandistance']", mean_distance)
         accumulator_features['maxdistance']                     = maxfeat(part_features, accumulator_features, "['maxdistance']")
@@ -122,15 +123,17 @@ def merge_distance_features(part_features, accumulator_features):
         accumulator_features['mindistance']                     = minfeat(part_features, accumulator_features, "['mindistance']", -1)
         accumulator_features['meandistance']                   = mean_distance
         accumulator_features['numdistancedata']                 = numdistancedata
-        #self.features['startdistance'] = self.firstseg.features['startdistance']
-        #self.features['enddistance'] = self.endseg.features['enddistance']
+        if (accumulator_features['startdistance'] == -1):
+            accumulator_features['startdistance'] = part_features['startdistance']
+        if (part_features['enddistance'] != -1):
+            accumulator_features['enddistance'] = part_features['enddistance']
     else:
         accumulator_features['meandistance']                    = -1
         accumulator_features['stddevdistance']                  = -1
         accumulator_features['maxdistance']                     = -1
         accumulator_features['mindistance']                     = -1
-        #self.features['startdistance'] = -1
-        #self.features['enddistance'] = -1
+        accumulator_features['startdistance']                   = -1
+        accumulator_features['enddistance']                     = -1
 
 def merge_aoi_fixations(part_features, accumulator_features, length):
     """
