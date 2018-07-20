@@ -9,11 +9,11 @@ class FixationDetector(DetectionComponent):
         Implementation of DetectionComponent used to detect fixations from raw gaze data
         stored in TobiiController. Once called, runs indefinitely.
     """
-    def __init__(self, tobii_controller, adaptation_loop, liveWebSocket):
+    def __init__(self, tobii_controller, adaptation_loop):
         """
             See __init__ in DetectionComponent
         """
-        DetectionComponent.__init__(self, tobii_controller, adaptation_loop, liveWebSocket = liveWebSocket)
+        DetectionComponent.__init__(self, tobii_controller, adaptation_loop)
         self.runOnlineFix = True
         self.cur_fix_id = 0
         self.AOIS = self.application_state_controller.getFixAoiMapping()
@@ -78,16 +78,6 @@ class FixationDetector(DetectionComponent):
                     fixIndex = newTime.index(SfixTime)
                     xVal = newX[fixIndex]
                     yVal = newY[fixIndex]
-                    #Get the open websocket and send x and y values through it to front end
-                    # A start fixation has been detected!
-                    for ws in self.liveWebSocket:
-                        if ((xVal != -1280) & (yVal != -1024)):
-                            for aoi in self.AOIS:
-                                if (fixation_inside_aoi(xVal, yVal, self.AOIS[aoi])):
-                                    if aoi == 'text_fix':
-                                        print("FIRST curr time ! %d"  % (time.time() * 1000.0))
-                                    ws.write_message('{"x":"%d", "y":"%d"}' % (xVal, yVal))
-                                    break
                     break
             #We are here because start fixation was detected
             while(1):
@@ -125,27 +115,13 @@ class FixationDetector(DetectionComponent):
                         Sfix = []
                         break
 
-
-                    #print(Efix[0][3], Efix[0][4])
                     x_fixation /= points_in_fixation
                     y_fixation /= points_in_fixation
-                    #print("FIXATION")
-                    #print x_fixation, y_fixation
                     self.tobii_controller.add_fixation(Efix[0][3], Efix[0][4], Efix[0][2], Sfix[0])
-                    for ws in self.liveWebSocket:
-                        for aoi in self.AOIS:
-                            #print aoi
-                            #print self.AOIS[aoi]
-                            if (fixation_inside_aoi(x_fixation, y_fixation, self.AOIS[aoi])):
-                                if (aoi == 'text_fix'):
-                                    print("SECOND curr time ! %f"  %  (time.time() * 1000.0))
-                                    #print x_fixation
-                                    #print y_fixation
-                                    print(Efix[0][2])
-
-                                ws.write_message('{"x":"%d", "y":"%d"}' % (x_fixation, y_fixation))
-                                self.cur_fix_id += 1
-                                self.notify_app_state_controller(aoi, int(Sfix[0]), int(EfixEndTime), int(EfixEndTime - Sfix[0]))
+                    for aoi in self.AOIS:
+                        if (fixation_inside_aoi(x_fixation, y_fixation, self.AOIS[aoi])):
+                            self.cur_fix_id += 1
+                            self.notify_app_state_controller(aoi, int(Sfix[0]), int(EfixEndTime), int(EfixEndTime - Sfix[0]))
                     #May wanrt to use something like this in the future in there are performace issues
                     #self.x = self.x[array_index:]
                     #self.y = self.y[array_index:]
