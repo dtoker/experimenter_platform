@@ -318,6 +318,8 @@ class TobiiController:
 		else:
 			self.x.append(-1 * 1280)
 			self.y.append(-1 * 1024)
+		# print(gaze.RightGazePoint2D.x * 1280, gaze.RightGazePoint2D.y * 1024)
+		# print("%f" % (time.time() * 1000.0))
 		for aoi, polygon in self.AOIs.iteritems():
 			if emdat_utils.datapoint_inside_aoi((self.x[-1], self.y[-1]), polygon):
 				self.aoi_ids[aoi].append(self.dpt_id)

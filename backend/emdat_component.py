@@ -534,7 +534,6 @@ class EMDATComponent(DetectionComponent):
             self.emdat_interval_features[aoi]['numpupilsizes']          = 0
             self.emdat_interval_features[aoi]['numpupilvelocity']       = 0
             self.emdat_interval_features[aoi]['numdistancedata']        = 0
-            self.emdat_interval_features[aoi]['numfixations']               = 0
             self.emdat_interval_features[aoi]['meanpupilvelocity']      = -1
             self.emdat_interval_features[aoi]['stddevpupilvelocity']    = -1
             self.emdat_interval_features[aoi]['maxpupilvelocity']       = -1
@@ -545,6 +544,8 @@ class EMDATComponent(DetectionComponent):
             self.emdat_interval_features[aoi]['mindistance']            = -1
             self.emdat_interval_features[aoi]['startdistance']          = -1
             self.emdat_interval_features[aoi]['enddistance']            = -1
+
+        self.emdat_interval_features[aoi]['numfixations']               = 0
         self.emdat_interval_features[aoi]['longestfixation']            = -1
         self.emdat_interval_features[aoi]['meanfixationduration']       = -1
         self.emdat_interval_features[aoi]['stddevfixationduration']     = -1

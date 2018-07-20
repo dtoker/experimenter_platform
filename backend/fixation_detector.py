@@ -1,14 +1,20 @@
 from detection_component import DetectionComponent
 from dummy_controller import DummyController
 from tornado import gen
+import time
 import ast
 
 class FixationDetector(DetectionComponent):
-    controller_num = 0
+
+    """
+
+    Implementation of DetectionComponent used to detect fixations from raw gaze data stored in TobiiController.
+    Once called, runs indefinitely.
+
+    """
 
     def __init__(self, tobii_controller, adaptation_loop, liveWebSocket):
         DetectionComponent.__init__(self, tobii_controller, adaptation_loop, liveWebSocket = liveWebSocket)
-        FixationDetector.controller_num += 1
         self.runOnlineFix = True
         self.cur_fix_id = 0
         self.AOIS = self.application_state_controller.getFixAoiMapping()
@@ -87,8 +93,10 @@ class FixationDetector(DetectionComponent):
                     # A start fixation has been detected!
                     for ws in self.liveWebSocket:
                         if ((xVal != -1280) & (yVal != -1024)):
-                            for aoi in self.AOIS.values():
-                                if (fixation_inside_aoi(xVal, yVal, aoi)):
+                            for aoi in self.AOIS:
+                                if (fixation_inside_aoi(xVal, yVal, self.AOIS[aoi])):
+                                    if aoi == 'text_fix':
+                                        print("FIRST curr time ! %d"  % (time.time() * 1000.0))
                                     ws.write_message('{"x":"%d", "y":"%d"}' % (xVal, yVal))
                                     break
                     break
@@ -128,20 +136,39 @@ class FixationDetector(DetectionComponent):
                         Sfix = []
                         break
 
+
                     #print(Efix[0][3], Efix[0][4])
                     x_fixation /= points_in_fixation
                     y_fixation /= points_in_fixation
-
+                    #print("FIXATION")
+                    #print x_fixation, y_fixation
                     self.tobii_controller.add_fixation(Efix[0][3], Efix[0][4], Efix[0][2])
                     #print("size of AOIs: %d" % len(self.AOIS))
                     for ws in self.liveWebSocket:
                         for aoi in self.AOIS:
+                            #print aoi
+                            #print self.AOIS[aoi]
                             if (fixation_inside_aoi(x_fixation, y_fixation, self.AOIS[aoi])):
+                                if (aoi == 'text_fix'):
+                                    print("SECOND curr time ! %f"  %  (time.time() * 1000.0))
+                                    #print x_fixation
+                                    #print y_fixation
+                                    print(Efix[0][2])
+
                                 ws.write_message('{"x":"%d", "y":"%d"}' % (x_fixation, y_fixation))
                                 #print(Efix[0][3], Efix[0][4])
                                 self.cur_fix_id += 1
+                                #if (aoi == 'text_fix'):
+                                    #print("UPDATING FIX TABLE curr time ! %f"  %  (time.time() * 1000.0))
+
                                 self.application_state_controller.updateFixTable(aoi, self.cur_fix_id, int(Sfix[0]), int(EfixEndTime), int(EfixEndTime - Sfix[0]))
+                                #if (aoi == 'text_fix'):
+                                    #print("EVALUATING RULES curr time ! %f"  %  (time.time() * 1000.0))
+
                                 self.adaptation_loop.evaluateRules(aoi, EfixEndTime)
+                                #if (aoi == 'text_fix'):
+                                    #print("DONE WITH THIS FIXATION curr time ! %f"  %  (time.time() * 1000.0))
+
                     #May wanrt to use something like this in the future in there are performace issues
                     #self.x = self.x[array_index:]
                     #self.y = self.y[array_index:]
@@ -287,9 +314,11 @@ def fixation_inside_aoi(x,y,poly):
     """
     inside = False
     poly = ast.literal_eval(str(poly))
-
+    #print "inside fixation algo"
+    #print poly
     n = len(poly)
     if n == 0:
+        #print "N IS ZERO"
         return False
     p1x, p1y = poly[0]
     for i in range(n + 1):
@@ -302,4 +331,5 @@ def fixation_inside_aoi(x,y,poly):
                     if p1x == p2x or x <= xinters:
                         inside = not inside
         p1x, p1y = p2x, p2y
+    #print inside
     return inside
