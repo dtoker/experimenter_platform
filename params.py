@@ -14,3 +14,6 @@ ML_CALL_PERIOD = 6000000
 
 # Some parameter from EMDAT, ask later
 MAX_SEG_TIMEGAP= 10
+
+MAXDIST = 35
+MINDUR = 100000

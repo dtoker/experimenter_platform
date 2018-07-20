@@ -16,11 +16,6 @@ def merge_fixation_features(part_features, accumulator_features):
         accumulator_features['sumfixationduration']     = sumfeat(part_features, accumulator_features, "['sumfixationduration']")
         accumulator_features['meanfixationduration']    = meanfixationduration
         accumulator_features['numfixations']            = numfixations
-    else:
-        accumulator_features['meanfixationduration']    = -1
-        accumulator_features['stddevfixationduration']  = -1
-        accumulator_features['sumfixationduration']     = -1
-        accumulator_features['fixationrate']            = -1
 
 def merge_path_angle_features(part_features, accumulator_features):
     """
@@ -52,19 +47,6 @@ def merge_path_angle_features(part_features, accumulator_features):
         accumulator_features['numfixdistances']         = numfixdistances
         accumulator_features['numabsangles']            = numabsangles
         accumulator_features['numrelangles']            = numrelangles
-    else:
-        accumulator_features['meanpathdistance']        = -1
-        accumulator_features['sumpathdistance']         = -1
-        accumulator_features['stddevpathdistance']      = -1
-        accumulator_features['eyemovementvelocity']     = -1
-        accumulator_features['sumabspathangles']        = -1
-        accumulator_features['abspathanglesrate']       = -1
-        accumulator_features['meanabspathangles']       = -1
-        accumulator_features['stddevabspathangles']     = -1
-        accumulator_features['sumrelpathangles']        = -1
-        accumulator_features['relpathanglesrate']       = -1
-        accumulator_features['meanrelpathangles']       = -1
-        accumulator_features['stddevrelpathangles']     = -1
 
 def merge_pupil_features(part_features, accumulator_features):
     """
@@ -88,13 +70,6 @@ def merge_pupil_features(part_features, accumulator_features):
             accumulator_features['startpupilsize'] = part_features['startpupilsize']
         if (part_features['endpupilsize'] != -1):
             accumulator_features['endpupilsize'] = part_features['endpupilsize']
-    else:
-        accumulator_features['meanpupilsize']                  = -1
-        accumulator_features['stddevpupilsize']                = -1
-        accumulator_features['maxpupilsize']                   = -1
-        accumulator_features['minpupilsize']                   = -1
-        accumulator_features['startpupilsize'] = -1
-        accumulator_features['endpupilsize'] = -1
 
     if numpupilvelocity > 0: # check if scene has any pupil velocity data
         mean_velocity                                           = weightedmeanfeat(part_features, accumulator_features, "['numpupilvelocity']", "['meanpupilvelocity']")
@@ -104,11 +79,6 @@ def merge_pupil_features(part_features, accumulator_features):
         accumulator_features['minpupilvelocity']                = minfeat(part_features, accumulator_features, "['minpupilvelocity']", -1)
         accumulator_features['meanpupilvelocity']               = mean_velocity
         accumulator_features['numpupilvelocity']                = numpupilvelocity
-    else:
-        accumulator_features['meanpupilvelocity']               = -1
-        accumulator_features['stddevpupilvelocity']             = -1
-        accumulator_features['maxpupilvelocity']                = -1
-        accumulator_features['minpupilvelocity']                = -1
 
 def merge_distance_features(part_features, accumulator_features):
     """
@@ -127,13 +97,6 @@ def merge_distance_features(part_features, accumulator_features):
             accumulator_features['startdistance'] = part_features['startdistance']
         if (part_features['enddistance'] != -1):
             accumulator_features['enddistance'] = part_features['enddistance']
-    else:
-        accumulator_features['meandistance']                    = -1
-        accumulator_features['stddevdistance']                  = -1
-        accumulator_features['maxdistance']                     = -1
-        accumulator_features['mindistance']                     = -1
-        accumulator_features['startdistance']                   = -1
-        accumulator_features['enddistance']                     = -1
 
 def merge_aoi_fixations(part_features, accumulator_features, length):
     """
@@ -165,8 +128,6 @@ def merge_aoi_fixations(part_features, accumulator_features, length):
 
             if accumulator_features['totaltimespent'] > 0:
                 accumulator_features['fixationrate']      = float(accumulator_features['numfixations']) / accumulator_features['totaltimespent']
-            else:
-                accumulator_features['fixationrate']      = -1
     #if part_features['timetofirstfixation'] != -1:
     #    accumulator_features['timetofirstfixation']       = min(accumulator_features['timetofirstfixation'], deepcopy(part_features['timetofirstfixation']) + part_features['starttime'] - sc_start)
     #if part_features['timetolastfixation']  != -1:

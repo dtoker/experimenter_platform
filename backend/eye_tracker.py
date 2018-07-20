@@ -445,8 +445,8 @@ class TobiiController:
 				self.emdat_global_features[event_name]['stddevdistance']     		= -1
 				self.emdat_global_features[event_name]['maxdistance']        		= -1
 				self.emdat_global_features[event_name]['mindistance']        		= -1
-				#self.emdat_interval_features[event_name]['startdistance']      	= valid_distance_data[0]
-				#self.emdat_interval_features[event_name]['enddistance']        	= valid_distance_data[-1]
+				self.emdat_global_features[event_name]['startdistance']      	= -1
+				self.emdat_global_features[event_name]['enddistance']        	= -1
 				self.emdat_global_features[event_name]['total_trans_from'] = 0
 				for cur_aoi in AOIS.keys():
 				    self.emdat_global_features[event_name]['numtransfrom_%s'%(cur_aoi)] = 0
@@ -467,8 +467,8 @@ class TobiiController:
 		self.emdat_global_features['stddevpupilsize'] 			= -1
 		self.emdat_global_features['maxpupilsize'] 				= -1
 		self.emdat_global_features['minpupilsize'] 				= -1
-		#self.emdat_global_features['startpupilsize'] 			= -1
-		#self.emdat_global_features['endpupilsize'] 			= -1
+		self.emdat_global_features['startpupilsize'] 			= -1
+		self.emdat_global_features['endpupilsize'] 			= -1
 		self.emdat_global_features['meanpupilvelocity'] 		= -1
 		self.emdat_global_features['stddevpupilvelocity'] 		= -1
 		self.emdat_global_features['maxpupilvelocity'] 			= -1
@@ -479,8 +479,8 @@ class TobiiController:
 		self.emdat_global_features['stddevdistance'] 			= -1
 		self.emdat_global_features['maxdistance'] 				= -1
 		self.emdat_global_features['mindistance'] 				= -1
-		#self.emdat_global_features['startdistance'] 			= -1
-		#self.emdat_global_features['enddistance'] 			= -1
+		self.emdat_global_features['startdistance'] 			= -1
+		self.emdat_global_features['enddistance'] 			= -1
 		# Path features
 		self.emdat_global_features['numfixdistances'] = 0
 		self.emdat_global_features['numabsangles'] = 0

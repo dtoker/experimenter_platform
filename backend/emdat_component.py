@@ -96,7 +96,7 @@ class EMDATComponent(DetectionComponent):
         self.id += 1
         self.notify_app_state_controller()
 
-    def init_emdat_features(features_dictionary):
+    def init_emdat_features(self, features_dictionary):
         """
         Initializes the given feature dictionary with empty values.
         """
@@ -110,8 +110,8 @@ class EMDATComponent(DetectionComponent):
         features_dictionary['stddevpupilsize'] 		= -1
         features_dictionary['maxpupilsize'] 			= -1
         features_dictionary['minpupilsize'] 			= -1
-		features_dictionary['startpupilsize'] 			= -1
-		features_dictionary['endpupilsize'] 			= -1
+        features_dictionary['startpupilsize'] 			= -1
+        features_dictionary['endpupilsize'] 			= -1
         features_dictionary['meanpupilvelocity'] 		= -1
         features_dictionary['stddevpupilvelocity'] 	= -1
         features_dictionary['maxpupilvelocity'] 		= -1
@@ -122,8 +122,8 @@ class EMDATComponent(DetectionComponent):
         features_dictionary['stddevdistance'] 			= -1
         features_dictionary['maxdistance'] 			= -1
         features_dictionary['mindistance'] 			= -1
-		features_dictionary['startdistance'] 			= -1
-		features_dictionary['enddistance'] 				= -1
+        features_dictionary['startdistance'] 			= -1
+        features_dictionary['enddistance'] 				= -1
 		# Path features
         features_dictionary['numfixdistances'] 		= 0
         features_dictionary['numabsangles'] 			= 0
@@ -177,9 +177,9 @@ class EMDATComponent(DetectionComponent):
             features_dictionary[aoi]['stddevdistance']             = -1
             features_dictionary[aoi]['maxdistance']                = -1
             features_dictionary[aoi]['mindistance']                = -1
-            features_dictionary[aoi]['startdistance']      = -1
-            features_dictionary[aoi]['enddistance']        = -1
-            features_dictionary[aoi]['total_trans_from'] = 0
+            features_dictionary[aoi]['startdistance']              = -1
+            features_dictionary[aoi]['enddistance']                = -1
+            features_dictionary[aoi]['total_trans_from']           = 0
 
             for cur_aoi in self.AOIS.keys():
                 features_dictionary[aoi]['numtransfrom_%s'%(cur_aoi)] = 0
@@ -197,16 +197,14 @@ class EMDATComponent(DetectionComponent):
         if (params.USE_PUPIL_FEATURES):
             merge_pupil_features(part_features, accumulator_features)
             for aoi in self.AOIS.keys():
-                print aoi
                 if (len(self.tobii_controller.aoi_ids[aoi]) > 0):
-                    merge_pupil_features(part_features[aoi], accumulator_features[aoi], aoi = aoi)
+                    merge_pupil_features(part_features[aoi], accumulator_features[aoi])
         """ calculate distance from screen features"""
         if (params.USE_DISTANCE_FEATURES):
             merge_distance_features(part_features, accumulator_features)
             for aoi in self.AOIS.keys():
-                print aoi
                 if (len(self.tobii_controller.aoi_ids[aoi]) > 0):
-                    merge_distance_features(part_features[aoi], accumulator_features[aoi], aoi = aoi)
+                    merge_distance_features(part_features[aoi], accumulator_features[aoi])
 
         """ calculate fixations, angles and path features"""
         if (params.USE_FIXATION_PATH_FEATURES):
@@ -333,7 +331,7 @@ class EMDATComponent(DetectionComponent):
         """
             Calculates the validity gaps in new raw Tobii data, i.e. segments
             with contiguous invalid datapoints, and stores the time segments for which,
-            during platform’s execution, the data was invalid.
+            during platform's execution, the data was invalid.
         """
         time = self.tobii_controller.time
         fixations = self.tobii_controller.EndFixations
@@ -373,14 +371,12 @@ class EMDATComponent(DetectionComponent):
         for aoi in self.AOIS:
             start_computing_features = time.time()
 
-            self.emdat_interval_features[aoi] = {}
             ## Indices of x-y array where datapoints are inside the specified AOI
             aoi_dpt_indices = np.array(self.tobii_controller.aoi_ids[aoi])
             aoi_dpt_indices = aoi_dpt_indices[aoi_dpt_indices >= self.x_y_idx]
             valid_indices = aoi_dpt_indices - self.x_y_idx
 
-            no_dpts_available = (len(valid_indices) == 0)
-            if (not new_dpts_available):
+            if (len(valid_indices) == 0):
                 continue
 
             if params.USE_PUPIL_FEATURES:
