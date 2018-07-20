@@ -20,12 +20,12 @@ def merge_fixation_features(part_features, accumulator_features):
                       "['numfixations']", "['stddevfixationduration']", "['meanfixationduration']", meanfixationduration)
         accumulator_features['sumfixationduration']     = sumfeat(part_features, accumulator_features, "['sumfixationduration']")
         accumulator_features['meanfixationduration']    = meanfixationduration
+        accumulator_features['numfixations']            = numfixations
     else:
         accumulator_features['meanfixationduration']    = -1
         accumulator_features['stddevfixationduration']  = -1
         accumulator_features['sumfixationduration']     = -1
         accumulator_features['fixationrate']            = -1
-    accumulator_features['numfixations']            = numfixations
 
 def merge_path_angle_features(part_features, accumulator_features):
     """ Merge path and angle features such as
@@ -58,11 +58,9 @@ def merge_path_angle_features(part_features, accumulator_features):
                                 "['stddevabspathangles']", "['meanabspathangles']", meanabspathangles)
         accumulator_features['sumrelpathangles']        = sumfeat(part_features, accumulator_features, "['sumrelpathangles']")
         meanrelpathangles                               = weightedmeanfeat(part_features, accumulator_features,"['numrelangles']","['meanrelpathangles']")
-
         accumulator_features['relpathanglesrate']       = accumulator_features['sumrelpathangles']/(accumulator_features['length'] - accumulator_features['length_invalid'])
         accumulator_features['stddevrelpathangles']     = aggregatestddevfeat(part_features, accumulator_features, "['numrelangles']", "['stddevrelpathangles']",
                                 "['meanrelpathangles']", meanrelpathangles)
-
         accumulator_features['meanpathdistance']        = meanpathdistance
         accumulator_features['meanabspathangles']       = meanabspathangles
         accumulator_features['meanrelpathangles']       = meanrelpathangles
@@ -109,7 +107,6 @@ def merge_pupil_features(part_features, accumulator_features):
                                                                             "['meanpupilsize']", mean_pupilsize)
         accumulator_features['maxpupilsize']       = maxfeat(part_features, accumulator_features, "['maxpupilsize']")
         accumulator_features['minpupilsize']       = minfeat(part_features, accumulator_features, "['minpupilsize']", -1)
-
         accumulator_features['meanpupilsize']      = mean_pupilsize
         accumulator_features['numpupilsizes']      = numpupilsizes
         #self.features['startpupilsize'] = self.firstseg.features['startpupilsize']
@@ -136,22 +133,7 @@ def merge_pupil_features(part_features, accumulator_features):
         accumulator_features['stddevpupilvelocity']             = -1
         accumulator_features['maxpupilvelocity']                = -1
         accumulator_features['minpupilvelocity']                = -1
-    """
-    print "MERGED INTERVAL AND TASK WHOLE PUPIL FEATURES"
-    print "meanpupilsize %f" % accumulator_features['meanpupilsize']
-    print "stddevpupilsize %f" % accumulator_features['stddevpupilsize']
-    print "maxpupilsize %f" % accumulator_features['maxpupilsize']
-    print "minpupilsize %f" % accumulator_features['minpupilsize']
-#    print "startpupilsize %f" % accumulator_features['startpupilsize']
-#    print "endpupilsize %f" % accumulator_features['endpupilsize']
-    print "meanpupilvelocity %f" % accumulator_features['meanpupilvelocity']
-    print "stddevpupilvelocity %f" % accumulator_features['stddevpupilvelocity']
-    print "maxpupilvelocity %f" % accumulator_features['maxpupilvelocity']
-    print "minpupilvelocity %f" % accumulator_features['minpupilvelocity']
-    print "numpupilsizes %f" % accumulator_features['numpupilsizes']
-    print "numpupilvelocity %f" % accumulator_features['numpupilvelocity']
-    print
-    """
+
 def merge_distance_features(part_features, accumulator_features):
     """ Merge distance features such as
             mean_distance:            mean of distances from the screen
@@ -182,13 +164,7 @@ def merge_distance_features(part_features, accumulator_features):
         accumulator_features['mindistance']                     = -1
         #self.features['startdistance'] = -1
         #self.features['enddistance'] = -1
-    """
-    print "MERGED INTERVAL AND TASK WHOLE DISTANCE FEATURES"
-    print "meandistance %f" % accumulator_features['meandistance']
-    print "stddevdistance %f" % accumulator_features['stddevdistance']
-    print "maxdistance %f" % accumulator_features['maxdistance']
-    print "mindistance %f\n" % accumulator_features['mindistance']
-    """
+
 def merge_aoi_fixations(part_features, accumulator_features, length):
     """ Merge fixation features such as
             meanfixationduration:     mean duration of fixations
@@ -236,28 +212,22 @@ def merge_aoi_fixations(part_features, accumulator_features, length):
 
 
 def merge_aoi_transitions(part_features, accumulator_features):
-        #calculating the transitions to and from this AOI and other active AOIs at the moment
+    
     part_features_transition_aois = filter(lambda x: x.startswith('numtransfrom_'), part_features.keys())
-
     accumulator_features['total_trans_from'] += part_features['total_trans_from']   #updating the total number of transition from this AOI
-    #print("Total transitions %d" % accumulator_features['total_trans_from'])
-
     for feat in part_features_transition_aois:
         if feat in accumulator_features:
             accumulator_features[feat] += part_features[feat]
         else:
             accumulator_features[feat] = part_features[feat]
     # updating the proportion tansition features based on new transitions to and from this AOI
-    accumulator_features_transition_aois = filter(lambda x: x.startswith('numtransfrom_'), accumulator_features.keys()) #all the transition features for this AOI should be aupdated even if they are not active for this segment
+    accumulator_features_transition_aois = filter(lambda x: x.startswith('numtransfrom_'), accumulator_features.keys()) #all the transition features for this AOI should be updated even if they are not active for this segment
     for feat in accumulator_features_transition_aois:
         aid = feat[len('numtransfrom_'):]
         if accumulator_features['total_trans_from'] > 0:
             accumulator_features['proptransfrom_%s'%(aid)] = float(accumulator_features[feat]) / accumulator_features['total_trans_from']
         else:
             accumulator_features['proptransfrom_%s'%(aid)] = 0
-        #print "Proptransform from %s is %f" % (aid, accumulator_features['proptransfrom_%s'%(aid)])
-    #print
-    ###endof transition calculation
 
 def calc_distances(fixdata):
     """returns the Euclidean distances between a sequence of "Fixation"s
