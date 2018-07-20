@@ -4,6 +4,12 @@ from tornado.ioloop import IOLoop, PeriodicCallback
 
 class DetectionComponent():
 
+    '''
+    Abstract class for defining detection components - classes responsible for calculating features
+    from raw data and sending them to Application State. Abstracts away all the interactions with
+    Tornado framework, providing an intuitive and flexible base for implementing feature extractors.
+    '''
+
     def __init__(self, tobii_controller, adaptation_loop, is_periodic = False, callback_time = 600000, liveWebSocket = None):
         '''
         Args:
