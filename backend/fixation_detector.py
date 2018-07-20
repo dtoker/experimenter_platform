@@ -1,8 +1,8 @@
 from detection_component import DetectionComponent
-from dummy_controller import DummyController
 from tornado import gen
 import time
 import ast
+import params
 
 class FixationDetector(DetectionComponent):
     """
@@ -18,28 +18,18 @@ class FixationDetector(DetectionComponent):
         self.cur_fix_id = 0
         self.AOIS = self.application_state_controller.getFixAoiMapping()
 
-    #def notify_app_state_controller(self, x, y):
-    #    for aoi in self.AOIs:
-    #        if (fixation_inside_aoi(x, y, aoi)):
-    #            yield #update_controller_and_usermodel()
-
-    def stop(self):
-        #TODO: Maybe something else?
-        self.runOnlineFix = False
+    def notify_app_state_controller(self, aoi, fix_start_time, fix_end_time, fix_dur):
+        self.application_state_controller.updateFixTable(aoi, self.cur_fix_id, fix_start_time, fix_end_time, fix_dur)
+        self.adaptation_loop.evaluateRules(aoi, fix_end_time)
 
     #Preetpal's Online/Realtime fixation algorithm
     @gen.coroutine
     def run(self):
         """
             Concurrently detects fixations, defined as consecutive samples with an inter-sample
-            distance of less than a set amount of pixels (disregarding missing data)
-
-            # TODO:
-            keyword arguments
-            maxdist	-	maximal inter sample distance in pixels (default = 25)
-            mindur	-	minimal duration of a fixation in milliseconds; detected
-                        fixation candidates will be disregarded if they are below
-                        this duration (default = 100)
+            distance of less than a set amount of pixels (disregarding missing data). Uses params.MAXDIST
+            and params.MINDUR for respectively the distance and the smallest possible time length of a fixation.
+            The method is a coroutine, which means that it can pause its execution and give control to other components of the platform.
         """
         #list of lists, each containing [starttime, endtime, duration, endx, endy]
         self.EndFixations = []
@@ -111,7 +101,7 @@ class FixationDetector(DetectionComponent):
                     newY.extend(nextY)
                     newTime.extend(nextTime)
                     newValid.extend(nextValid)
-                    Sfix, Efix = self.fixation_detection(newX, newY, newTime, newValid)
+                    Sfix, Efix = self.fixation_detection(newX, newY, newTime, newValid, params.MAXDIST, params.MINDUR)
                 #a genuine end fixation has been found!
                 else:
                     #Add the newly found end fixation to our collection of end fixations
@@ -155,17 +145,7 @@ class FixationDetector(DetectionComponent):
 
                                 ws.write_message('{"x":"%d", "y":"%d"}' % (x_fixation, y_fixation))
                                 self.cur_fix_id += 1
-                                #if (aoi == 'text_fix'):
-                                    #print("UPDATING FIX TABLE curr time ! %f"  %  (time.time() * 1000.0))
-
-                                self.application_state_controller.updateFixTable(aoi, self.cur_fix_id, int(Sfix[0]), int(EfixEndTime), int(EfixEndTime - Sfix[0]))
-                                #if (aoi == 'text_fix'):
-                                    #print("EVALUATING RULES curr time ! %f"  %  (time.time() * 1000.0))
-
-                                self.adaptation_loop.evaluateRules(aoi, EfixEndTime)
-                                #if (aoi == 'text_fix'):
-                                    #print("DONE WITH THIS FIXATION curr time ! %f"  %  (time.time() * 1000.0))
-
+                                self.notify_app_state_controller(aoi, int(Sfix[0]), int(EfixEndTime), int(EfixEndTime - Sfix[0]))
                     #May wanrt to use something like this in the future in there are performace issues
                     #self.x = self.x[array_index:]
                     #self.y = self.y[array_index:]

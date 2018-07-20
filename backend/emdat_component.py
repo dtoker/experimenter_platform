@@ -29,6 +29,9 @@ class EMDATComponent(DetectionComponent):
         self.execfile = open('newfile.txt', 'w')
 
     def notify_app_state_controller(self):
+        """
+            Selects features for specified events in Application State and sends them to the database.
+        """
         self.application_state_controller.updateEmdatTable(self.id, self.select_features())
 
     def select_features(self):
@@ -52,6 +55,11 @@ class EMDATComponent(DetectionComponent):
 
     @gen.coroutine
     def run(self):
+        """
+        		Calculates the features for new raw Tobii data collected since
+                the last call to EMDAT Component, merges it with previously computed
+                features and sends the results to the Application State.
+        """
         start_time = time.time()
         self.start = self.tobii_controller.time[self.pups_idx]
         self.end = self.tobii_controller.time[-1]
@@ -89,6 +97,10 @@ class EMDATComponent(DetectionComponent):
         self.notify_app_state_controller()
 
     def init_emdat_features(features_dictionary):
+        """
+        Initializes the given feature dictionary with empty values.
+        """
+
         features_dictionary['length'] = 0
         features_dictionary['length_invalid'] = 0
 		# Pupil features
@@ -174,6 +186,11 @@ class EMDATComponent(DetectionComponent):
                 features_dictionary[aoi]['proptransfrom_%s'%(cur_aoi)] = -1
 
     def merge_features(self, part_features, accumulator_features):
+        """
+        Merges features from two dictionaries into accumulator_features.
+        Usually called with emdat_interval_features as part_features and with
+        emdat_task_features or emdat_global_features as accumulator_features
+        """
         accumulator_features['length'] = sumfeat(part_features, accumulator_features, "['length']")
         accumulator_features['length_invalid'] = sumfeat(part_features, accumulator_features, "['length_invalid']")
 
@@ -203,18 +220,9 @@ class EMDATComponent(DetectionComponent):
                             merge_aoi_transitions(part_features[aoi], accumulator_features[aoi])
 
     def calc_pupil_features(self):
-        """ Calculates pupil features such as
-                mean_pupil_size:            mean of pupil sizes
-                stddev_pupil_size:          standard deviation of pupil sizes
-                min_pupil_size:             smallest pupil size in this segment
-                max_pupil_size:             largest pupil size in this segment
-                mean_pupil_velocity:        mean of pupil velocities
-                stddev_pupil_velocity:      standard deviation of pupil velocities
-                min_pupil_velocity:         smallest pupil velocity in this segment
-                max_pupil_velocity:         largest pupil velocity in this segment
-
-            Args:
-                all_data: The list of "Datapoint"s which make up this Segment
+        """
+		      Called from run(). Calculates pupil features for the whole screen with new raw
+              Tobii datapoints generated since the last call to run(). Features are stored in emdat_interval_features.
         """
         valid_pupil_data = []
         while(self.pups_idx < len(self.tobii_controller.pupilsize)):
@@ -263,16 +271,10 @@ class EMDATComponent(DetectionComponent):
                 self.emdat_interval_features['minpupilvelocity']    = min(valid_pupil_velocity)
 
     def calc_distance_features(self):
-        """ Calculates distance features such as
-                mean_distance:            mean of distances from the screen
-                stddev_distance:          standard deviation of distances from the screen
-                min_distance:             smallest distance from the screen in this segment
-                max_distance:             largest distance from the screen in this segment
-                start_distance:           distance from the screen in the beginning of this segment
-                end_distance:             distance from the screen in the end of this segment
-
-            Args:
-                all_data: The list of "Datapoint"s which make up this Segment
+        """
+            Called from run(). Calculates distance features for the whole screen with new raw
+            Tobii datapoints generated since the last call to run(). Features are stored in
+            emdat_interval_features.
         """
         #get all datapoints where distance is available
         distances_from_screen = []
@@ -300,20 +302,10 @@ class EMDATComponent(DetectionComponent):
             self.emdat_interval_features['numdistancedata']    = 0
 
     def calc_fix_ang_path_features(self):
-        """ Calculates fixation, angle and path features such as
-                meanfixationduration:     mean duration of fixations in the segment
-                stddevfixationduration    standard deviation of duration of fixations in the segment
-                sumfixationduration:      sum of durations of fixations in the segment
-                fixationrate:             rate of fixation datapoints relative to all datapoints in this segment
-                meanpathdistance:         mean of path distances for this segment
-                sumpathdistance:          sum of path distances for this segment
-                eyemovementvelocity:      average eye movement velocity for this segment
-                sumabspathangles:         sum of absolute path angles for this segment
-                abspathanglesrate:        ratio of absolute path angles relative to all datapoints in this segment
-                stddevabspathangles:      standard deviation of absolute path angles for this segment
-                sumrelpathangles:         sum of relative path angles for this segment
-                relpathanglesrate:        ratio of relative path angles relative to all datapoints in this segment
-                stddevrelpathangles:      standard deviation of relative path angles for this segment
+        """
+		      Called from run(). Calculates fixation, angle and path features for the whole
+              screen with new raw Tobii datapoints generated since the last call to run().
+              Features are stored in emdat_interval_features.
         """
         fixation_data = self.tobii_controller.EndFixations[self.fix_idx:]
         numfixations = len(fixation_data)
@@ -375,13 +367,10 @@ class EMDATComponent(DetectionComponent):
             self.emdat_interval_features['numrelangles'] = 0
 
     def calc_validity_gaps(self):
-        """Calculates the largest gap of invalid samples in the "Datapoint"s for this Segment.
-
-        Args:
-            all_data: The list of "Datapoint"s which make up this Segement
-
-        Returns:
-            An integer indicating the length of largest invalid gap for this Segment in milliseconds
+        """
+            Calculates the validity gaps in new raw Tobii data, i.e. segments
+            with contiguous invalid datapoints, and stores the time segments for which,
+            during platform’s execution, the data was invalid.
         """
         time = self.tobii_controller.time
         fixations = self.tobii_controller.EndFixations
@@ -407,6 +396,11 @@ class EMDATComponent(DetectionComponent):
             dindex += 1
 
     def calc_aoi_features(self):
+        """
+            Calculates pupil, distance, fixation and transition features
+            for AOIs specified for this task using the helper functions listed below.
+        """
+
         start_constructing_numpy        = time.time()
         x_y_coords                      = np.column_stack((np.array(self.tobii_controller.x[self.x_y_idx:]), np.array(self.tobii_controller.y[self.x_y_idx:])))
         pup_size_vals                   = np.array(self.tobii_controller.pupilsize[self.x_y_idx:])
@@ -451,6 +445,9 @@ class EMDATComponent(DetectionComponent):
         self.fix_idx = len(self.tobii_controller.EndFixations)
 
     def generate_aoi_pupil_features(self, aoi, valid_pupil_data, valid_pupil_velocity): # rest_pupil_size): ##datapoints, rest_pupil_size, export_pupilinfo):
+        """
+            Generates pupil features for given AOI
+        """
         #self.emdat_interval_features[aoi]['startpupilsize']         = -1
         #self.emdat_interval_features[aoi]['endpupilsize']           = -1
         self.emdat_interval_features[aoi]['meanpupilsize']           = -1
@@ -491,6 +488,9 @@ class EMDATComponent(DetectionComponent):
                 self.emdat_interval_features[aoi]['minpupilvelocity']       = np.min(valid_pupil_velocity)
 
     def generate_aoi_distance_features(self, aoi, valid_distance_data):
+        """
+            Generates distance features for given AOI
+        """
         valid_distance_data = valid_distance_data[valid_distance_data > 0]
         self.emdat_interval_features[aoi]['numdistancedata']        = len(valid_distance_data)
         if self.emdat_interval_features[aoi]['numdistancedata'] > 0:
@@ -509,7 +509,9 @@ class EMDATComponent(DetectionComponent):
             self.emdat_interval_features[aoi]['enddistance']        = -1
 
     def generate_aoi_fixation_features(self, aoi, fixation_data, sum_discarded, num_all_fixations):
-
+        """
+            Generates fixation features for given AOI
+        """
         self.emdat_interval_features[aoi]['longestfixation']            = -1
         self.emdat_interval_features[aoi]['meanfixationduration']       = -1
         self.emdat_interval_features[aoi]['stddevfixationduration']     = -1
@@ -536,6 +538,9 @@ class EMDATComponent(DetectionComponent):
             self.emdat_interval_features[aoi]['fixationrate']           = numfixations / float(totaltimespent)
 
     def generate_transition_features(self, cur_aoi, fixation_data, fixation_indices):
+        """
+            Generates distance features for given AOI
+        """
         for aoi in self.AOIS.keys():
             self.emdat_interval_features[cur_aoi]['numtransfrom_%s'%(aoi)] = 0
 
@@ -558,9 +563,8 @@ class EMDATComponent(DetectionComponent):
         self.emdat_interval_features[cur_aoi]['total_trans_from']               = sumtransfrom
 
     def get_length_invalid(self):
-        """Returns the sum of the length of the invalid gaps > params.MAX_SEG_TIMEGAP
-        Args:
-            an integer, the length in milliseconds
+        """
+            Takes the result of calc_validity_gaps() to calculate the sum of lengths of invalid segments.
         """
         time = self.tobii_controller.time
         length = 0
