@@ -3,13 +3,8 @@ import geometry
 import ast
 
 def merge_fixation_features(part_features, accumulator_features):
-    """ Merge fixation features such as
-    meanfixationduration:     mean duration of fixations
-    stddevfixationduration    standard deviation of duration of fixations
-    sumfixationduration:      sum of durations of fixations
-    fixationrate:     rate of fixation datapoints relative to all datapoints
-    Args:
-    segments: The list of Segments for this Scene with pre-calculated features
+    """
+		Merges fixation features (for whole screen) from part_features into accumulator_features
     """
     numfixations = sumfeat(part_features, accumulator_features, "['numfixations']")
 
@@ -28,18 +23,8 @@ def merge_fixation_features(part_features, accumulator_features):
         accumulator_features['fixationrate']            = -1
 
 def merge_path_angle_features(part_features, accumulator_features):
-    """ Merge path and angle features such as
-        meanpathdistance:     mean of path distances
-        sumpathdistance:      sum of path distances
-        eyemovementvelocity:      average eye movement velocity
-        sumabspathangles:     sum of absolute path angles
-        abspathanglesrate:    ratio of absolute path angles relative to all datapoints
-        stddevabspathangles:      standard deviation of absolute path angles
-        sumrelpathangles:     sum of relative path angles
-        relpathanglesrate:    ratio of relative path angles relative to all datapoints
-        stddevrelpathangles:      standard deviation of relative path angles
-        Args:
-        segments: The list of Segments for this Scene with pre-calculated features
+    """
+        Merges path and angle features (for whole screen) from part_features into accumulator_features
     """
     numfixdistances            = sumfeat(part_features, accumulator_features, "['numfixdistances']")
     numabsangles               = sumfeat(part_features, accumulator_features, "['numabsangles']")
@@ -82,18 +67,8 @@ def merge_path_angle_features(part_features, accumulator_features):
         accumulator_features['stddevrelpathangles']     = -1
 
 def merge_pupil_features(part_features, accumulator_features):
-    """ Merge pupil features asuch as
-            mean_pupil_size:            mean of pupil sizes
-            stddev_pupil_size:          standard deviation of pupil sizes
-            min_pupil_size:             smallest pupil size
-            max_pupil_size:             largest pupil size
-            mean_pupil_velocity:        mean of pupil velocities
-            stddev_pupil_velocity:      standard deviation of pupil velocities
-            min_pupil_velocity:         smallest pupil velocity
-            max_pupil_velocity:         largest pupil velocity
-        Args:
-            segments: The list of Segments for this Scene with pre-calculated features
-            export_pupilinfo: True to export raw pupil data in EMDAT output (False by default).
+    """
+	    Merges pupil features (for whole screen and AOIs) from part_features into accumulator_features
     """
     numpupilsizes    = sumfeat(part_features, accumulator_features, "['numpupilsizes']")
     numpupilvelocity = sumfeat(part_features, accumulator_features, "['numpupilvelocity']")
@@ -135,16 +110,8 @@ def merge_pupil_features(part_features, accumulator_features):
         accumulator_features['minpupilvelocity']                = -1
 
 def merge_distance_features(part_features, accumulator_features):
-    """ Merge distance features such as
-            mean_distance:            mean of distances from the screen
-            stddev_distance:          standard deviation of distances from the screen
-            min_distance:             smallest distance from the screen
-            max_distance:             largest distance from the screen
-            start_distance:           distance from the screen in the beginning of this scene
-            end_distance:             distance from the screen in the end of this scene
-
-        Args:
-            segments: The list of Segments for this Scene with pre-calculated features
+    """
+        Merges distance features (for whole screen and AOIs) from part_features into accumulator_features
     """
     numdistancedata = sumfeat(part_features, accumulator_features,"['numdistancedata']") #Distance
     if numdistancedata > 0: # check if scene has any pupil data
@@ -166,16 +133,8 @@ def merge_distance_features(part_features, accumulator_features):
         #self.features['enddistance'] = -1
 
 def merge_aoi_fixations(part_features, accumulator_features, length):
-    """ Merge fixation features such as
-            meanfixationduration:     mean duration of fixations
-            stddevfixationduration    standard deviation of duration of fixations
-            sumfixationduration:      sum of durations of fixations
-            fixationrate:             rate of fixation datapoints relative to all datapoints
-        Args:
-            main_AOI_Stat: AOI_Stat object of this Scene (must have been initialised)
-            part_features: a new AOI_Stat object
-            total_numfixations: number of fixations in the scene
-            sc_start: start time (timestamp) of the scene
+    """
+	   Merges fixation AOI features from part_features into accumulator_features
     """
     if accumulator_features['numfixations'] == 0:
         accumulator_features['numfixations']            = part_features['numfixations']
@@ -212,7 +171,9 @@ def merge_aoi_fixations(part_features, accumulator_features, length):
 
 
 def merge_aoi_transitions(part_features, accumulator_features):
-    
+    """
+        Merges transition AOI features from part_features into accumulator_features
+    """
     part_features_transition_aois = filter(lambda x: x.startswith('numtransfrom_'), part_features.keys())
     accumulator_features['total_trans_from'] += part_features['total_trans_from']   #updating the total number of transition from this AOI
     for feat in part_features_transition_aois:
@@ -233,7 +194,7 @@ def calc_distances(fixdata):
     """returns the Euclidean distances between a sequence of "Fixation"s
 
     Args:
-        fixdata: a list of "Fixation"s
+        fixdata: a list of fixation datapoints
     """
     distances = []
     lastx = fixdata[0][0]
@@ -255,7 +216,7 @@ def calc_abs_angles(fixdata):
     Abosolute angle for each saccade is the angle between that saccade and the horizental axis
 
     Args:
-        fixdata: a list of "Fixation"s
+        fixdata: a list of fixation datapoints
 
     Returns:
         a list of absolute angles for the saccades formed by the given sequence of "Fixation"s in Radiant
@@ -282,7 +243,7 @@ def calc_rel_angles(fixdata):
     Defined as: angle = acos(v1 dot v2)  such that v1 and v2 are normalized vector2coord
 
     Args:
-        fixdata: a list of "Fixation"s
+        fixdata: a list of fixation datapoints
 
     Returns:
         a list of relative angles for the saccades formed by the given sequence of "Fixation"s in Radiant
@@ -321,14 +282,6 @@ def calc_rel_angles(fixdata):
 def minfeat(part_features, accumulator_features, feat, nonevalue = None):
     """a helper method that calculates the min of a target feature over two feature dictionaries
 
-    Args:
-
-        obj_list: a list of objects
-
-        feat: a string containing the name of the target feature
-
-        nonevalue: value to be ignored when computing the min (typically -1 in EMDAT)
-
     Returns:
         the min of the target feature over the given list of objects
     """
@@ -343,12 +296,6 @@ def minfeat(part_features, accumulator_features, feat, nonevalue = None):
 
 def maxfeat(part_features, accumulator_features, feat):
     """a helper method that calculates the max of a target feature over a list of objects
-
-    Args:
-
-        obj_list: a list of objects
-
-        feat: a string containing the name of the target feature
 
     Returns:
         the max of the target feature over the given list of objects
@@ -386,13 +333,6 @@ def datapoint_inside_aoi(coords, poly):
 def weightedmeanfeat(part_features, accumulator_features, totalfeat, ratefeat):
     """a helper method that calculates the weighted average of a target feature over a list of Segments
 
-    Args:
-        obj_list: a list of Segments which all have a numeric field for which the weighted average is calculated
-
-        totalfeat: a string containing the name of the feature that has the total value of the target feature
-
-        ratefeat: a string containing the name of the feature that has the rate value of the target feature
-
     Returns:
         the weighted average of the ratefeat over the Segments
     """
@@ -412,13 +352,6 @@ def weightedmeanfeat(part_features, accumulator_features, totalfeat, ratefeat):
 
 def aggregatestddevfeat(part_features, accumulator_features, totalfeat, sdfeat, meanfeat, meanscene):
     """a helper method that calculates the aggregated standard deviation of a target feature over a list of Segments
-
-    Args:
-        obj_list: a list of Segments which all have a numeric field for which the stdev is calculated
-
-        totalfeat: a string containing the name of the feature that has the total value of the target feature
-
-        ratefeat: a string containing the name of the feature that has the rate value of the target feature
 
     Returns:
         the weighted average of the ratefeat over the Segments
@@ -450,12 +383,6 @@ def aggregatestddevfeat(part_features, accumulator_features, totalfeat, sdfeat, 
 
 def sumfeat(part_features, accumulator_features, feat):
     """a helper method that calculates the sum of a target feature over a list of objects
-
-    Args:
-
-        obj_list: a list of objects
-
-        feat: a string containing the name of the target feature
 
     Returns:
         the sum of the target feature over the given list of objects
