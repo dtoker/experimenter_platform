@@ -18,14 +18,9 @@ class FixationDetector(DetectionComponent):
         self.cur_fix_id = 0
         self.AOIS = self.application_state_controller.getFixAoiMapping()
 
-    #def notify_app_state_controller(self, x, y):
-    #    for aoi in self.AOIs:
-    #        if (fixation_inside_aoi(x, y, aoi)):
-    #            yield #update_controller_and_usermodel()
-
-    def stop(self):
-        #TODO: Maybe something else?
-        self.runOnlineFix = False
+    def notify_app_state_controller(self, aoi, fix_start_time, fix_end_time, fix_dur):
+        self.application_state_controller.updateFixTable(aoi, self.cur_fix_id, fix_start_time, fix_end_time, fix_dur)
+        self.adaptation_loop.evaluateRules(aoi, fix_end_time)
 
     #Preetpal's Online/Realtime fixation algorithm
     @gen.coroutine
@@ -137,8 +132,7 @@ class FixationDetector(DetectionComponent):
                             if (fixation_inside_aoi(x_fixation, y_fixation, self.AOIS[aoi])):
                                 ws.write_message('{"x":"%d", "y":"%d"}' % (x_fixation, y_fixation))
                                 self.cur_fix_id += 1
-                                self.application_state_controller.updateFixTable(aoi, self.cur_fix_id, int(Sfix[0]), int(EfixEndTime), int(EfixEndTime - Sfix[0]))
-                                self.adaptation_loop.evaluateRules(aoi, EfixEndTime)
+                                self.notify_app_state_controller(aoi, int(Sfix[0]), int(EfixEndTime), int(EfixEndTime - Sfix[0]))
                     #May wanrt to use something like this in the future in there are performace issues
                     #self.x = self.x[array_index:]
                     #self.y = self.y[array_index:]
