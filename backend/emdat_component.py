@@ -491,7 +491,7 @@ class EMDATComponent(DetectionComponent):
                     # TODO: Add  polyout
                     #polyout = aoi.polyout
                     key = 'numtransfrom_%s'%(aoi)
-                    if datapoint_inside_aoi((fixation_data[i-1][0], fixation_data[i-1][1]), self.AOIS[aoi]):
+                    if utils.point_inside_polygon(fixation_data[i-1][0], fixation_data[i-1][1], self.AOIS[aoi]):
                         self.emdat_interval_features[cur_aoi][key] += 1
                         sumtransfrom += 1
         for aoi in self.AOIS.keys():
