@@ -235,17 +235,6 @@ class EMDATComponent(DetectionComponent):
                 valid_pupil_velocity.append(self.tobii_controller.pupilvelocity[self.pupv_idx])
             self.pupv_idx += 1
         #number of valid pupil sizes
-        self.emdat_interval_features['meanpupilsize']           = -1
-        self.emdat_interval_features['stddevpupilsize']         = -1
-        self.emdat_interval_features['maxpupilsize']            = -1
-        self.emdat_interval_features['minpupilsize']            = -1
-        self.emdat_interval_features['startpupilsize']         = -1
-        self.emdat_interval_features['endpupilsize']           = -1
-        self.emdat_interval_features['meanpupilvelocity']       = -1
-        self.emdat_interval_features['stddevpupilvelocity']     = -1
-        self.emdat_interval_features['maxpupilvelocity']        = -1
-        self.emdat_interval_features['minpupilvelocity']        = -1
-
         self.emdat_interval_features['numpupilsizes']           = len(valid_pupil_data)
         self.emdat_interval_features['numpupilvelocity']        = len(valid_pupil_velocity)
 
@@ -292,14 +281,6 @@ class EMDATComponent(DetectionComponent):
             self.emdat_interval_features['startdistance']      = distances_from_screen[0]
             self.emdat_interval_features['enddistance']        = distances_from_screen[-1]
             self.emdat_interval_features['numdistancedata']    = numdistancedata
-        else:
-            self.emdat_interval_features['meandistance']       = -1
-            self.emdat_interval_features['stddevdistance']     = -1
-            self.emdat_interval_features['maxdistance']        = -1
-            self.emdat_interval_features['mindistance']        = -1
-            self.emdat_interval_features['startdistance']      = -1
-            self.emdat_interval_features['enddistance']        = -1
-            self.emdat_interval_features['numdistancedata']    = 0
 
     def calc_fix_ang_path_features(self):
         """
@@ -347,22 +328,6 @@ class EMDATComponent(DetectionComponent):
             self.emdat_interval_features['numfixdistances'] = numfixdistances
             self.emdat_interval_features['numabsangles'] = numabsangles
             self.emdat_interval_features['numrelangles'] = numrelangles
-        else:
-            self.emdat_interval_features['meanpathdistance'] = -1
-            self.emdat_interval_features['sumpathdistance'] = -1
-            self.emdat_interval_features['stddevpathdistance'] = -1
-            self.emdat_interval_features['eyemovementvelocity'] = -1
-            self.emdat_interval_features['sumabspathangles'] = -1
-            self.emdat_interval_features['abspathanglesrate'] = -1
-            self.emdat_interval_features['meanabspathangles'] = -1
-            self.emdat_interval_features['stddevabspathangles'] = -1
-            self.emdat_interval_features['sumrelpathangles'] = -1
-            self.emdat_interval_features['relpathanglesrate'] = -1
-            self.emdat_interval_features['meanrelpathangles'] = -1
-            self.emdat_interval_features['stddevrelpathangles'] = -1
-            self.emdat_interval_features['numfixdistances'] = 0
-            self.emdat_interval_features['numabsangles'] = 0
-            self.emdat_interval_features['numrelangles'] = 0
 
     def calc_validity_gaps(self):
         """
@@ -446,18 +411,6 @@ class EMDATComponent(DetectionComponent):
         """
             Generates pupil features for given AOI
         """
-        self.emdat_interval_features[aoi]['startpupilsize']         = -1
-        self.emdat_interval_features[aoi]['endpupilsize']           = -1
-        self.emdat_interval_features[aoi]['meanpupilsize']           = -1
-        self.emdat_interval_features[aoi]['stddevpupilsize']         = -1
-        self.emdat_interval_features[aoi]['maxpupilsize']            = -1
-        self.emdat_interval_features[aoi]['minpupilsize']            = -1
-
-
-        self.emdat_interval_features[aoi]['meanpupilvelocity']      = -1
-        self.emdat_interval_features[aoi]['stddevpupilvelocity']    = -1
-        self.emdat_interval_features[aoi]['maxpupilvelocity']       = -1
-        self.emdat_interval_features[aoi]['minpupilvelocity']       = -1
         valid_pupil_data = valid_pupil_data[valid_pupil_data > 0]
         valid_pupil_velocity = valid_pupil_velocity[valid_pupil_velocity != -1]
 
@@ -498,13 +451,6 @@ class EMDATComponent(DetectionComponent):
             self.emdat_interval_features[aoi]['mindistance']        = np.min(valid_distance_data)
             self.emdat_interval_features[aoi]['startdistance']      = valid_distance_data[0]
             self.emdat_interval_features[aoi]['enddistance']        = valid_distance_data[-1]
-        else:
-            self.emdat_interval_features[aoi]['meandistance']       = -1
-            self.emdat_interval_features[aoi]['stddevdistance']     = -1
-            self.emdat_interval_features[aoi]['maxdistance']        = -1
-            self.emdat_interval_features[aoi]['mindistance']        = -1
-            self.emdat_interval_features[aoi]['startdistance']      = -1
-            self.emdat_interval_features[aoi]['enddistance']        = -1
 
     def generate_aoi_fixation_features(self, aoi, fixation_data, sum_discarded, num_all_fixations):
         """
