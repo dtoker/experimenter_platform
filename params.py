@@ -17,3 +17,6 @@ MAX_SEG_TIMEGAP= 10
 
 MAXDIST = 35
 MINDUR = 100000
+
+rest_pupil_size = 0
+PUPIL_ADJUSTMENT = "rpscenter"

@@ -116,7 +116,7 @@ def merge_aoi_fixations(part_features, accumulator_features, length):
             total_numfixations = accumulator_features['numfixations'] + part_features['numfixations']
             accumulator_features['longestfixation']       = max(accumulator_features['longestfixation'], part_features['longestfixation'])
             accumulator_features['totaltimespent']        += part_features['totaltimespent']
-            aggregate_meanfixationduration = accumulator_features['totaltimespent'] / accumulator_features['numfixations']
+            aggregate_meanfixationduration = accumulator_features['totaltimespent'] / total_numfixations
             accumulator_features['stddevfixationduration']      = pow(((accumulator_features['numfixations'] - 1) * pow(accumulator_features['stddevfixationduration'], 2) + \
                                                                  (part_features['numfixations'] - 1) * pow(part_features['stddevfixationduration'], 2) + \
                                                                  accumulator_features['numfixations'] * pow(accumulator_features['meanfixationduration'] - aggregate_meanfixationduration , 2) + \

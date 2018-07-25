@@ -82,7 +82,7 @@ class EMDATComponent(DetectionComponent):
         if (params.USE_FIXATION_PATH_FEATURES):
             self.calc_fix_ang_path_features()
         """ calculate AOIs features """
-        self.calc_aoi_features()# rest_pupil_size, export_pupilinfo)
+        self.calc_aoi_features()# params.REST_PUPIL_SIZE, export_pupilinfo)
         if (params.KEEP_TASK_FEATURES and params.KEEP_GLOBAL_FEATURES):
             self.merge_features(self.emdat_interval_features, self.emdat_task_features)
             self.merge_features(self.emdat_interval_features, self.tobii_controller.emdat_global_features)
@@ -238,9 +238,9 @@ class EMDATComponent(DetectionComponent):
 
         if self.emdat_interval_features['numpupilsizes'] > 0: #check if the current segment has pupil data available
             #if params.PUPIL_ADJUSTMENT == "rpscenter":
-            #    adjvalidpupilsizes = map(lambda x: x.pupilsize - rest_pupil_size, valid_pupil_data)
+            #    adjvalidpupilsizes = map(lambda x: x.pupilsize - params.REST_PUPIL_SIZE, valid_pupil_data)
             #elif params.PUPIL_ADJUSTMENT == "PCPS":
-            #    adjvalidpupilsizes = map(lambda x: (x.pupilsize - rest_pupil_size) / (1.0 * rest_pupil_size), valid_pupil_data)
+            #    adjvalidpupilsizes = map(lambda x: (x.pupilsize - params.REST_PUPIL_SIZE) / (1.0 * params.REST_PUPIL_SIZE), valid_pupil_data)
             #else:
             #    adjvalidpupilsizes = map(lambda x: x.pupilsize, valid_pupil_data)#valid_pupil_data
             #valid_pupil_velocity = map(lambda x: x.pupilvelocity, valid_pupil_velocity)#valid_pupil_data
@@ -386,7 +386,7 @@ class EMDATComponent(DetectionComponent):
                     ## Select valid velocities inside the AOI
                 valid_pupil_vel        = pup_vel_vals[valid_indices]
                 valid_pupil_vel        = valid_pupil_vel[valid_pupil_vel != -1]
-                self.generate_aoi_pupil_features(aoi, valid_pupil_sizes, valid_pupil_vel) #rest_pupil_size)
+                self.generate_aoi_pupil_features(aoi, valid_pupil_sizes, valid_pupil_vel)
             if params.USE_DISTANCE_FEATURES:
                 ## Select valid head distances inside the AOI
                 valid_dist_vals        = dist_vals[valid_indices]
@@ -403,7 +403,7 @@ class EMDATComponent(DetectionComponent):
         self.x_y_idx = len(self.tobii_controller.x)
         self.fix_idx = len(self.tobii_controller.EndFixations)
 
-    def generate_aoi_pupil_features(self, aoi, valid_pupil_data, valid_pupil_velocity): # rest_pupil_size): ##datapoints, rest_pupil_size, export_pupilinfo):
+    def generate_aoi_pupil_features(self, aoi, valid_pupil_data, valid_pupil_velocity):
         """
             Generates pupil features for given AOI
         """
@@ -415,12 +415,12 @@ class EMDATComponent(DetectionComponent):
 
         if self.emdat_interval_features[aoi]['numpupilsizes'] > 0: #check if the current segment has pupil data available
 
-            #if params.PUPIL_ADJUSTMENT == "rpscenter":
-            #    valid_pupil_data        = valid_pupil_data - rest_pupil_size
-            #elif params.PUPIL_ADJUSTMENT == "PCPS":
-            #    adjvalidpupilsizes      = (valid_pupil_data - rest_pupil_size) / (1.0 * rest_pupil_size)
-            #else:
-            adjvalidpupilsizes      = valid_pupil_data
+            if params.PUPIL_ADJUSTMENT == "rpscenter":
+                valid_pupil_data        = valid_pupil_data - params.REST_PUPIL_SIZE
+            elif params.PUPIL_ADJUSTMENT == "PCPS":
+                adjvalidpupilsizes      = (valid_pupil_data - params.REST_PUPIL_SIZE) / (1.0 * params.REST_PUPIL_SIZE)
+            else:
+                adjvalidpupilsizes      = valid_pupil_data
             self.emdat_interval_features[aoi]['meanpupilsize']              = np.mean(adjvalidpupilsizes)
             self.emdat_interval_features[aoi]['stddevpupilsize']            = calc_aoi_std_feature(adjvalidpupilsizes)
             self.emdat_interval_features[aoi]['maxpupilsize']               = np.max(adjvalidpupilsizes)
