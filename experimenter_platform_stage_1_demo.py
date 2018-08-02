@@ -76,8 +76,7 @@ class webSocketHandler(tornado.websocket.WebSocketHandler):
         self.websocket_ping_interval = 0
         self.websocket_ping_timeout = float("inf")
         self.app_state_control = ApplicationStateController(1)
-        self.adaptation_loop = AdaptationLoop(self.app_state_control)
-        self.adaptation_loop.liveWebSocket.append(self)
+        self.adaptation_loop = AdaptationLoop(self.app_state_control, [self])
 
         self.tobii_controller = TobiiController()
         self.tobii_controller.liveWebSocket.add(self)
@@ -115,10 +114,16 @@ class webSocketHandler(tornado.websocket.WebSocketHandler):
             self.fixation_component.start()
             #self.emdat_component.start()
         else:
-
+            return
             print("unexpected message")
 
     def on_close(self):
+        self.fixation_component.stop()
+        #self.emdat_component.stop()
+
+        self.tobii_controller.stopTracking()
+        self.tobii_controller.destroy()
+        self.app_state_control.resetApplication()
         print("WebSocket closed")
 
 class MainHandler(tornado.web.RequestHandler):
@@ -133,7 +138,7 @@ class MainHandler(tornado.web.RequestHandler):
         #self.render('mmd.html', mmd="3")
         #self.render('mmd.html', mmd="3")
 
-        self.render('MMDIntervention.html', mmd="3")
+        self.render('MMDIntervention.html', mmd="62")
         #self.render('questionnaire.html', mmd="3", questions = mmdQuestions)
 
 

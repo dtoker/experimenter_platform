@@ -24,16 +24,6 @@ function setAllInterventionsFalse(){
     isArrowsIntervention = false;
 }
 
-function executeFunctionByName(functionName, context /*, args */) {
-  var args = Array.prototype.slice.call(arguments, 2);
-  var namespaces = functionName.split(".");
-  var func = namespaces.pop();
-  for(var i = 0; i < namespaces.length; i++) {
-    context = context[namespaces[i]];
-  }
-  return context[func].apply(context, args);
-}
-
 (function() {
 
 var AppCtrl = function($scope, $http, $location) {
@@ -86,6 +76,8 @@ var AppCtrl = function($scope, $http, $location) {
     matchMode: 'lenient'
   };
 
+  $scopeGlobal.interventions = {};
+
  // TODO: delete
  // begins here:
  // for testing connection between middlend and front-end
@@ -100,16 +92,52 @@ var AppCtrl = function($scope, $http, $location) {
   var ws = new WebSocket("ws://localhost:8888/websocket");
   ws.onmessage = function (evt){
     var obj = JSON.parse(evt.data);
-    console.log(evt.data);
+    //console.log(evt.data);
     if (obj.remove != null) {
       console.log("Received a remove call");
-      removeAllInterventions($scopeGlobal.selectedReference);
+      var referenceID;
+      for (let intervention of obj.remove) {
+        var referenceID = $scopeGlobal.interventions[intervention]
+        delete $scopeGlobal.interventions[intervention];
+        removeAllInterventions(referenceID);
+      }
 
     } else if (obj.deliver != null) {
       console.log("Received a deliver call");
-      var func = obj.deliver[0].function;
+      console.log(obj.deliver)
+      for (let intervention of obj.deliver) {
+        var func = intervention.function;
+        var interventionName = intervention.name;
+        var transition_in = intervention.transition_in;
+
+        var args = JSON.parse(intervention.arguments);
+        var referenced_tuples = [];
+        var data = $scope.datatable.data;
+        if (args.type == "legend") {
+          referenced_tuples.push(7);
+        } else {
+          var referenceID = args.id;
+          console.log("id " + args.id);
+          function matched_tuple(tuple_a, tuple_b) {
+            return tuple_a.map(function(val, ind) {
+              return val == tuple_b[ind]; // Match strings and floats that are the same number
+            }).reduce(function(acc, val) { return acc && val; });
+          }
+          var reference =  $scopeGlobal.curReference[referenceID]
+            for(var j=0; j<reference.tuples.length; j++) {
+              for(var k=0; k<data.length; k++) {
+                if(matched_tuple(reference.tuples[j], data[k].tuple)) {
+                  referenced_tuples.push(data[k].id);
+                  break;
+                }
+              }
+            }
+        }
+
+        $scopeGlobal.interventions[interventionName] = { tuple_id: $scopeGlobal.refMapper.getReferringMarks(referenced_tuples)[0], args: args, transition_out: intervention.transition_out };
       //highlightVisOnly($scopeGlobal.selectedReference);
-      eval(func)($scopeGlobal.selectedReference);
+        eval(func)($scopeGlobal.interventions[interventionName], transition_in, args);
+      }
 
     }
   }
@@ -283,8 +311,8 @@ var AppCtrl = function($scope, $http, $location) {
         overlappedReferences.push(reference);
       }
     }
-    highlightRelatedTuples($scope, overlappedReferences);
-    highlightRelatedPhrases($scope, overlappedReferences);
+    highlightRelatedTuples($scope, overlappedReferences, reference.selected); //TODO: might be bad code: pls fix
+    highlightRelatedPhrases($scope, overlappedReferences, reference.selected);
   }
 
   angular.element(document.getElementById('theChart')).on('load',
@@ -300,7 +328,7 @@ var AppCtrl = function($scope, $http, $location) {
       $scope.curSpanManager.clearSpans();
     }
     // Clear the highlights
-    $scope.curMarksManager.unhighlight();
+    $scope.curMarksManager.unhighlight($scope.curReference); //TODO: Fix up
     angular.forEach($scope.curReference, function(reference) {
       reference.selected = false;
     });
@@ -358,7 +386,7 @@ var AppCtrl = function($scope, $http, $location) {
         }
       }
 
-      highlightRelatedTuples($scope, overlappedReferences);
+      highlightRelatedTuples($scope, overlappedReferences, selection); //TODO: selection might be bad addition
       highlightRelatedPhrases($scope, overlappedReferences, selection);
       $scope.$apply();
     }
@@ -452,7 +480,7 @@ function getStrictRelatedReferences(selection, references) {
  * @param {angular.Scope} $scope .
  * @param {Array.<reference>} references .
  */
-function highlightRelatedTuples($scope, references) {
+function highlightRelatedTuples($scope, references, reference_id, transition_in, args) {
   // Determine the tuple IDs that the text references refer to.
   var referenced_tuples = [];
   var data = $scope.datatable.data;
@@ -463,7 +491,7 @@ function highlightRelatedTuples($scope, references) {
     }).reduce(function(acc, val) { return acc && val; });
   }
 
-  for(var i=0; i<references.length; i++) {
+  /*for(var i=0; i<references.length; i++) {
     for(var j=0; j<references[i].tuples.length; j++) {
       for(var k=0; k<data.length; k++) {
         if(matched_tuple(references[i].tuples[j], data[k].tuple)) {
@@ -472,11 +500,20 @@ function highlightRelatedTuples($scope, references) {
         }
       }
     }
-  }
+  } */
+/*
+  for (var tuple_id in references) {
+    for (var entry of data) {
+      if (matched_tuple(references[tuple_id], entry.id)) {
+        referenced_tuples.push(entry.id)
+        break;
+      }
+    }
+  } */
 
   console.log(referenced_tuples);
-  $scope.curMarksManager.highlight($scope.refMapper.getReferringMarks(
-      referenced_tuples),true);//true for animating
+  console.log("references " + references);
+  $scope.curMarksManager.highlight(references, reference_id, transition_in, args);
 }
 
 /**
@@ -917,24 +954,34 @@ function clone(obj) {
         highlightRelatedPhrases($scopeGlobal, overlappedReferences);
     }
 
-    function highlightVisOnly(referenceID) {
+    function highlightVisOnly(referenceID, transition_in, args) {
         var overlappedReferences = [];
-
         //for (var i=0; i<$scopeGlobal.curReference.length; i++) {
-        var reference = $scopeGlobal.curReference[$scopeGlobal.selectedReference];
+        var reference = $scopeGlobal.curReference[referenceID.tuple_id];
         overlappedReferences.push(reference);
         //}
 
-        removeAllInterventions(referenceID);
-        $scopeGlobal.lastSelectedReference = referenceID;
-
+      //  removeAllInterventions(referenceID); TODO: commented out
+        $scopeGlobal.lastSelectedReference = referenceID.tuple_id;
         setTimeout(function () {
           console.log(overlappedReferences);
-          highlightRelatedTuples($scopeGlobal, overlappedReferences);
+          console.log($scopeGlobal.interventions);
+          var tuple_ids = Object.values($scopeGlobal.interventions).map(function(obj){ return obj.tuple_id});
+          //highlightRelatedTuples($scopeGlobal, tuple_ids , referenceID, transition_in, args);
+          $scopeGlobal.curMarksManager.highlight(tuple_ids , referenceID.tuple_id, transition_in, args);
 
-        },TRANSITION_DURATION*1.2);
+        },transition_in*1.2); //TODO:CHECK
     }
 
+    function highlightLegend(referenceID) {
+      var overlappedReferences = [];
+      overlappedReferences.push(coordinates)
+      setTimeout(function () {
+        console.log(overlappedReferences);
+        highlightRelatedTuples($scopeGlobal, overlappedReferences, referenceID);
+
+      },TRANSITION_DURATION*1.2);
+    }
 
     function highlightbothTextVis(referenceID){
       if($scopeGlobal.lastSelectedReference === referenceID) return; // no intervention if the reference is same as previous
@@ -951,8 +998,8 @@ function clone(obj) {
         overlappedReferences.push(reference);
         //}
         //console.log(overlappedReferences);
-        highlightRelatedTuples($scopeGlobal, overlappedReferences);
-        highlightRelatedPhrases($scopeGlobal, overlappedReferences);
+        highlightRelatedTuples($scopeGlobal, overlappedReferences, referenceID);
+        highlightRelatedPhrases($scopeGlobal, overlappedReferences, referenceID);
 
       },TRANSITION_DURATION*1.2);
 
@@ -972,7 +1019,7 @@ function clone(obj) {
               overlappedReferences.push(reference);
 
             }
-            highlightRelatedTuples($scopeGlobal, overlappedReferences);
+            highlightRelatedTuples($scopeGlobal, overlappedReferences, mergedID);
             break;
           }
         }
@@ -983,7 +1030,7 @@ function clone(obj) {
 
       if($scopeGlobal.lastSelectedReference!=-1){//remove previous intervention
         console.log("removing interventions");
-        $scopeGlobal.curMarksManager.unhighlight();
+        $scopeGlobal.curMarksManager.unhighlight($scopeGlobal.interventions, referenceID);
 
       }
 

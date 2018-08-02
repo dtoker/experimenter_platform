@@ -163,7 +163,7 @@ class FixationDetector(DetectionComponent):
                 self.tobii_controller.time[array_index : (array_index + array_iterator)],
                 self.tobii_controller.validity[array_index : (array_index + array_iterator)])
 
-    def fixation_detection(self, x, y, time, validity, maxdist=35, mindur=100000):
+    def fixation_detection(self, x, y, time, validity, maxdist=35, mindur=65000):
         #Detects fixations, defined as consecutive samples with an inter-sample
         #distance of less than a set amount of pixels (disregarding missing data)
 

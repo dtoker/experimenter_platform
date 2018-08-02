@@ -194,6 +194,7 @@ class AdaptationLoop():
         if to_deliver_rules:
             to_deliver_rules = json.dumps({'deliver': to_deliver_rules})
             #print to_deliver_rules
+            print("number of websockets" + str(len(self.liveWebSocket)))
             for ws in self.liveWebSocket:
                 ws.write_message(to_deliver_rules)
 
