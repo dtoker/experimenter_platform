@@ -98,7 +98,7 @@ def merge_distance_features(part_features, accumulator_features):
         if (part_features['enddistance'] != -1):
             accumulator_features['enddistance'] = part_features['enddistance']
 
-def merge_aoi_fixations(part_features, accumulator_features, length):
+def merge_aoi_fixations(part_features, accumulator_features, length, total_numfixations_accumulator):
     """
 	   Merges fixation AOI features from part_features into accumulator_features
     """
@@ -124,7 +124,7 @@ def merge_aoi_fixations(part_features, accumulator_features, length):
             accumulator_features['numfixations']          = total_numfixations
             accumulator_features['meanfixationduration']  = aggregate_meanfixationduration
             accumulator_features['proportiontime']        = float(accumulator_features['totaltimespent']) / length
-            accumulator_features['proportionnum']         = float(accumulator_features['numfixations']) / total_numfixations
+            accumulator_features['proportionnum']         = float(accumulator_features['numfixations']) / total_numfixations_accumulator
 
             if accumulator_features['totaltimespent'] > 0:
                 accumulator_features['fixationrate']      = float(accumulator_features['numfixations']) / accumulator_features['totaltimespent']

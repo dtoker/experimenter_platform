@@ -212,7 +212,7 @@ class EMDATComponent(DetectionComponent):
             merge_fixation_features(part_features, accumulator_features)
             for aoi in self.AOIS.keys():
                 if (len(self.tobii_controller.aoi_ids[aoi]) > 0):
-                    merge_aoi_fixations(part_features[aoi], accumulator_features[aoi], accumulator_features['length'])
+                    merge_aoi_fixations(part_features[aoi], accumulator_features[aoi], accumulator_features['length'], accumulator_features['numfixations'])
                     if (params.USE_TRANSITION_AOI_FEATURES):
                         if (len(self.tobii_controller.aoi_ids[aoi]) > 0):
                             merge_aoi_transitions(part_features[aoi], accumulator_features[aoi])
