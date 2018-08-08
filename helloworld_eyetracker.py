@@ -70,7 +70,7 @@ class EchoWebSocketHandler(tornado.websocket.WebSocketHandler):
         self.websocket_ping_interval = 0
         self.websocket_ping_timeout = float("inf")
 
-        self.app_state_control = ApplicationStateController(2)
+        self.app_state_control = ApplicationStateController(4)
         self.adaptation_loop = AdaptationLoop(self.app_state_control)
         self.adaptation_loop.liveWebSocket.append(self)
 

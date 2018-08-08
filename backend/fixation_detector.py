@@ -49,7 +49,7 @@ class FixationDetector(DetectionComponent):
             newY = curY
             newTime = curTime
             newValid = curValid
-            Sfix, Efix = self.fixation_detection(curX, curY, curTime, curValid)
+            Sfix, Efix = self.fixation_detection(curX, curY, curTime, curValid, params.FIX_MAXDIST, params.FIX_MINDUR)
             #When there is no end fixation detected yet
             while(1):
                 #If start of fixation has not been detected yet
@@ -66,7 +66,7 @@ class FixationDetector(DetectionComponent):
                     newTime = curTime + nextTime
                     newValid = curValid + nextValid
                     #Run fixation algorithm again with extended array
-                    Sfix, Efix = self.fixation_detection(newX, newY, newTime, newValid)
+                    Sfix, Efix = self.fixation_detection(newX, newY, newTime, newValid, params.FIX_MAXDIST, params.FIX_MINDUR)
                     #If no start detected, then we can use this to drop the first |array_iterator| items
                     curX = nextX
                     curY = nextY
@@ -101,7 +101,7 @@ class FixationDetector(DetectionComponent):
                     newY.extend(nextY)
                     newTime.extend(nextTime)
                     newValid.extend(nextValid)
-                    Sfix, Efix = self.fixation_detection(newX, newY, newTime, newValid, params.MAXDIST, params.MINDUR)
+                    Sfix, Efix = self.fixation_detection(newX, newY, newTime, newValid, params.FIX_MAXDIST, params.FIX_MINDUR)
                 #a genuine end fixation has been found!
                 else:
                     #Add the newly found end fixation to our collection of end fixations
