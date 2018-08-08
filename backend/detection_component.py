@@ -10,7 +10,7 @@ class DetectionComponent():
     Tornado framework, providing an intuitive and flexible base for implementing feature extractors.
     '''
 
-    def __init__(self, tobii_controller, adaptation_loop, is_periodic = False, callback_time = 600000, liveWebSocket = None):
+    def __init__(self, tobii_controller, adaptation_loop, is_periodic = False, callback_time = 600000):
         '''
         Args:
             tobii_controller - an instance of TobiiController already connected to an eyetracker
@@ -24,7 +24,6 @@ class DetectionComponent():
         self.application_state_controller = self.adaptation_loop.app_state_controller
         self.is_periodic = is_periodic
         self.callback_time = callback_time
-        self.liveWebSocket = liveWebSocket
         print("querying db")
         print("queried db")
 

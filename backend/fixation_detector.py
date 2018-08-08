@@ -9,11 +9,11 @@ class FixationDetector(DetectionComponent):
         Implementation of DetectionComponent used to detect fixations from raw gaze data
         stored in TobiiController. Once called, runs indefinitely.
     """
-    def __init__(self, tobii_controller, adaptation_loop, liveWebSocket):
+    def __init__(self, tobii_controller, adaptation_loop):
         """
             See __init__ in DetectionComponent
         """
-        DetectionComponent.__init__(self, tobii_controller, adaptation_loop, liveWebSocket = liveWebSocket)
+        DetectionComponent.__init__(self, tobii_controller, adaptation_loop)
         self.runOnlineFix = True
         self.cur_fix_id = 0
         self.AOIS = self.application_state_controller.getFixAoiMapping()

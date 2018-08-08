@@ -78,7 +78,7 @@ class EchoWebSocketHandler(tornado.websocket.WebSocketHandler):
         self.tobii_controller.liveWebSocket.add(self)
         self.tobii_controller.waitForFindEyeTracker()
         print self.tobii_controller.eyetrackers
-        self.fixation_component = FixationDetector(self.tobii_controller, self.adaptation_loop, liveWebSocket = self.tobii_controller.liveWebSocket)
+        self.fixation_component = FixationDetector(self.tobii_controller, self.adaptation_loop)
         self.emdat_component = EMDATComponent(self.tobii_controller, self.adaptation_loop, callback_time = params.EMDAT_CALL_PERIOD)
 
     def on_message(self, message):
@@ -99,7 +99,7 @@ class EchoWebSocketHandler(tornado.websocket.WebSocketHandler):
             self.tobii_controller.stop()
             self.tobii_controller.flush()
             self.app_state_control.changeTask(2)
-            self.fixation_component = FixationDetector(self.tobii_controller, self.app_state_control, liveWebSocket = self.tobii_controller.liveWebSocket)
+            self.fixation_component = FixationDetector(self.tobii_controller, self.app_state_control)
             #self.emdat_component = EMDATComponent(self.tobii_controller, self.app_state_control, liveWebSocket = self.tobii_controller.liveWebSocket, callback_time = 6000)
             self.tobii_controller.start()
             self.fixation_component.start()
