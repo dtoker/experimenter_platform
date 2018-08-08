@@ -17,7 +17,6 @@ class DetectionComponent():
             adaptation_loop - instance of AdaptationLoop to send the computed features to Application State
             is_periodic - boolean - true if run() method should be called periodically.
             callback_time (Long) - if is_periodic = True, specifies how often should the run() method be called, in microseconds.
-            liveWebSocket (WebSocket) - if needed, the  features can be sent over websocket connection.
         '''
         self.tobii_controller  = tobii_controller
         self.adaptation_loop = adaptation_loop

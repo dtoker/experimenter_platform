@@ -21,3 +21,6 @@ MAX_SEG_TIMEGAP= 10
 
 FIX_MAXDIST = 35
 FIX_MINDUR = 100000
+
+rest_pupil_size = 0
+PUPIL_ADJUSTMENT = "rpscenter"

@@ -95,7 +95,6 @@ class EchoWebSocketHandler(tornado.websocket.WebSocketHandler):
             return
         elif (message == "next_task"):
             del self.fixation_component
-            # TODO: Decide what to do with emdat when task finishes!
             self.tobii_controller.stop()
             self.tobii_controller.flush()
             self.app_state_control.changeTask(2)

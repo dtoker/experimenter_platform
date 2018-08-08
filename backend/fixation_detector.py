@@ -3,6 +3,7 @@ from tornado import gen
 import time
 import ast
 import params
+import utils
 
 class FixationDetector(DetectionComponent):
     """
@@ -78,16 +79,6 @@ class FixationDetector(DetectionComponent):
                     fixIndex = newTime.index(SfixTime)
                     xVal = newX[fixIndex]
                     yVal = newY[fixIndex]
-                    #Get the open websocket and send x and y values through it to front end
-                    # A start fixation has been detected!
-                    for ws in self.liveWebSocket:
-                        if ((xVal != -1280) & (yVal != -1024)):
-                            for aoi in self.AOIS:
-                                if (fixation_inside_aoi(xVal, yVal, self.AOIS[aoi])):
-                                    if aoi == 'text_fix':
-                                        print("FIRST curr time ! %d"  % (time.time() * 1000.0))
-                                    ws.write_message('{"x":"%d", "y":"%d"}' % (xVal, yVal))
-                                    break
                     break
             #We are here because start fixation was detected
             while(1):
@@ -113,7 +104,8 @@ class FixationDetector(DetectionComponent):
                     points_in_fixation = array_index - 1 - start_fix
                     x_fixation = 0
                     y_fixation = 0
-                    for i in range(points_in_fixation):
+                    arr_size = points_in_fixation
+                    for i in range(arr_size):
                         if (self.tobii_controller.x[start_fix + i] > 0):
                             x_fixation += self.tobii_controller.x[start_fix + i]
                             y_fixation += self.tobii_controller.y[start_fix + i]
@@ -125,27 +117,13 @@ class FixationDetector(DetectionComponent):
                         Sfix = []
                         break
 
-
-                    #print(Efix[0][3], Efix[0][4])
                     x_fixation /= points_in_fixation
                     y_fixation /= points_in_fixation
-                    #print("FIXATION")
-                    #print x_fixation, y_fixation
                     self.tobii_controller.add_fixation(Efix[0][3], Efix[0][4], Efix[0][2], Sfix[0])
-                    for ws in self.liveWebSocket:
-                        for aoi in self.AOIS:
-                            #print aoi
-                            #print self.AOIS[aoi]
-                            if (fixation_inside_aoi(x_fixation, y_fixation, self.AOIS[aoi])):
-                                if (aoi == 'text_fix'):
-                                    print("SECOND curr time ! %f"  %  (time.time() * 1000.0))
-                                    #print x_fixation
-                                    #print y_fixation
-                                    print(Efix[0][2])
-
-                                ws.write_message('{"x":"%d", "y":"%d"}' % (x_fixation, y_fixation))
-                                self.cur_fix_id += 1
-                                self.notify_app_state_controller(aoi, int(Sfix[0]), int(EfixEndTime), int(EfixEndTime - Sfix[0]))
+                    for aoi in self.AOIS:
+                        if (utils.point_inside_polygon(x_fixation, y_fixation, self.AOIS[aoi])):
+                            self.cur_fix_id += 1
+                            self.notify_app_state_controller(aoi, int(Sfix[0]), int(EfixEndTime), int(EfixEndTime - Sfix[0]))
                     #May wanrt to use something like this in the future in there are performace issues
                     #self.x = self.x[array_index:]
                     #self.y = self.y[array_index:]
@@ -287,34 +265,3 @@ class FixationDetector(DetectionComponent):
                 break
             j += 1
         return j
-
-def fixation_inside_aoi(x,y,poly):
-    """Determines if a point is inside a given polygon or not
-        The algorithm is called "Ray Casting Method".
-    Args:
-        poly: is a list of (x,y) pairs defining the polgon
-
-    Returns:
-        True or False.
-    """
-    inside = False
-    poly = ast.literal_eval(str(poly))
-    #print "inside fixation algo"
-    #print poly
-    n = len(poly)
-    if n == 0:
-        #print "N IS ZERO"
-        return False
-    p1x, p1y = poly[0]
-    for i in range(n + 1):
-        p2x, p2y = poly[i % n]
-        if y > min(p1y, p2y):
-            if y <= max(p1y, p2y):
-                if x <= max(p1x, p2x):
-                    if p1y != p2y:
-                        xinters = (y - p1y) * (p2x - p1x) / (p2y - p1y) + p1x
-                    if p1x == p2x or x <= xinters:
-                        inside = not inside
-        p1x, p1y = p2x, p2y
-    #print inside
-    return inside
