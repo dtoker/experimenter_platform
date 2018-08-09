@@ -56,8 +56,6 @@ def merge_pupil_features(part_features, accumulator_features):
     numpupilvelocity = sumfeat(part_features, accumulator_features, "['numpupilvelocity']")
 
     if numpupilsizes > 0: # check if scene has any pupil data
-        #if export_pupilinfo:
-        #    self.pupilinfo_for_export = mergevalues(part_features, accumulator_features, 'pupilinfo_for_export')
         mean_pupilsize = weightedmeanfeat(part_features, accumulator_features, "['numpupilsizes']", "['meanpupilsize']")
         accumulator_features['stddevpupilsize']    = aggregatestddevfeat(part_features, accumulator_features,
                                                                             "['numpupilsizes']", "['stddevpupilsize']",
@@ -79,6 +77,10 @@ def merge_pupil_features(part_features, accumulator_features):
         accumulator_features['minpupilvelocity']                = minfeat(part_features, accumulator_features, "['minpupilvelocity']", -1)
         accumulator_features['meanpupilvelocity']               = mean_velocity
         accumulator_features['numpupilvelocity']                = numpupilvelocity
+        if (accumulator_features['startpupilvelocity'] == -1):
+            accumulator_features['startpupilvelocity'] = part_features['startpupilvelocity']
+        if (part_features['endpupilvelocity'] != -1):
+            accumulator_features['endpupilvelocity'] = part_features['endpupilvelocity']
 
 def merge_distance_features(part_features, accumulator_features):
     """
