@@ -80,7 +80,10 @@ class AdaptationLoop():
         """
 
         # get all rules and interventions which have a trigger event that matches event_name
-        query_results = self.conn.execute("SELECT name, removal_sql_condition, intervention FROM rule, rule_task WHERE rule.name = rule_task.rule_name and rule_task.task = ? and rule.removal_trigger_event = ?", (task, event_name))
+        query_results = self.conn.execute("""SELECT name, removal_sql_condition, intervention_name FROM rule, rule_task, rule_removal_trigger, rule_intervention_payload
+                                            WHERE rule.name = rule_task.rule_name and rule_task.task = ?
+                                            and rule.name = rule_intervention_payload.rule_name
+                                            and rule.name = rule_removal_trigger.rule_name and rule_removal_trigger.removal_trigger_event = ?""", (task, event_name))
         triggered_removals = query_results.fetchall()
 
         to_remove = []
@@ -88,7 +91,7 @@ class AdaptationLoop():
         #update its status in the application state. ie. set active = 0
         for removal in triggered_removals:
 
-            intervention_name = removal['intervention']
+            intervention_name = removal['intervention_name']
             removal_condition = removal['removal_sql_condition']
 
             if self.app_state_controller.isInterventionActive(intervention_name):
@@ -168,7 +171,11 @@ class AdaptationLoop():
         """
 
         #get all the rules/interventions which have event_name as the delivery_trigger
-        query_results = self.conn.execute("SELECT name, delivery_sql_condition, intervention, active_retrigger FROM rule, rule_task WHERE rule.name = rule_task.rule_name and rule_task.task = ? and rule.delivery_trigger_event = ?", (task, event_name))
+        query_results = self.conn.execute("""SELECT name, delivery_sql_condition, intervention_name, active_retrigger
+                                            FROM rule, rule_task, rule_delivery_trigger, rule_intervention_payload
+                                            WHERE rule.name = rule_task.rule_name and rule_task.task = ?
+                                            and rule.name = rule_intervention_payload.rule_name
+                                            and rule.name = rule_delivery_trigger.rule_name and rule_delivery_trigger.delivery_trigger_event = ?""", (task, event_name))
         triggered_rules = query_results.fetchall()
 
         #filter the triggered rules to rules to deliver based on their delivery sql conditional
@@ -176,7 +183,7 @@ class AdaptationLoop():
         to_deliver_rules = []
         for rule in triggered_rules:
             rule_name = rule['name']
-            intervention_name = rule['intervention']
+            intervention_name = rule['intervention_name']
             active_retrigger = rule['active_retrigger']
             #check the rule if it is not currently active or if active_retrigger = 1
             if active_retrigger == 1 or not self.app_state_controller.isInterventionActive(intervention_name):
@@ -217,7 +224,7 @@ class AdaptationLoop():
         if event_name not in self.app_state_controller.eventNames:
             raise ValueError("Event name received is not one of the user states active for this task")
         task = self.app_state_controller.currTask
-
+        print("EVALUATING: " + event_name)
         #remove all interventions that have this event as a removal_triggger
         self.__removeExpiredInterventions__(event_name, task)
 

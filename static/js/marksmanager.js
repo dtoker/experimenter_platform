@@ -172,6 +172,7 @@
 
               d3.selectAll(selected_mark.selected_marks)
                 .attr('stroke', 'white')
+								.attr('stroke-width', 0)
                 .transition()
                 .duration(transition_in)
                 //.attr('fill-opacity', 0)
@@ -186,6 +187,7 @@
               d3.selectAll(marks.unselected_marks)
                 .transition()
                 .duration(transition_in)
+								.attr('stroke', 'none')
                 .attr('fill-opacity', function(mark_data) {
 										//var this_selection = d3.select(this)[0];
 										//console.log("contains? :" + marks.selected_marks.includes(this));
@@ -205,26 +207,35 @@
 						.duration(TRANSITION_DURATION);*/
 					var desat = Object.values(interventions).map(function(obj) {return obj.args.desat}).includes(true); // true if there is an intervention with desat
 					var transition_out = to_be_removed.transition_out || 0;
-					if (desat) {
-						d3.selectAll(marks.unselected_marks)
-						  .transition()
-							.attr('fill-opacity', DESATURATION)
-	            .attr('stroke', 'none') //Enamul: to remove Bolding Intervention
-							.duration(transition_out)
-	            .each('end', function() {
-	              d3.select(this).classed('selected', 'false');
-	            });
-					} else {
-							d3.selectAll(marks.unselected_marks)
-								.transition()
-								.attr('fill-opacity', 0)
-								.attr('stroke', 'none') //Enamul: to remove Bolding Intervention
-								.duration(transition_out)
-								.each('end', function() {
-							d3.select(this).classed('selected', 'false');
-						});
-					}
+					d3.selectAll(marks.unselected_marks)
+					  .transition()
+						.attr('fill-opacity', desat? DESATURATION: 0)
+						.attr('stroke', 'none') //Enamul: to remove Bolding Intervention
+						.duration(transition_out)
+            .each('end', function() {
+              d3.select(this).classed('selected', 'false');
+            });
 					d3.select(this.overlay).selectAll( '.arrow_selectArrow').remove();
+				},
+				"highlightLegend": function(transition_in, args) {
+					console.log("highlighting legend");
+					var legend_mark = this.getLegendMark();
+					var transition_in = transition_in || 0; //TODO: maybe this should be TRANSITION_DURATION
+					var color = args.color;
+					//var arrow = args.arrow;
+					//var arrow_direction = args.arrow_direction; //TODO: no suppor for arrows or desat currently
+					//var desat = args.desat;
+					var bold = args.bold;
+					var bold_thickness = args.bold_thickness || 1;
+					d3.select(legend_mark)
+						.attr('stroke', 'white')
+						.attr('stroke-width', 0)
+						.transition()
+						.duration(transition_in)
+						//.attr('fill-opacity', 0)
+						.attr('stroke-width', bold_thickness)
+						.attr('stroke', function () { return bold? color: 'none';})
+						.attr('fill-opacity', 0);
 				}
 			}
 		}
@@ -351,15 +362,17 @@
 			(function(curMark) {
 				var d3mark = d3.select(curMark);
 				var mark_data = d3mark.data()[0];
-				var selected = false;
-	        	for(var i=0; i<tuple_ids.length; i++) {
-								if(tuple_ids[i] === mark_data.id) {
-									selected_marks.push(curMark);
-									selected = true;
-									return;
-						}
+				if (mark_data.id != "legend") {
+					var selected = false;
+		        	for(var i=0; i<tuple_ids.length; i++) {
+									if(tuple_ids[i] === mark_data.id) {
+										selected_marks.push(curMark);
+										selected = true;
+										return;
+							}
+					}
+					if(!selected) unselected_marks.push(curMark);
 				}
-				if(!selected) unselected_marks.push(curMark);
 			})(self.marks[j]);
 	    }
 
@@ -367,6 +380,16 @@
 			'selected_marks': selected_marks,
 			'unselected_marks': unselected_marks
 		};
+	};
+	MarksManager.prototype.getLegendMark = function() {
+		var self = this;
+		for (var i=0; i<self.marks.length; i++){
+				var d3mark = d3.select(self.marks[i]);
+				var mark_data = d3mark.data()[0];
+				if (mark_data.id == "legend") {
+					return self.marks[i];
+				}
+		}
 	};
 	MarksManager.prototype.update = function() {
 		this.marks = MarksManager.internal.highlights[this.type].create.call(this);
@@ -378,6 +401,9 @@
 	};
 	MarksManager.prototype.unhighlight = function(interventions, to_be_removed) {
 		MarksManager.internal.highlights[this.type].unhighlight.call(this, interventions, to_be_removed);
+	};
+	MarksManager.prototype.highlightLegend = function(transition_in, args) {
+		MarksManager.internal.highlights[this.type].highlightLegend.call(this, transition_in, args);
 	};
 	MarksManager.prototype.clearMarks = function() {
 		d3.select(this.overlay).selectAll('.visual_reference').remove();

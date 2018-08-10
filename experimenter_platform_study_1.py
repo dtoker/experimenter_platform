@@ -81,51 +81,78 @@ class WebSocketHandler(tornado.websocket.WebSocketHandler):
         self.tobii_controller = TobiiController()
         self.tobii_controller.liveWebSocket.add(self)
         self.tobii_controller.waitForFindEyeTracker()
+        self.initialize_detection_components()
         print self.tobii_controller.eyetrackers
-        self.fixation_component = FixationDetector(self.tobii_controller, self.adaptation_loop, liveWebSocket = self.tobii_controller.liveWebSocket)
-        self.emdat_component = EMDATComponent(self.tobii_controller, self.adaptation_loop, callback_time = params.EMDAT_CALL_PERIOD)
 
         self.tobii_controller.activate(self.tobii_controller.eyetrackers.keys()[0])
         self.tobii_controller.startTracking()
-        self.fixation_component.start()
-        self.emdat_component.start()
+        self.start_detection_components()
         print "tracking started"
 
     def on_message(self, message):
+        print("RECEIVED MESSAGE: " + message)
         if (message == "close"):
             print("destroying")
-            #DummyController.receiveFixations = False
-            self.fixation_component.stop()
-            #self.emdat_component.stop()
-
+            self.stop_detection_components()
             self.tobii_controller.stopTracking()
             self.tobii_controller.destroy()
             self.app_state_control.resetApplication()
             return
-        elif (message == "next_task"):
-            del self.fixation_component
-            # TODO: Decide what to do with emdat when task finishes!
-            self.tobii_controller.stop()
-            self.tobii_controller.flush()
-            self.app_state_control.changeTask(2)
-            self.fixation_component = FixationDetector(self.tobii_controller, self.app_state_control, liveWebSocket = self.tobii_controller.liveWebSocket)
-            #self.emdat_component = EMDATComponent(self.tobii_controller, self.app_state_control, liveWebSocket = self.tobii_controller.liveWebSocket, callback_time = 6000)
-            self.tobii_controller.start()
-            self.fixation_component.start()
-            #self.emdat_component.start()
-        else:
-            self.fixation_component.stop()
-            #self.emdat_component.stop()
+        elif (message.find("next_task") != -1):
+            result = message.split(":")
+            next_task = int(result[1])
 
+            self.stop_detection_components()
+            """ ??? """
+            # TODO: Decide what to do with emdat when task finishes!
+            self.tobii_controller.stopTracking()
+            self.tobii_controller.flush()
+            self.app_state_control.changeTask(next_task)
+            self.initialize_detection_components()
+            self.start_detection_components()
+            self.tobii_controller.startTracking()
+        else:
+            self.stop_detection_components()
             self.tobii_controller.stopTracking()
             self.tobii_controller.destroy()
             self.app_state_control.resetApplication()
+            """ wtf """
             return
             print("unexpected message")
 
     def on_close(self):
-
+        self.stop_detection_components()
+        self.tobii_controller.stopTracking()
+        self.tobii_controller.destroy()
+        self.app_state_control.resetApplication()
         print("WebSocket closed")
+
+    def initialize_detection_components(self):
+        if (params.USE_FIXATION_ALGORITHM):
+            self.fixation_component = FixationDetector(self.tobii_controller, self.adaptation_loop, liveWebSocket = self.tobii_controller.liveWebSocket)
+        if (params.USE_EMDAT):
+            self.emdat_component = EMDATComponent(self.tobii_controller, self.adaptation_loop, callback_time = params.EMDAT_CALL_PERIOD)
+            if (params.USE_ML):
+                self.ml_component = MLComponent(self.tobii_controller, self.adaptation_loop, callback_time = params.EMDAT_CALL_PERIOD, self.emdat_component)
+
+    def start_detection_components(self):
+        if (params.USE_FIXATION_ALGORITHM):
+            self.fixation_component.start()
+        if (params.USE_EMDAT):
+            self.emdat_component.start()
+            if (params.USE_ML):
+                self.ml_component.start()
+
+    def stop_detection_components(self):
+        if (params.USE_FIXATION_ALGORITHM):
+            self.fixation_component.stop()
+            del self.fixation_component
+        if (params.USE_EMDAT):
+            self.emdat_component.stop()
+            del self.emdat_component
+            if (params.USE_ML):
+                self.ml_component.stop()
+                del self.ml_component
 
 class MainHandler(tornado.web.RequestHandler):
     def get(self):
@@ -145,9 +172,9 @@ class MainHandler(tornado.web.RequestHandler):
 
         q1 = self.get_argument('element_1')
         if(int(q1)==1):
-            self.application.mmd_order = [3,5,9,11,18,20,27,28,30,60,62,66,72,74,76] #removed MMD 73
+            self.application.mmd_order = [62,3,5,9,11,18,20,27,28,30,60,62,66,72,74,76] #removed MMD 73
             #self.application.mmd_order = [73] #removed MMD 73
-            random.shuffle(self.application.mmd_order)
+            # TODO:remove commenting out random.shuffle(self.application.mmd_order)
             self.application.mmd_index = 0
 
             #self.redirect('/mmd')
@@ -297,7 +324,7 @@ class MMDHandler(tornado.web.RequestHandler):
             if (self.application.show_question_only):
                 self.redirect('/questionnaire')
             else:
-                self.render('mmd.html', mmd=str(self.application.cur_mmd))
+                self.render('MMDExperimenter.html', mmd=str(self.application.cur_mmd))
             self.application.mmd_index+=1
         else:
             self.redirect('/done')
@@ -312,6 +339,7 @@ class MMDHandler(tornado.web.RequestHandler):
         #print self.application.UserID
 
         #self.application.cur_user = random.randint(0, 1000)  #random number for now
+        print ("POST RECEIVED")
         self.application.end_time = str(datetime.datetime.now().time())
         task_data = (self.application.cur_user, self.application.cur_mmd,'mmd' ,self.application.start_time, self.application.end_time)
         self.application.conn.execute('INSERT INTO MMD_performance VALUES (?,?,?,?,?)', task_data)

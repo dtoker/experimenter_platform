@@ -374,6 +374,27 @@ class ApplicationStateController():
 
         return mapping
 
+    def getMLFeatures(self):
+        """ Returns a mapping of the ML user states (event names) to associated ML features
+
+        arguments
+        None
+
+        keyword arguments
+        None
+
+        returns
+        List    -- contains a list of the user states to associate with ML predictions
+        """
+        mapping = {}
+        query_results = self.conn.execute("SELECT user_state.event_name FROM user_state, user_state_task WHERE user_state.event_name = user_state_task.event_name AND user_state_task.task = ? AND type = 'ml'", (str(self.currTask),))
+        feature_results = query_results.fetchall()
+        ml_features = []
+        for feature in feature_results:
+            ml_features.append(feature['event_name'])
+
+        return ml_features
+
     def evaluateConditional(self, query):
 
         """ Evalutaes an SQL conditional

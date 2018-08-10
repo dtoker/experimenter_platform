@@ -89,8 +89,8 @@ var AppCtrl = function($scope, $http, $location) {
   //var source = new EventSource('/socket');
   //source.addEventListener('message', handleCallback, false);
 
-  var ws = new WebSocket("ws://localhost:8888/websocket");
-  ws.onmessage = function (evt){
+  $scopeGlobal.ws = new WebSocket("ws://localhost:8888/websocket");
+  $scopeGlobal.ws.onmessage = function (evt){
     var obj = JSON.parse(evt.data);
     //console.log(evt.data);
     if (obj.remove != null) {
@@ -114,7 +114,7 @@ var AppCtrl = function($scope, $http, $location) {
         var referenced_tuples = [];
         var data = $scope.datatable.data;
         if (args.type == "legend") {
-          referenced_tuples.push(7);
+          referenced_tuples.push("legend");
         } else {
           var referenceID = args.id;
           console.log("id " + args.id);
@@ -941,6 +941,11 @@ function clone(obj) {
   $( "#button_merged" ).click(function() {
     highlightMergedReferences("A");
   });
+  $("#form1").submit(function() {
+    console.log("next_task")
+    $.post('http://localhost:8888/mmd'); //TODO: fix this to be handled more robustly
+    $scopeGlobal.ws.send("next_task:2");
+  })
     function highlightTextOnly(referenceID) {
         console.log('highlight text');
         var overlappedReferences = [];
@@ -973,14 +978,10 @@ function clone(obj) {
         },transition_in*1.2); //TODO:CHECK
     }
 
-    function highlightLegend(referenceID) {
-      var overlappedReferences = [];
-      overlappedReferences.push(coordinates)
+    function highlightLegend(referenceID, transition_in, args) {
       setTimeout(function () {
-        console.log(overlappedReferences);
-        highlightRelatedTuples($scopeGlobal, overlappedReferences, referenceID);
-
-      },TRANSITION_DURATION*1.2);
+          $scopeGlobal.curMarksManager.highlightLegend(transition_in, args);
+      },transition_in*1.2);
     }
 
     function highlightbothTextVis(referenceID){
@@ -1030,7 +1031,9 @@ function clone(obj) {
 
       if($scopeGlobal.lastSelectedReference!=-1){//remove previous intervention
         console.log("removing interventions");
-        $scopeGlobal.curMarksManager.unhighlight($scopeGlobal.interventions, referenceID);
+        setTimeout(function(){
+          $scopeGlobal.curMarksManager.unhighlight($scopeGlobal.interventions, referenceID);
+        }, referenceID.transition_out*1.2);
 
       }
 
