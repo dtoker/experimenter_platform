@@ -70,7 +70,7 @@ class EchoWebSocketHandler(tornado.websocket.WebSocketHandler):
         self.websocket_ping_interval = 0
         self.websocket_ping_timeout = float("inf")
 
-        self.app_state_control = ApplicationStateController(1)
+        self.app_state_control = ApplicationStateController(4)
         self.adaptation_loop = AdaptationLoop(self.app_state_control)
         self.adaptation_loop.liveWebSocket.append(self)
 
@@ -78,13 +78,14 @@ class EchoWebSocketHandler(tornado.websocket.WebSocketHandler):
         self.tobii_controller.liveWebSocket.add(self)
         self.tobii_controller.waitForFindEyeTracker()
         print self.tobii_controller.eyetrackers
-        self.fixation_component = FixationDetector(self.tobii_controller, self.adaptation_loop, liveWebSocket = self.tobii_controller.liveWebSocket)
+        self.fixation_component = FixationDetector(self.tobii_controller, self.adaptation_loop)
         self.emdat_component = EMDATComponent(self.tobii_controller, self.adaptation_loop, callback_time = params.EMDAT_CALL_PERIOD)
 
     def on_message(self, message):
         if (message == "close"):
             print("destroying")
             #DummyController.receiveFixations = False
+            self.emdat_component.execfile.close()
             self.fixation_component.stop()
             #self.emdat_component.stop()
 
@@ -94,11 +95,10 @@ class EchoWebSocketHandler(tornado.websocket.WebSocketHandler):
             return
         elif (message == "next_task"):
             del self.fixation_component
-            # TODO: Decide what to do with emdat when task finishes!
             self.tobii_controller.stop()
             self.tobii_controller.flush()
             self.app_state_control.changeTask(2)
-            self.fixation_component = FixationDetector(self.tobii_controller, self.app_state_control, liveWebSocket = self.tobii_controller.liveWebSocket)
+            self.fixation_component = FixationDetector(self.tobii_controller, self.app_state_control)
             #self.emdat_component = EMDATComponent(self.tobii_controller, self.app_state_control, liveWebSocket = self.tobii_controller.liveWebSocket, callback_time = 6000)
             self.tobii_controller.start()
             self.fixation_component.start()
