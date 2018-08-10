@@ -18,6 +18,8 @@ from backend.eye_tracker import TobiiController
 from backend.dummy_controller import DummyController
 from backend.fixation_detector import FixationDetector
 from backend.emdat_component import EMDATComponent
+from backend.ml_component import MLComponent
+
 import csv
 
 import thread
@@ -129,11 +131,11 @@ class WebSocketHandler(tornado.websocket.WebSocketHandler):
 
     def initialize_detection_components(self):
         if (params.USE_FIXATION_ALGORITHM):
-            self.fixation_component = FixationDetector(self.tobii_controller, self.adaptation_loop, liveWebSocket = self.tobii_controller.liveWebSocket)
+            self.fixation_component = FixationDetector(self.tobii_controller, self.adaptation_loop)
         if (params.USE_EMDAT):
             self.emdat_component = EMDATComponent(self.tobii_controller, self.adaptation_loop, callback_time = params.EMDAT_CALL_PERIOD)
             if (params.USE_ML):
-                self.ml_component = MLComponent(self.tobii_controller, self.adaptation_loop, callback_time = params.EMDAT_CALL_PERIOD, self.emdat_component)
+                self.ml_component = MLComponent(self.tobii_controller, self.adaptation_loop, callback_time = params.EMDAT_CALL_PERIOD, emdat_component = self.emdat_component)
 
     def start_detection_components(self):
         if (params.USE_FIXATION_ALGORITHM):
@@ -148,10 +150,10 @@ class WebSocketHandler(tornado.websocket.WebSocketHandler):
             self.fixation_component.stop()
             del self.fixation_component
         if (params.USE_EMDAT):
-            self.emdat_component.stop()
+            #self.emdat_component.stop()
             del self.emdat_component
             if (params.USE_ML):
-                self.ml_component.stop()
+                #self.ml_component.stop()
                 del self.ml_component
 
 class MainHandler(tornado.web.RequestHandler):

@@ -448,6 +448,9 @@ class TobiiController:
 				self.emdat_global_features[event_name]['startdistance']      	= -1
 				self.emdat_global_features[event_name]['enddistance']        	= -1
 				self.emdat_global_features[event_name]['total_trans_from'] = 0
+				self.emdat_global_features[event_name]['startpupilvelocity']        	= -1
+				self.emdat_global_features[event_name]['endpupilvelocity'] = 0
+
 				for cur_aoi in AOIS.keys():
 				    self.emdat_global_features[event_name]['numtransfrom_%s'%(cur_aoi)] = 0
 				    self.emdat_global_features[event_name]['proptransfrom_%s'%(cur_aoi)] = -1
@@ -473,6 +476,9 @@ class TobiiController:
 		self.emdat_global_features['stddevpupilvelocity'] 		= -1
 		self.emdat_global_features['maxpupilvelocity'] 			= -1
 		self.emdat_global_features['minpupilvelocity'] 			= -1
+		self.emdat_global_features['startpupilvelocity'] 			= -1
+		self.emdat_global_features['endpupilvelocity'] 			= -1
+
 		# Distance features
 		self.emdat_global_features['numdistancedata']							= 0
 		self.emdat_global_features['meandistance'] 			= -1

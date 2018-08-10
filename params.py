@@ -1,10 +1,7 @@
-<<<<<<< HEAD
-=======
 
->>>>>>> master
 USE_FIXATION_ALGORITHM = True
-USE_EMDAT = True
-USE_ML = True
+USE_EMDAT = False
+USE_ML = False
 # Features to use
 USE_PUPIL_FEATURES = True
 USE_DISTANCE_FEATURES = True
@@ -25,5 +22,5 @@ MAX_SEG_TIMEGAP= 10
 FIX_MAXDIST = 35
 FIX_MINDUR = 100000
 
-rest_pupil_size = 0
+REST_PUPIL_SIZE = 0
 PUPIL_ADJUSTMENT = "rpscenter"

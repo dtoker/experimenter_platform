@@ -19,20 +19,12 @@ class FixationDetector(DetectionComponent):
         self.cur_fix_id = 0
         self.AOIS = self.application_state_controller.getFixAoiMapping()
 
-<<<<<<< HEAD
-    #def notify_app_state_controller(self, x, y):
-    #    for aoi in self.AOIs:
-    #        if (fixation_inside_aoi(x, y, aoi)):
-    #            yield #update_controller_and_usermodel()
-
-    def stop(self):
-        self.runOnlineFix = False
-=======
     def notify_app_state_controller(self, aoi, fix_start_time, fix_end_time, fix_dur):
         self.application_state_controller.updateFixTable(aoi, self.cur_fix_id, fix_start_time, fix_end_time, fix_dur)
         self.adaptation_loop.evaluateRules(aoi, fix_end_time)
->>>>>>> master
 
+    def stop(self):
+        self.runOnlineFix = False
     #Preetpal's Online/Realtime fixation algorithm
     @gen.coroutine
     def run(self):
@@ -129,23 +121,11 @@ class FixationDetector(DetectionComponent):
 
                     x_fixation /= points_in_fixation
                     y_fixation /= points_in_fixation
-<<<<<<< HEAD
-
-                    self.tobii_controller.add_fixation(Efix[0][3], Efix[0][4], Efix[0][2])
-                    for ws in self.liveWebSocket:
-                        for aoi in self.AOIS:
-                            if (fixation_inside_aoi(x_fixation, y_fixation, self.AOIS[aoi])):
-                                ws.write_message('{"x":"%d", "y":"%d"}' % (x_fixation, y_fixation))
-                                self.cur_fix_id += 1
-                                self.application_state_controller.updateFixTable(aoi, self.cur_fix_id, int(Sfix[0]), int(EfixEndTime), int(EfixEndTime - Sfix[0]))
-                                self.adaptation_loop.evaluateRules(aoi, EfixEndTime)
-=======
                     self.tobii_controller.add_fixation(Efix[0][3], Efix[0][4], Efix[0][2], Sfix[0])
                     for aoi in self.AOIS:
                         if (utils.point_inside_polygon(x_fixation, y_fixation, self.AOIS[aoi])):
                             self.cur_fix_id += 1
                             self.notify_app_state_controller(aoi, int(Sfix[0]), int(EfixEndTime), int(EfixEndTime - Sfix[0]))
->>>>>>> master
                     #May wanrt to use something like this in the future in there are performace issues
                     #self.x = self.x[array_index:]
                     #self.y = self.y[array_index:]
@@ -176,12 +156,8 @@ class FixationDetector(DetectionComponent):
                 self.tobii_controller.time[array_index : (array_index + array_iterator)],
                 self.tobii_controller.validity[array_index : (array_index + array_iterator)])
 
-<<<<<<< HEAD
-    def fixation_detection(self, x, y, time, validity, maxdist=35, mindur=65000):
-=======
     def fixation_detection(self, x, y, time, validity, maxdist=35, mindur=100000):
         """
->>>>>>> master
         #Detects fixations, defined as consecutive samples with an inter-sample
         #distance of less than a set amount of pixels (disregarding missing data)
 
