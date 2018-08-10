@@ -19,14 +19,15 @@ import tobii.eye_tracking_io.time.sync
 import csv
 import numpy as np
 from tornado import gen
-from dummy_controller import DummyController
 import emdat_utils
 import ast
 
 class TobiiController:
 
-	"""Class to handle communication to Tobii eye trackers, as well as some
-	display operations"""
+	"""	The singleton class used to communicate with Tobii eye tracker API: it initializes the eye tracker,
+	stores the raw gaze data, so the detection components can compute the features
+	they are responsible for, and it stores the EMDAT features computed over the whole execution of the platform.
+	"""
 
 	def __init__(self):
 
@@ -70,7 +71,7 @@ class TobiiController:
 
 	def waitForFindEyeTracker(self):
 
-		"""Keeps running until an eyetracker is found
+		"""Blocks the current thread until Tobii API detects an eye tracker in the system.
 
 		arguments
 		None
@@ -273,7 +274,9 @@ class TobiiController:
 
 	def on_gazedata(self,error,gaze):
 
-		"""Adds new data point to the data collection (self.gazeData)
+		"""AAdds new data point to the raw data arrays. If x, y coordinate data is not available,
+		stores the coordinates for this datapoint as (-1280, -1024). Any other feature,
+		if not available, is stored as -1.
 
 		arguments
 		error		--	some Tobii error message, isn't used in function
@@ -316,8 +319,10 @@ class TobiiController:
 		else:
 			self.x.append(-1 * 1280)
 			self.y.append(-1 * 1024)
+		# print(gaze.RightGazePoint2D.x * 1280, gaze.RightGazePoint2D.y * 1024)
+		# print("%f" % (time.time() * 1000.0))
 		for aoi, polygon in self.AOIs.iteritems():
-			if emdat_utils.datapoint_inside_aoi((self.x[-1], self.y[-1]), polygon):
+			if utils.point_inside_polygon((self.x[-1], self.y[-1]), polygon):
 				self.aoi_ids[aoi].append(self.dpt_id)
 		# Pupil size features
 		self.pupilsize.append(self.get_pupil_size(gaze.LeftPupil, gaze.RightPupil))
@@ -334,12 +339,20 @@ class TobiiController:
 		self.LastTimestamp = gaze.Timestamp
 		self.dpt_id += 1
 
-	def add_fixation(self, x, y, duration):
-		self.EndFixations.append((x, y, duration))
+	def add_fixation(self, x, y, duration, start_time):
+		'''
+		Called by FixationDetector when a new fixation is detected.
+		Adds a new fixation to data array to be used for EMDAT features calculation.
+		Args:
+			x 			- coordinate of fixation on the screen
+			y 			- coordinate of fixation on the screen
+			duration 	- duration of fixation in microseconds
+		'''
+		self.EndFixations.append((x, y, duration, start_time))
 
 	def get_pupil_size(self, pupilleft, pupilright):
 	    '''
-	    If recordings for both eyes are available, return their average,
+	    Used for extracting pupilsize in on_gazedata(). If recordings for both eyes are available, return their average,
 	    else return value for a recorded eye (if any)
 	    Args:
 	        pupilleft - recording of pupil size on left eye
@@ -357,15 +370,34 @@ class TobiiController:
 
 
 	def get_pupil_velocity(self, last_pupilleft, last_pupilright, pupilleft, pupilright, time):
-	    if (last_pupilleft == 0 or pupilleft == 0) and (last_pupilright == 0 or pupilright == 0):
-	        return -1
-	    if (last_pupilleft == 0 or pupilleft == 0):
-	        return abs(pupilright - last_pupilright) / time
-	    if (last_pupilright == 0 or pupilright == 0):
-	        return abs(pupilleft - last_pupilleft) / time
-	    return abs( (pupilleft + pupilright) / 2 - (last_pupilleft + last_pupilright) / 2 ) / time
+		'''
+		Used for extracting pupilvelocity in on_gazedata().
+		If pupilsizes for both eyes are available, return the average of their difference,
+		else return value for a recorded eye (if any)
+		Args:
+			last_pupilleft - pupilsize for left eye from previous gaze object
+			last_pupilright - pupilsize for right eye from previous gaze object
+			pupilleft - pupilsize for left eye from current gaze object
+			pupilright - pupilsize for left eye from current gaze object
+			time - timestamp difference between current and last gaze object
+
+		'''
+		if (last_pupilleft == 0 or pupilleft == 0) and (last_pupilright == 0 or pupilright == 0):
+ 			return -1
+		if (last_pupilleft == 0 or pupilleft == 0):
+			return abs(pupilright - last_pupilright) / time
+		if (last_pupilright == 0 or pupilright == 0):
+			return abs(pupilleft - last_pupilleft) / time
+		return abs( (pupilleft + pupilright) / 2 - (last_pupilleft + last_pupilright) / 2 ) / time
 
 	def get_distance(self, distanceleft, distanceright):
+	    '''
+	    Used for extracting head distance in on_gazedata(). If recordings for both eyes are available, return their average,
+	    else return value for a recorded eye (if any)
+	    Args:
+	        distanceleft - recording of distance on left eye
+	        distanceright - recording of distance size on right eye
+	    '''
 	    if distanceleft == 0 and distanceright == 0:
 	        return -1
 	    if distanceleft == 0:
@@ -375,6 +407,11 @@ class TobiiController:
 	    return (distanceleft + distanceright) / 2.0
 
 	def update_aoi_storage(self, AOIS):
+		"""
+			Add new aois to global EMDAT feature storage dictionary.
+			Called during a task switch by EMDATComponent.
+		"""
+
 		self.AOIs = AOIS
 		for event_name in AOIS.keys():
 			self.aoi_ids[event_name] = []
@@ -408,8 +445,8 @@ class TobiiController:
 				self.emdat_global_features[event_name]['stddevdistance']     		= -1
 				self.emdat_global_features[event_name]['maxdistance']        		= -1
 				self.emdat_global_features[event_name]['mindistance']        		= -1
-				#self.emdat_interval_features[event_name]['startdistance']      	= valid_distance_data[0]
-				#self.emdat_interval_features[event_name]['enddistance']        	= valid_distance_data[-1]
+				self.emdat_global_features[event_name]['startdistance']      	= -1
+				self.emdat_global_features[event_name]['enddistance']        	= -1
 				self.emdat_global_features[event_name]['total_trans_from'] = 0
 				for cur_aoi in AOIS.keys():
 				    self.emdat_global_features[event_name]['numtransfrom_%s'%(cur_aoi)] = 0
@@ -417,6 +454,9 @@ class TobiiController:
 
 
 	def init_emdat_global_features(self):
+		'''
+		Initialize global EMDAT feature storage dictionary. Called by EMDATComponent.
+		'''
 		self.emdat_global_features = {}
 		self.emdat_global_features['length'] = 0
 		self.emdat_global_features['length_invalid'] = 0
@@ -427,8 +467,8 @@ class TobiiController:
 		self.emdat_global_features['stddevpupilsize'] 			= -1
 		self.emdat_global_features['maxpupilsize'] 				= -1
 		self.emdat_global_features['minpupilsize'] 				= -1
-		#self.emdat_global_features['startpupilsize'] 			= -1
-		#self.emdat_global_features['endpupilsize'] 			= -1
+		self.emdat_global_features['startpupilsize'] 			= -1
+		self.emdat_global_features['endpupilsize'] 			= -1
 		self.emdat_global_features['meanpupilvelocity'] 		= -1
 		self.emdat_global_features['stddevpupilvelocity'] 		= -1
 		self.emdat_global_features['maxpupilvelocity'] 			= -1
@@ -439,8 +479,8 @@ class TobiiController:
 		self.emdat_global_features['stddevdistance'] 			= -1
 		self.emdat_global_features['maxdistance'] 				= -1
 		self.emdat_global_features['mindistance'] 				= -1
-		#self.emdat_global_features['startdistance'] 			= -1
-		#self.emdat_global_features['enddistance'] 			= -1
+		self.emdat_global_features['startdistance'] 			= -1
+		self.emdat_global_features['enddistance'] 			= -1
 		# Path features
 		self.emdat_global_features['numfixdistances'] = 0
 		self.emdat_global_features['numabsangles'] = 0
@@ -464,12 +504,6 @@ class TobiiController:
 		self.emdat_global_features['stddevfixationduration'] 	= -1
 		self.emdat_global_features['sumfixationduration'] 		= -1
 		self.emdat_global_features['fixationrate'] 				= -1
-
-	def flush(self):
-		self.x = []
-		self.y = []
-		self.time = []
-		self.validity = []
 
 #Original code provided by Roberto showing how to start the the eyetracker
 """

@@ -1,3 +1,7 @@
+<<<<<<< HEAD
+=======
+
+>>>>>>> master
 USE_FIXATION_ALGORITHM = True
 USE_EMDAT = True
 USE_ML = True

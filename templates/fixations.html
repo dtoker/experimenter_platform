@@ -42,6 +42,8 @@ ws.onmessage = function (evt) {
      elem.style.left = obj.x-75;
   } else if (obj.deliver != null) {
     // document.getElementById("demo").innerHTML =  evt.data;
+    var d = new Date();
+    console.log(d.getTime())
     elem.style.backgroundColor = 'red';
   } else if (obj.remove != null){
     console.log("reached here");
