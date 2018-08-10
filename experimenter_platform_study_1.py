@@ -18,6 +18,8 @@ from backend.eye_tracker import TobiiController
 from backend.dummy_controller import DummyController
 from backend.fixation_detector import FixationDetector
 from backend.emdat_component import EMDATComponent
+from backend.ml_component import MLComponent
+
 import csv
 
 import thread
@@ -32,23 +34,26 @@ from application.application_state_controller import ApplicationStateController
 
 define("port", default=8888, help="run on the given port", type=int)
 
-
-
 class Application(tornado.web.Application):
     def __init__(self):
         #connects url with code
         handlers = [
             (r"/", MainHandler),
-            (r"/locus", LocusHandler),
-            (r"/prestudy", PreStudyHandler),
-            (r"/fixation", FixationHandler),
             (r"/mmd", MMDHandler),
-            (r"/MMDIntervention", MMDInterventionHandler),
             (r"/questionnaire", QuestionnaireHandler),
-            (r"/saveCoordinates", AjaxHandler),
             (r"/resume", ResumeHandler),
-            (r"/websocket", webSocketHandler),
-
+            (r"/userID", UserIDHandler),
+            (r"/prestudy", PreStudyHandler), (r"/(Sample_bars.png)", tornado.web.StaticFileHandler, {'path':'./'}),
+                                             (r"/(Sample_bars_2.png)", tornado.web.StaticFileHandler, {'path':'./'}),
+            (r"/sample_MMD", SampleHandler), (r"/(ExampleMMD.png)", tornado.web.StaticFileHandler, {'path':'./'}),
+            (r"/sample_Q", SampleHandler2), (r"/(ExampleQ.png)", tornado.web.StaticFileHandler, {'path':'./'}),
+            (r"/calibration", CalibrationHandler), (r"/(blank_cross.jpg)", tornado.web.StaticFileHandler, {'path':'./'}),
+            (r"/tobii", TobiiHandler),
+            (r"/ready", ReadyHandler),
+            (r"/done", DoneHandler),
+            (r"/final_question", FinalHandler), (r"/(post_question.png)", tornado.web.StaticFileHandler, {'path':'./'}),
+            (r"/done2", DoneHandler2),
+            (r"/websocket", WebSocketHandler)
         ]
         #connects to database
         self.conn = sqlite3.connect('database.db')
@@ -66,11 +71,7 @@ class Application(tornado.web.Application):
         #initializes web app
         tornado.web.Application.__init__(self, handlers, **settings)
 
-#each ____Handler is associated with a url
-#def get is for when a http get request is made to the url
-#def post is for when a http post request is made to the url(ex: form is submitted)
-
-class webSocketHandler(tornado.websocket.WebSocketHandler):
+class WebSocketHandler(tornado.websocket.WebSocketHandler):
 
     def open(self):
         self.websocket_ping_interval = 0
@@ -82,44 +83,78 @@ class webSocketHandler(tornado.websocket.WebSocketHandler):
         self.tobii_controller = TobiiController()
         self.tobii_controller.liveWebSocket.add(self)
         self.tobii_controller.waitForFindEyeTracker()
+        self.initialize_detection_components()
         print self.tobii_controller.eyetrackers
-        self.fixation_component = FixationDetector(self.tobii_controller, self.adaptation_loop, liveWebSocket = self.tobii_controller.liveWebSocket)
-        self.emdat_component = EMDATComponent(self.tobii_controller, self.adaptation_loop, callback_time = params.EMDAT_CALL_PERIOD)
 
         self.tobii_controller.activate(self.tobii_controller.eyetrackers.keys()[0])
         self.tobii_controller.startTracking()
-        self.fixation_component.start()
-        self.emdat_component.start()
+        self.start_detection_components()
         print "tracking started"
 
     def on_message(self, message):
+        print("RECEIVED MESSAGE: " + message)
         if (message == "close"):
             print("destroying")
-            #DummyController.receiveFixations = False
-            self.fixation_component.stop()
-            #self.emdat_component.stop()
-
+            self.stop_detection_components()
             self.tobii_controller.stopTracking()
             self.tobii_controller.destroy()
             self.app_state_control.resetApplication()
             return
-        elif (message == "next_task"):
-            del self.fixation_component
-            # TODO: Decide what to do with emdat when task finishes!
-            self.tobii_controller.stop()
-            self.tobii_controller.flush()
-            self.app_state_control.changeTask(2)
-            self.fixation_component = FixationDetector(self.tobii_controller, self.app_state_control, liveWebSocket = self.tobii_controller.liveWebSocket)
-            #self.emdat_component = EMDATComponent(self.tobii_controller, self.app_state_control, liveWebSocket = self.tobii_controller.liveWebSocket, callback_time = 6000)
-            self.tobii_controller.start()
-            self.fixation_component.start()
-            #self.emdat_component.start()
-        else:
+        elif (message.find("next_task") != -1):
+            result = message.split(":")
+            next_task = int(result[1])
 
+            self.stop_detection_components()
+            """ ??? """
+            # TODO: Decide what to do with emdat when task finishes!
+            self.tobii_controller.stopTracking()
+            self.tobii_controller.flush()
+            self.app_state_control.changeTask(next_task)
+            self.initialize_detection_components()
+            self.start_detection_components()
+            self.tobii_controller.startTracking()
+        else:
+            self.stop_detection_components()
+            self.tobii_controller.stopTracking()
+            self.tobii_controller.destroy()
+            self.app_state_control.resetApplication()
+            """ wtf """
+            return
             print("unexpected message")
 
     def on_close(self):
+        self.stop_detection_components()
+        self.tobii_controller.stopTracking()
+        self.tobii_controller.destroy()
+        self.app_state_control.resetApplication()
         print("WebSocket closed")
+
+    def initialize_detection_components(self):
+        if (params.USE_FIXATION_ALGORITHM):
+            self.fixation_component = FixationDetector(self.tobii_controller, self.adaptation_loop)
+        if (params.USE_EMDAT):
+            self.emdat_component = EMDATComponent(self.tobii_controller, self.adaptation_loop, callback_time = params.EMDAT_CALL_PERIOD)
+            if (params.USE_ML):
+                self.ml_component = MLComponent(self.tobii_controller, self.adaptation_loop, callback_time = params.EMDAT_CALL_PERIOD, emdat_component = self.emdat_component)
+
+    def start_detection_components(self):
+        if (params.USE_FIXATION_ALGORITHM):
+            self.fixation_component.start()
+        if (params.USE_EMDAT):
+            self.emdat_component.start()
+            if (params.USE_ML):
+                self.ml_component.start()
+
+    def stop_detection_components(self):
+        if (params.USE_FIXATION_ALGORITHM):
+            self.fixation_component.stop()
+            del self.fixation_component
+        if (params.USE_EMDAT):
+            #self.emdat_component.stop()
+            del self.emdat_component
+            if (params.USE_ML):
+                #self.ml_component.stop()
+                del self.ml_component
 
 class MainHandler(tornado.web.RequestHandler):
     def get(self):
@@ -127,40 +162,25 @@ class MainHandler(tornado.web.RequestHandler):
         self.application.start_time = str(datetime.datetime.now().time())
         #self.application.cur_user = 100
         print 'hello'
-        #mmdQuestions = self.loadMMDQuestions()
 
-        #self.render('index.html', mmd="3")
-        #self.render('mmd.html', mmd="3")
+        self.render('index.html', mmd="3")
         #self.render('mmd.html', mmd="3")
 
-        self.render('MMDIntervention.html', mmd="3")
+        #self.render('MMDIntervention.html', mmd="3")
         #self.render('questionnaire.html', mmd="3", questions = mmdQuestions)
 
 
     def post(self):
 
-        ##### TODO ######
-
-        # 1)generate userid
-        # 2)login with old userid
-
         q1 = self.get_argument('element_1')
-        print q1
-        if(int(q1)==1): #genereate new userid
-            #query_results = self.application.conn.execute('SELECT * FROM User_data ORDER BY user_id DESC LIMIT 1')
-            #rows =  query_results.fetchall()
-            #print 'new user id'
-            #print int(rows[0][0])+1 # maximum valued ID
-            #self.application.cur_user = int(rows[0][0])+1
-            self.application.mmd_order = [73,3,5,9,11,18,20,27,28,30,60,62,66,72,74,76] #removed MMD 73
-            #random.shuffle(self.application.mmd_order)
-            print self.application.mmd_order
+        if(int(q1)==1):
+            self.application.mmd_order = [62,3,5,9,11,18,20,27,28,30,60,62,66,72,74,76] #removed MMD 73
+            #self.application.mmd_order = [73] #removed MMD 73
+            # TODO:remove commenting out random.shuffle(self.application.mmd_order)
             self.application.mmd_index = 0
 
-
             #self.redirect('/mmd')
-
-            self.redirect('/prestudy')
+            self.redirect('/userID')
         else:
             self.redirect('/resume')
 
@@ -169,10 +189,7 @@ class MainHandler(tornado.web.RequestHandler):
         query_results = conn.execute('select * from MMD_questions')
 
         return json.dumps(query_results.fetchall())
-        # query_results
-        # OR
 
-        # query_results.fetchone()
 
 class ResumeHandler(tornado.web.RequestHandler):
     def get(self):
@@ -288,37 +305,15 @@ class QuestionnaireHandler(tornado.web.RequestHandler):
 
         # hard-coded two questions as they appear in all mmds
         questions = []
-        questions.append([self.application.cur_mmd, "1", "I am interested in reading the full article.", "Likert", "Subjective"])
+        questions.append([self.application.cur_mmd, "1", "The snippet I read was easy to understand.", "Likert", "Subjective"])
 
-        questions.append([self.application.cur_mmd, "2", "The article/snippet was easy to understand.", "Likert", "Subjective"])
+        questions.append([self.application.cur_mmd, "2", "I would be interested in reading the full article.", "Likert", "Subjective"])
 
         questions.extend(query_results.fetchall())
 
         return json.dumps(questions)
 
-    #
-    # def saveMMDQuestions(self):
-    #     self.application.end_time = str(datetime.datetime.now().time())
-    #     task_data = (
-    #     self.application.cur_user, self.application.cur_mmd, self.application.start_time, self.application.end_time, "")
-    #     self.application.conn.execute('INSERT INTO MMD_tasks VALUES (?,?,?,?,?)', task_data)
-    #     self.application.conn.commit()
 
-class MMDInterventionHandler(tornado.web.RequestHandler):
-    def get(self):
-        #displays contents of index.html
-        self.application.start_time = str(datetime.datetime.now().time())
-        self.render('MMDIntervention.html', mmd="30")
-
-    def post(self):
-        #refers to database connected to in 'class Application'
-        #database = self.application.db.database
-        #empty entry to insert into database in order to generate a user id
-        #entry = {}
-        #inserts empty entry and saves it to UserID variable in 'class Application'
-        #self.application.UserID = database.insert_one(entry).inserted_id
-        #print self.application.UserID
-        self.redirect('/prestudy')
 
 class MMDHandler(tornado.web.RequestHandler):
     def get(self):
@@ -331,10 +326,10 @@ class MMDHandler(tornado.web.RequestHandler):
             if (self.application.show_question_only):
                 self.redirect('/questionnaire')
             else:
-                self.render('mmd.html', mmd=str(self.application.cur_mmd))
+                self.render('MMDExperimenter.html', mmd=str(self.application.cur_mmd))
             self.application.mmd_index+=1
         else:
-            self.redirect('/')
+            self.redirect('/done')
 
     def post(self):
         #refers to database connected to in 'class Application'
@@ -346,26 +341,15 @@ class MMDHandler(tornado.web.RequestHandler):
         #print self.application.UserID
 
         #self.application.cur_user = random.randint(0, 1000)  #random number for now
+        print ("POST RECEIVED")
         self.application.end_time = str(datetime.datetime.now().time())
         task_data = (self.application.cur_user, self.application.cur_mmd,'mmd' ,self.application.start_time, self.application.end_time)
         self.application.conn.execute('INSERT INTO MMD_performance VALUES (?,?,?,?,?)', task_data)
         self.application.conn.commit()
         self.redirect('/questionnaire')
 
-class AjaxHandler(tornado.web.RequestHandler):
-    def post(self):
 
-
-        jsonobj = json.loads(self.request.body)
-        print jsonobj
-
-        print 'Post data received'
-
-        file = open('static/AOICoordinates/'+jsonobj['filename'], 'w')
-        file.write(self.request.body)
-        file.close()
-
-class PreStudyHandler(tornado.web.RequestHandler):
+class UserIDHandler(tornado.web.RequestHandler):
     def get(self):
         #gets time upon entering form
         self.application.start_time = str(datetime.datetime.now().time())
@@ -381,91 +365,85 @@ class PreStudyHandler(tornado.web.RequestHandler):
         # store the new userID
         user_data = [self.application.cur_user, str(self.application.start_time), str(self.application.mmd_order)]
         self.application.conn.execute('INSERT INTO User_data VALUES (?,?,?)', user_data)
-
-
-        # age = self.get_argument('age')
-        # gender = self.get_argument('gender')
-        # occupation = self.get_argument('occupation')
-        # field = self.get_argument('field')
-        # simple_bar = self.get_argument('simple_bar')
-        # complex_bar = self.get_argument('complex_bar')
-        #
-        # #currently that number value is just a dummy user id
-        # #organizes data to insert into table into a tuple
-        # prestudy = (self.application.cur_user, age, gender, occupation, field, simple_bar, complex_bar, self.application.start_time, self.application.end_time)
-        # self.application.conn.execute('INSERT INTO prestudy VALUES (?,?,?,?,?,?,?,?,?)', prestudy)
-        # self.application.conn.commit()
-
-        #####TODO######
-
-        #get database entry with current sessions user id and saves prestudy content
-            #database.update({"_id": self.application.UserID}, {'$set': prestudy})
-        #self.redirect('/locus')
-        self.redirect('/mmd')
-
-class LocusHandler(tornado.web.RequestHandler):
-    def get(self):
-        #get time upon entering form
-        self.application.start_time = str(datetime.datetime.now().time())
-        #displays contents of locus.html
-        self.render("locus.html", userid = self.application.UserID)
-    def post(self):
-        #get time upon leaving form
-        self.application.end_time = str(datetime.datetime.now().time())
-        #gets content submitted in the form for locus
-        q1 = self.get_argument('question1')
-        q2 = self.get_argument('question2')
-        q3 = self.get_argument('question3')
-        q4 = self.get_argument('question4')
-        q5 = self.get_argument('question5')
-        q6 = self.get_argument('question6')
-        q7 = self.get_argument('question7')
-        q8 = self.get_argument('question8')
-        q9 = self.get_argument('question9')
-        q10 = self.get_argument('question10')
-        q11 = self.get_argument('question11')
-        q12 = self.get_argument('question12')
-        q13 = self.get_argument('question13')
-        q14 = self.get_argument('question14')
-        q15 = self.get_argument('question15')
-        q16 = self.get_argument('question16')
-        q17 = self.get_argument('question17')
-        q18 = self.get_argument('question18')
-        q19 = self.get_argument('question19')
-        q20 = self.get_argument('question20')
-        q21 = self.get_argument('question21')
-        q22 = self.get_argument('question22')
-        q23 = self.get_argument('question23')
-        q24 = self.get_argument('question24')
-        q25 = self.get_argument('question25')
-        q26 = self.get_argument('question26')
-        q27 = self.get_argument('question27')
-        q28 = self.get_argument('question28')
-        q29 = self.get_argument('question29')
-        #time = self.get_argument('elapsed_time')
-
-        #####TODO#####
-
-        #gets database entry with current sessions user id and saves locus content
-            #database.update({"_id": self.application.UserID}, {'$set': locus})
-
-        #organizes data to be inserted into table as a tuple
-        locus = (2, q1, q2, q3, q4, q5, q6, q7, q8, q9, q10,
-                 q11, q12, q13, q14, q15, q16, q17, q18, q19, q20,
-                 q21, q22, q23, q24, q25, q26, q27, q28, q29,
-                 self.application.start_time, self.application.end_time)
-        self.application.conn.execute('INSERT INTO locus VALUES (?,?,?,?,?,?,?,?,?,?,' +
-                                                                '?,?,?,?,?,?,?,?,?,?,' +
-                                                                '?,?,?,?,?,?,?,?,?,?,?)', locus)
         self.application.conn.commit()
 
+        self.redirect('/prestudy')
+
+class PreStudyHandler(tornado.web.RequestHandler):
+    def get(self):
+        #gets time upon entering form
+        self.render("prestudy.html")
+    def post(self):
+
+        #get contents submitted in the form for prestudy
+        q1 = self.get_argument('age')
+        q2 = self.get_argument('gender')
+        q3 = self.get_argument('occupation')
+        q4 = self.get_argument('field')
+        q5 = self.get_argument('first_language')
+        q6 = self.get_argument('pref_language')
+        q7 = self.get_argument('enlish_proficiency')
+        q8 = self.get_argument('read_freq')
+        q9 = self.get_argument('distrcted')
+        q10 = self.get_argument('complex_bar')
+
+        pre_data = [self.application.cur_user, q1, q2, q3, q4, q5, q6, q7, q8, q9, q10]
+        self.application.conn.execute('INSERT INTO prestudy VALUES (?,?,?,?,?,?,?,?,?,?,?)', pre_data)
+        self.application.conn.commit()
+
+        self.redirect('/sample_MMD')
+
+class SampleHandler(tornado.web.RequestHandler):
+    def get(self):
+        self.render("sample_mmd.html")
+    def post(self):
+        self.redirect('/sample_Q')
+
+class SampleHandler2(tornado.web.RequestHandler):
+    def get(self):
+        self.render("sample_questionnaire.html")
+    def post(self):
+        self.redirect('/tobii')
+
+class TobiiHandler(tornado.web.RequestHandler):
+    def get(self):
+        self.render("load_tobii.html")
+    def post(self):
+        self.redirect('/calibration')
+
+class CalibrationHandler(tornado.web.RequestHandler):
+    def get(self):
+        self.render("calibration.html")
+    def post(self):
+        self.redirect('/ready')
+
+class ReadyHandler(tornado.web.RequestHandler):
+    def get(self):
+        self.render("ready.html")
+    def post(self):
         self.redirect('/mmd')
 
-
-class FixationHandler(tornado.web.RequestHandler):
+class DoneHandler(tornado.web.RequestHandler):
     def get(self):
-        self.write("Hello, world")
+        self.render("done.html")
+    def post(self):
+        self.redirect('/final_question')
 
+class FinalHandler(tornado.web.RequestHandler):
+    def get(self):
+        self.render("final_question.html")
+    def post(self):
+        q1 = self.get_argument('viz_pref')
+
+        pre_data = [self.application.cur_user, q1]
+        self.application.conn.execute('INSERT INTO final_question VALUES (?,?)', pre_data)
+        self.application.conn.commit()
+
+        self.redirect('/done2')
+
+class DoneHandler2(tornado.web.RequestHandler):
+    def get(self):
+        self.render("done2.html")
 
 #main function is first thing to run when application starts
 def main():

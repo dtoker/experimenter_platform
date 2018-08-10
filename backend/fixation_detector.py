@@ -23,6 +23,8 @@ class FixationDetector(DetectionComponent):
         self.application_state_controller.updateFixTable(aoi, self.cur_fix_id, fix_start_time, fix_end_time, fix_dur)
         self.adaptation_loop.evaluateRules(aoi, fix_end_time)
 
+    def stop(self):
+        self.runOnlineFix = False
     #Preetpal's Online/Realtime fixation algorithm
     @gen.coroutine
     def run(self):

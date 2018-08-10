@@ -6,6 +6,39 @@ CREATE TABLE "aoi" (
         `polygon`       BLOB,
         PRIMARY KEY(`name`,`task`)
 );
+<<<<<<< HEAD
+INSERT INTO "aoi" VALUES('text',1,1,'[(132,229),(132,555),(606,555),(606,229)]');
+INSERT INTO "aoi" VALUES('vis2',1,1,'[(378,371),(378,401),(553,401),(553,371)]');
+INSERT INTO "aoi" VALUES('text',2,1,'[(0,0),(0,100),(100,100),(100,0)]');
+INSERT INTO "aoi" VALUES('vis',1,'','[(616,94),(616,509),(1090,509),(1090,94)]');
+INSERT INTO "aoi" VALUES('legend',1,'','[(653,499),(653,557),(1075,557),(1075,499)]');
+INSERT INTO "aoi" VALUES('top_left',1,'','[(0,0),(0,300),(300,300),(300,0)]');
+INSERT INTO "aoi" VALUES('ref_1',1,'','[(244,233),(244,253),(578,253),(244,233),(578,233),(152,258),(152,279),(196,279),(196,258),(578,233)]');
+INSERT INTO "aoi" VALUES('ref_2',1,'','[(534,254),(534,279),(583,279),(583,254),(534,254),(152,282),(152,302),(259,302),(259,283),(152,282)]');
+INSERT INTO "aoi" VALUES('ref_3',1,'','[(256,331),(256,353),(440,353),(440,331)]');
+INSERT INTO "aoi" VALUES('ref_4',1,'','[(199,380),(199,404),(380,404),(380,380)]');
+INSERT INTO "aoi" VALUES('ref_4',2,'','[(199,380),(199,404),(380,404),(380,380)]');
+INSERT INTO "aoi" VALUES('ref_3',2,'','[(256,331),(256,353),(440,353),(440,331)]');
+INSERT INTO "aoi" VALUES('ref_2',2,'','[(534,254),(534,279),(583,279),(583,254),(534,254),(152,282),(152,302),(259,302),(259,283),(152,282)]');
+INSERT INTO "aoi" VALUES('ref_1',2,'','[(244,233),(244,253),(578,253),(244,233),(578,233),(152,258),(152,279),(196,279),(196,258),(578,233)]');
+INSERT INTO "aoi" VALUES('legend',2,'','[(653,499),(653,557),(1075,557),(1075,499)]');
+INSERT INTO "aoi" VALUES('vis',2,'','[(616,94),(616,509),(1090,509),(1090,94)]');
+CREATE TABLE intervention_state ( `intervention` TEXT, `active` INTEGER, time_stamp INTEGER, occurences INTEGER, PRIMARY KEY(`intervention`));
+CREATE TABLE legend_fix ( `id` INTEGER, `time_start` INTEGER, `time_end` INTEGER, `duration` INTEGER, PRIMARY KEY(`id`) );
+INSERT INTO "legend_fix" VALUES(2,1533857244926499,1533857245009732,83233);
+CREATE TABLE pupil ( `id` INTEGER, `interval_value` INTEGER, `task_value` TEXT, `runtime_value` TEXT, PRIMARY KEY(`id`) );
+INSERT INTO "pupil" VALUES(2,-1,'-1','-1');
+INSERT INTO "pupil" VALUES(3,2.16223653157552098136e+00,'2.16223653157552','2.16223653157552');
+INSERT INTO "pupil" VALUES(4,-1,'2.16223653157552','2.16223653157552');
+INSERT INTO "pupil" VALUES(5,-1,'2.16223653157552','2.16223653157552');
+INSERT INTO "pupil" VALUES(6,-1,'2.16223653157552','2.16223653157552');
+CREATE TABLE reading_proficiency ( `id` INTEGER, `time_stamp` INTEGER, `raw_prediction` REAL, `value` TEXT, PRIMARY KEY(`id`) );
+CREATE TABLE ref_1_fix ( `id` INTEGER, `time_start` INTEGER, `time_end` INTEGER, `duration` INTEGER, PRIMARY KEY(`id`) );
+CREATE TABLE ref_2_fix ( `id` INTEGER, `time_start` INTEGER, `time_end` INTEGER, `duration` INTEGER, PRIMARY KEY(`id`) );
+CREATE TABLE ref_3_fix ( `id` INTEGER, `time_start` INTEGER, `time_end` INTEGER, `duration` INTEGER, PRIMARY KEY(`id`) );
+CREATE TABLE ref_4_fix ( `id` INTEGER, `time_start` INTEGER, `time_end` INTEGER, `duration` INTEGER, PRIMARY KEY(`id`) );
+CREATE TABLE rule_state ( `rule` TEXT, time_stamp INTEGER, occurences INTEGER, PRIMARY KEY(`rule`));
+=======
 INSERT INTO "aoi" VALUES('text',1,1,'[(0,0),(300,0),(300,300),(0,300)]');
 INSERT INTO "aoi" VALUES('text',2,1,'[(0,0),(200,0),(200,200),(0,200)]
 ');
@@ -348,6 +381,7 @@ INSERT INTO "text_fix" VALUES(58,1532043204495582,1532043205003382,507800);
 INSERT INTO "text_fix" VALUES(59,1532043214462784,1532043214845726,382942);
 INSERT INTO "text_fix" VALUES(60,1532043215686947,1532043216444471,757524);
 INSERT INTO "text_fix" VALUES(63,1532043325809080,1532043326583607,774527);
+>>>>>>> master
 CREATE TABLE "user_state" (
 	`event_name`	TEXT NOT NULL,
 	`type`	TEXT,
@@ -355,6 +389,18 @@ CREATE TABLE "user_state" (
 	`feature`	TEXT,
 	PRIMARY KEY(`event_name`)
 );
+<<<<<<< HEAD
+INSERT INTO "user_state" VALUES('text_fix','fix','text',NULL);
+INSERT INTO "user_state" VALUES('pupil','emdat','vis','meanpupilsize');
+INSERT INTO "user_state" VALUES('reading_proficiency','ml','',NULL);
+INSERT INTO "user_state" VALUES('bad_type','same','text',NULL);
+INSERT INTO "user_state" VALUES('vis_fix','fix','vis',NULL);
+INSERT INTO "user_state" VALUES('legend_fix','fix','legend',NULL);
+INSERT INTO "user_state" VALUES('ref_1_fix','fix','ref_1',NULL);
+INSERT INTO "user_state" VALUES('ref_2_fix','fix','ref_2','');
+INSERT INTO "user_state" VALUES('ref_3_fix','fix','ref_3',NULL);
+INSERT INTO "user_state" VALUES('ref_4_fix','fix','ref_4',NULL);
+=======
 INSERT INTO "user_state" VALUES('text_fix','fix','text','');
 INSERT INTO "user_state" VALUES('pupil','emdat','vis','meanpupilsize');
 INSERT INTO "user_state" VALUES('reading_proficiency','ml','',NULL);
@@ -376,11 +422,32 @@ INSERT INTO "user_state" VALUES('task_6_4_emdat','emdat','t4_aoi6','meanfixation
 INSERT INTO "user_state" VALUES('task_7_4_emdat','emdat','t4_aoi7','stddevfixationduration');
 INSERT INTO "user_state" VALUES('bad_type','same','text',NULL);
 INSERT INTO "user_state" VALUES('task_2_2_emdat','emdat','text','maxpupilsize');
+>>>>>>> master
 CREATE TABLE "user_state_task" (
         `event_name`    TEXT,
         `task`  INTEGER,
         PRIMARY KEY(`event_name`,`task`)
 );
+<<<<<<< HEAD
+INSERT INTO "user_state_task" VALUES('text_fix',1);
+INSERT INTO "user_state_task" VALUES('pupil',2);
+INSERT INTO "user_state_task" VALUES('reading_proficiency',1);
+INSERT INTO "user_state_task" VALUES('reading_proficiency',2);
+INSERT INTO "user_state_task" VALUES('vis_fix',1);
+INSERT INTO "user_state_task" VALUES('legend_fix',1);
+INSERT INTO "user_state_task" VALUES('ref_1_fix',1);
+INSERT INTO "user_state_task" VALUES('ref_2_fix',1);
+INSERT INTO "user_state_task" VALUES('ref_3_fix',1);
+INSERT INTO "user_state_task" VALUES('ref_4_fix',1);
+INSERT INTO "user_state_task" VALUES('ref_4_fix',2);
+INSERT INTO "user_state_task" VALUES('ref_3_fix',2);
+INSERT INTO "user_state_task" VALUES('ref_2_fix',2);
+INSERT INTO "user_state_task" VALUES('ref_1_fix',2);
+INSERT INTO "user_state_task" VALUES('legend_fix',2);
+INSERT INTO "user_state_task" VALUES('vis_fix',2);
+CREATE TABLE vis_fix ( `id` INTEGER, `time_start` INTEGER, `time_end` INTEGER, `duration` INTEGER, PRIMARY KEY(`id`) );
+INSERT INTO "vis_fix" VALUES(1,1533857244926499,1533857245009732,83233);
+=======
 INSERT INTO "user_state_task" VALUES('text_fix',2);
 INSERT INTO "user_state_task" VALUES('pupil',2);
 INSERT INTO "user_state_task" VALUES('pupil',1);
@@ -404,4 +471,5 @@ INSERT INTO "user_state_task" VALUES('task_2_2_emdat',2);
 CREATE TABLE vis_fix ( `id` INTEGER, `time_start` INTEGER, `time_end` INTEGER, `duration` INTEGER, PRIMARY KEY(`id`) );
 INSERT INTO "vis_fix" VALUES(61,1532043306707360,1532043306873839,166479);
 INSERT INTO "vis_fix" VALUES(62,1532043306882222,1532043307040443,158221);
+>>>>>>> master
 COMMIT;
