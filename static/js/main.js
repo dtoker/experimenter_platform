@@ -34,10 +34,6 @@ d3.json("static/data/conditions.json", function(data){
           currentMMD = $(this).find("option:selected").text();
           loadMMD(currentMMD);
      });
-
-
-
-
 });
 
 function loadMMD(mmdName){
@@ -50,7 +46,7 @@ function loadMMD(mmdName){
      d3.json("static/data/"+mmdName+".json", function(data){
           $("#theText").html(data.text);
           //console.log('<img src='+data.chart+'');
-          $("#visualization").html('<img id="theChart" src="static/'+data.chart+'">' );					
+          $("#visualization").html('<img id="theChart" src="static/'+data.chart+'">' );
 					var coordinatesChars = [];
 
 					var some_text = $("#theTextParagraph").text().trim()

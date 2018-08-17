@@ -142,7 +142,8 @@ class ApplicationStateController():
         """
 
         self.currTask = task
-        query_results = self.conn.execute('SELECT user_state.event_name, type FROM user_state, user_state_task WHERE user_state.event_name = user_state_task.event_name and task = ?', str(self.currTask))
+        print("CURR TASK " + str(self.currTask))
+        query_results = self.conn.execute("SELECT user_state.event_name, type FROM user_state, user_state_task WHERE user_state.event_name = user_state_task.event_name and task = ?", (str(self.currTask),))
         self.userStates = query_results.fetchall()
         self.eventNames = []
         for user in self.userStates:

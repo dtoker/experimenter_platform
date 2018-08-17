@@ -74,14 +74,14 @@ class Application(tornado.web.Application):
 class WebSocketHandler(tornado.websocket.WebSocketHandler):
 
     def open(self):
+        print('opened ws')
         self.websocket_ping_interval = 0
         self.websocket_ping_timeout = float("inf")
-        self.app_state_control = ApplicationStateController(1)
+        self.app_state_control = ApplicationStateController(self.application.cur_mmd)
         self.adaptation_loop = AdaptationLoop(self.app_state_control)
-        self.adaptation_loop.liveWebSocket.append(self)
+        self.adaptation_loop.liveWebSocket = self
 
         self.tobii_controller = TobiiController()
-        self.tobii_controller.liveWebSocket.add(self)
         self.tobii_controller.waitForFindEyeTracker()
         self.initialize_detection_components()
         print self.tobii_controller.eyetrackers
@@ -100,7 +100,22 @@ class WebSocketHandler(tornado.websocket.WebSocketHandler):
             self.tobii_controller.destroy()
             self.app_state_control.resetApplication()
             return
-        elif (message.find("next_task") != -1):
+        elif (message == "next_task"):
+
+            next_task = self.application.mmd_order[self.application.mmd_index]
+            print("NEXT TASK" + str(next_task))
+            self.stop_detection_components()
+            """ ??? """
+            # TODO: Decide what to do with emdat when task finishes!
+            self.tobii_controller.stopTracking()
+            self.tobii_controller.flush()
+            self.app_state_control.changeTask(next_task)
+            self.initialize_detection_components()
+            self.start_detection_components()
+            self.tobii_controller.startTracking()
+            return
+
+        elif (message.find("switch_task") != -1):
             result = message.split(":")
             next_task = int(result[1])
 
@@ -113,19 +128,23 @@ class WebSocketHandler(tornado.websocket.WebSocketHandler):
             self.initialize_detection_components()
             self.start_detection_components()
             self.tobii_controller.startTracking()
+            return
+
         else:
             self.stop_detection_components()
             self.tobii_controller.stopTracking()
             self.tobii_controller.destroy()
             self.app_state_control.resetApplication()
-            """ wtf """
             return
-            print("unexpected message")
 
     def on_close(self):
+        print('closed ws')
         self.stop_detection_components()
+        print('closed dc')
         self.tobii_controller.stopTracking()
+        print('stop track')
         self.tobii_controller.destroy()
+        print('destroy')
         self.app_state_control.resetApplication()
         print("WebSocket closed")
 
@@ -147,13 +166,10 @@ class WebSocketHandler(tornado.websocket.WebSocketHandler):
 
     def stop_detection_components(self):
         if (params.USE_FIXATION_ALGORITHM):
-            self.fixation_component.stop()
             del self.fixation_component
         if (params.USE_EMDAT):
-            #self.emdat_component.stop()
             del self.emdat_component
             if (params.USE_ML):
-                #self.ml_component.stop()
                 del self.ml_component
 
 class MainHandler(tornado.web.RequestHandler):
@@ -174,9 +190,9 @@ class MainHandler(tornado.web.RequestHandler):
 
         q1 = self.get_argument('element_1')
         if(int(q1)==1):
-            self.application.mmd_order = [62,3,5,9,11,18,20,27,28,30,60,62,66,72,74,76] #removed MMD 73
+            self.application.mmd_order = [3,5,9,11,18,20,27,28,30,60,62,66,72,74,76] #removed MMD 73
             #self.application.mmd_order = [73] #removed MMD 73
-            # TODO:remove commenting out random.shuffle(self.application.mmd_order)
+            #random.shuffle(self.application.mmd_order)
             self.application.mmd_index = 0
 
             #self.redirect('/mmd')
@@ -252,7 +268,7 @@ class QuestionnaireHandler(tornado.web.RequestHandler):
         noofMMD = len(self.application.mmd_order)
         progress = str(self.application.mmd_index)+ ' of '+ str(noofMMD)
         self.render('questionnaire.html', mmd=self.application.cur_mmd, progress = progress, questions = mmdQuestions)
-
+        print("finished rendering qustionnaire")
 
 
     def post(self):

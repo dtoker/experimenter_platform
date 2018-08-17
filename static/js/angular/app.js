@@ -94,51 +94,10 @@ var AppCtrl = function($scope, $http, $location) {
     var obj = JSON.parse(evt.data);
     //console.log(evt.data);
     if (obj.remove != null) {
-      console.log("Received a remove call");
-      var referenceID;
-      for (let intervention of obj.remove) {
-        var referenceID = $scopeGlobal.interventions[intervention]
-        delete $scopeGlobal.interventions[intervention];
-        removeAllInterventions(referenceID);
-      }
+        handleRemoval(obj);
 
     } else if (obj.deliver != null) {
-      console.log("Received a deliver call");
-      console.log(obj.deliver)
-      for (let intervention of obj.deliver) {
-        var func = intervention.function;
-        var interventionName = intervention.name;
-        var transition_in = intervention.transition_in;
-
-        var args = JSON.parse(intervention.arguments);
-        var referenced_tuples = [];
-        var data = $scope.datatable.data;
-        if (args.type == "legend") {
-          referenced_tuples.push("legend");
-        } else {
-          var referenceID = args.id;
-          console.log("id " + args.id);
-          function matched_tuple(tuple_a, tuple_b) {
-            return tuple_a.map(function(val, ind) {
-              return val == tuple_b[ind]; // Match strings and floats that are the same number
-            }).reduce(function(acc, val) { return acc && val; });
-          }
-          var reference =  $scopeGlobal.curReference[referenceID]
-            for(var j=0; j<reference.tuples.length; j++) {
-              for(var k=0; k<data.length; k++) {
-                if(matched_tuple(reference.tuples[j], data[k].tuple)) {
-                  referenced_tuples.push(data[k].id);
-                  break;
-                }
-              }
-            }
-        }
-
-        $scopeGlobal.interventions[interventionName] = { tuple_id: $scopeGlobal.refMapper.getReferringMarks(referenced_tuples)[0], args: args, transition_out: intervention.transition_out };
-      //highlightVisOnly($scopeGlobal.selectedReference);
-        eval(func)($scopeGlobal.interventions[interventionName], transition_in, args);
-      }
-
+        handleDelivery(obj);
     }
   }
 
@@ -152,7 +111,6 @@ var AppCtrl = function($scope, $http, $location) {
       success(function(data, status, headers) {
         $scope.conditions = data;
         if (data.length > 0) {
-
           $scope.curConditionId = data[0];
             if(currentMMD){
                 $scope.curConditionId = currentMMD;
@@ -172,7 +130,7 @@ var AppCtrl = function($scope, $http, $location) {
     }
     //console.log('static/data/' + $scope.curConditionId + '.json');
     // Load the new condition
-    $http.get('static/data/' + $scope.curConditionId + '.json').
+    $http.get('static/data_updated/' + $scope.curConditionId + '_updated.json').
         success(function(data, status, headers) {
 
 
@@ -209,13 +167,14 @@ var AppCtrl = function($scope, $http, $location) {
           $scope.curText = data.text;
           globalText = data.text;
           $scope.sentences = data.sentences;
-          console.log($scope.curText);
-          console.log($scope.sentences);
+          //console.log($scope.curText);
+          //console.log($scope.sentences);
           $scope.datatable = data.datatable;
           $scope.marks = data.marks;
           $scope.visualReferences = data.visual_references;
           $scope.allReferences = data.references;
-          $scope.curReference = $scope.allReferences[1].reference; // '1== GOLD reference
+//          $scope.curReference = $scope.allReferences[1].reference; // '1== GOLD reference
+          $scope.curReference = $scope.allReferences
           $scope.selectedReference = 0
           $scope.lastSelectedReference = -1
           //console.log(JSON.stringify($scope.curReference));
@@ -225,8 +184,17 @@ var AppCtrl = function($scope, $http, $location) {
           $scope.coordinatesofChar = findCoordinatesofCharacters("#theTextParagraph");
           $scope.coordinatesofSentences = findCoordinatesofSentences("#theTextParagraph", $scope.coordinatesofChar);
           $scope.coordinatesofWords = findCoordinatesofWords("#theTextParagraph", $scope.coordinatesofChar);
+          console.log("CHARACTERS")
+          console.log($scope.coordinatesofChar)
+          console.log("SENTENCES")
+          console.log($scope.coordinatesofSentences)
+          console.log("WORDS")
+          console.log($scope.coordinatesofWords)
+
           $scope.aggregatedData = aggregateDataIntoJSON($scope.coordinatesofChar, $scope.coordinatesofSentences, $scope.coordinatesofWords);
-          //console.log($scope.aggregatedData);
+          console.log("AGGREGATE")          
+
+          console.log($scope.aggregatedData);
 
           //uncomment this to store the json data
           //sendJSONtoTornado($scope.aggregatedData,$scope.curConditionId );
@@ -942,10 +910,62 @@ function clone(obj) {
     highlightMergedReferences("A");
   });
   $("#form1").submit(function() {
-    console.log("next_task")
-    $.post('http://localhost:8888/mmd'); //TODO: fix this to be handled more robustly
-    $scopeGlobal.ws.send("next_task:2");
+      console.log("next_task")
+    //$.post('http://localhost:8888/mmd'); //TODO: fix this to be handled more robustly
+    //$.get('http://localhost:8888/questionnaire', function (req, res){
+    //  res.render();
+    //})
+    $scopeGlobal.ws.send("next_task");
   })
+
+    function handleRemoval(obj) {
+      console.log("Received a remove call");
+      var referenceID;
+      for (let intervention of obj.remove) {
+        var referenceID = $scopeGlobal.interventions[intervention]
+        delete $scopeGlobal.interventions[intervention];
+        removeAllInterventions(referenceID);
+      }
+    }
+
+    function handleDelivery(obj) {
+      console.log("Received a deliver call");
+      console.log(obj.deliver)
+      for (let intervention of obj.deliver) {
+        var func = intervention.function;
+        var interventionName = intervention.name;
+        var transition_in = intervention.transition_in;
+
+        var args = JSON.parse(intervention.arguments);
+        var referenced_tuples = [];
+        var data = $scopeGlobal.datatable.data;
+        if (args.type == "legend") {
+          referenced_tuples.push("legend");
+        } else {
+          var referenceID = args.id;
+          console.log("id " + args.id); /*
+          function matched_tuple(tuple_a, tuple_b) {
+            return tuple_a.map(function(val, ind) {
+              return val == tuple_b[ind]; // Match strings and floats that are the same number
+            }).reduce(function(acc, val) { return acc && val; });
+          }
+          var reference =  $scopeGlobal.curReference[referenceID]
+            for(var j=0; j<reference.tuples.length; j++) {
+              for(var k=0; k<data.length; k++) {
+                if(matched_tuple(reference.tuples[j], data[k].tuple)) {
+                  referenced_tuples.push(data[k].id);
+                  break;
+                }
+              }
+            } */
+        }
+
+        $scopeGlobal.interventions[interventionName] = { tuple_id: args.id, args: args, transition_out: intervention.transition_out };
+      //highlightVisOnly($scopeGlobal.selectedReference);
+        eval(func)($scopeGlobal.interventions[interventionName], transition_in, args);
+      }
+    }
+
     function highlightTextOnly(referenceID) {
         console.log('highlight text');
         var overlappedReferences = [];

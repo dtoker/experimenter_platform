@@ -12,7 +12,7 @@ class AdaptationLoop():
 
     """Class to evaluate user defined rules and dispatch interventions as neccesary"""
 
-    def __init__(self, app_state_controller, liveWebSocket = []):
+    def __init__(self, app_state_controller, liveWebSocket = None):
 
         """Initiliazes the class variables
 
@@ -105,8 +105,7 @@ class AdaptationLoop():
         if to_remove:
             to_remove = json.dumps({'remove': to_remove})
             #print to_remove
-            for ws in self.liveWebSocket:
-                ws.write_message(to_remove)
+            self.liveWebSocket.write_message(to_remove)
 
     def __ruleRepeatsAllowed__(self, rule_name):
 
@@ -197,13 +196,10 @@ class AdaptationLoop():
                         self.app_state_controller.setInterventionActive(intervention_name, rule_name, time_stamp)
                         #print("triggered: " + rule_name + " deliverying: " + intervention_name)
 
-        #TODO: whether or not liveWebSocket should be an array
         if to_deliver_rules:
             to_deliver_rules = json.dumps({'deliver': to_deliver_rules})
             #print to_deliver_rules
-            print("number of websockets" + str(len(self.liveWebSocket)))
-            for ws in self.liveWebSocket:
-                ws.write_message(to_deliver_rules)
+            self.liveWebSocket.write_message(to_deliver_rules)
 
     def evaluateRules(self, event_name, time_stamp):
 

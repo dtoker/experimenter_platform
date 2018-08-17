@@ -90,7 +90,7 @@ function aggregateDataIntoJSON(charData, sentenceData, wordData){
 function sendJSONtoTornado(jsonObj, MMDid){
   jsonObj.filename = MMDid+'.json';
   $.ajax({
-    url: '/saveCoordinates',
+    url: '/AOIUpdatedCoordinates',
 
     data: JSON.stringify(jsonObj),
     dataType: "JSON",

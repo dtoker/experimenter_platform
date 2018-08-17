@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html ng-app="visreferences">
+<html>
 
   <head>
 
@@ -18,7 +18,7 @@
         console.log(currentMMD);
     </script>
   </head>
-  <body ng-controller="AppCtrl" ng-cloak>
+  <body>
 
   <!-- Application -->
   <!-- div >
@@ -41,7 +41,7 @@
 </div -->
    <!-- Controls -->
 
-  <div id='textandvis' class='col-md-9 row'>
+  <div  ng-app="visreferences" id='textandvis' class='col-md-9 row' ng-controller="AppCtrl" ng-cloak>
     <svg id="overlayText" height="840" width="450" style="position: absolute;">
 
 

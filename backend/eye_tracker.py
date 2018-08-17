@@ -52,7 +52,6 @@ class TobiiController:
 		self.head_distance = []
 		self.EndFixations = []
 		#This contains the websocket to send data to be displayed on front end
-		self.liveWebSocket = set()
 		self.runOnlineFix = True
 		# initialize communications
 		tobii.eye_tracking_io.init()
@@ -83,9 +82,10 @@ class TobiiController:
 		None		--	only returns when an entry has been made to the
 					self.eyetrackers dict
 		"""
-
+		print("looking for eyetracker")
 		while len(self.eyetrackers.keys()) == 0:
 			pass
+		print("found eyetracker")
 
 	def on_eyetracker_browser_event(self, event_type, event_name, eyetracker_info):
 
@@ -142,8 +142,10 @@ class TobiiController:
 
 		self.eyetracker = None
 		self.browser.stop()
+		print('browser stop')
 		self.browser = None
 		self.mainloop_thread.stop()
+		print('yes stop')
 
 	############################################################################
 	# activation methods
@@ -321,9 +323,10 @@ class TobiiController:
 			self.y.append(-1 * 1024)
 		# print(gaze.RightGazePoint2D.x * 1280, gaze.RightGazePoint2D.y * 1024)
 		# print("%f" % (time.time() * 1000.0))
-		for aoi, polygon in self.AOIs.iteritems():
-			if utils.point_inside_polygon((self.x[-1], self.y[-1]), polygon):
-				self.aoi_ids[aoi].append(self.dpt_id)
+		if (params.USE_EMDAT):
+			for aoi, polygon in self.AOIs.iteritems():
+				if utils.point_inside_polygon((self.x[-1], self.y[-1]), polygon):
+					self.aoi_ids[aoi].append(self.dpt_id)
 		# Pupil size features
 		self.pupilsize.append(self.get_pupil_size(gaze.LeftPupil, gaze.RightPupil))
 		if (self.last_pupil_right != -1):
@@ -510,6 +513,16 @@ class TobiiController:
 		self.emdat_global_features['stddevfixationduration'] 	= -1
 		self.emdat_global_features['sumfixationduration'] 		= -1
 		self.emdat_global_features['fixationrate'] 				= -1
+
+	def flush(self):
+		self.x = []
+		self.y = []
+		self.time = []
+		self.validity = []
+		self.pupilsize = []
+		self.pupilvelocity = []
+		self.head_distance = []
+		self.EndFixations = []
 
 #Original code provided by Roberto showing how to start the the eyetracker
 """

@@ -261,6 +261,13 @@
         "left": 135,
         "id": 17,
         "height": 118
+      },
+      {
+        "width": 95,
+        "top": 39,
+        "left": 64,
+        "id": "legend",
+        "height": 67
       }
     ]
   },

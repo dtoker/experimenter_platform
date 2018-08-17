@@ -131,7 +131,6 @@ class FixationDetector(DetectionComponent):
                     #self.y = self.y[array_index:]
                     #self.time = self.time[array_index:]
                     break
-        yield Efix
 
     @gen.coroutine
     def wait_for_new_data(self, array_index, array_iterator):
